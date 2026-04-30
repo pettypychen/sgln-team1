@@ -20,7 +20,7 @@
 ---
 
 ## Phase 2: Research & Empathy
-**Milestone: 26 May** | Deliverables: Evidence-backed problem statement; Stakeholder empathy map & SWOT; DT Training: Ideate & Create
+**Milestone: 26 May** | CEO: Simon | Deliverables: Evidence-backed problem statement; Stakeholder empathy map & SWOT; DT Training: Ideate & Create
 
 *Buffer week: week of May 19 (review & polish only)*
 
@@ -45,7 +45,7 @@
 ---
 
 ## Phase 3: Ideate & Create
-**Milestone: 16 Jun** | Deliverables: Presentation deck outline + white paper outline; DT Diverge-Converge ideation; DT Training: Prototype
+**Milestone: 16 Jun** | CEO: Audrey | Deliverables: Presentation deck outline + white paper outline; DT Diverge-Converge ideation; DT Training: Prototype
 
 *Buffer week: week of Jun 9 (review & polish only)*
 
@@ -69,7 +69,7 @@
 ---
 
 ## Phase 4: Prototype & Strategic Roadmap
-**Milestone: 20 Jul** | Deliverables: Presentation deck (submitted); DT prototype (Vibe-code complete); DT Training: Test
+**Milestone: 20 Jul** | CEO: Derrick | Deliverables: Presentation deck (submitted); DT prototype (Vibe-code complete); DT Training: Test
 
 *Buffer week: week of Jul 13 (review & polish only)*
 
@@ -98,7 +98,7 @@
 ---
 
 ## Phase 5: Test & Refine
-**Milestone: 20 Aug** | Deliverables: 15-min peer presentations; Prototype tested (Feasibility / Viability / Desirability); Refinements applied
+**Milestone: 20 Aug** | CEO: Shue Ching | Deliverables: 15-min peer presentations; Prototype tested (Feasibility / Viability / Desirability); Refinements applied
 
 *Buffer week: week of Aug 10 (rehearsal & final refinements)*
 
@@ -125,7 +125,7 @@
 ---
 
 ## Phase 6: Demo Day
-**Milestone: 25 Sep** | Deliverables: Executive pitch (10 min + 5 min Q&A); Live demo / deployable product; Final whitepaper
+**Milestone: 25 Sep** | CEO: Petty | Deliverables: Executive pitch (10 min + 5 min Q&A); Live demo / deployable product; Final whitepaper
 
 *Buffer week: week of Sep 14 (full run-through & final submissions)*
 
