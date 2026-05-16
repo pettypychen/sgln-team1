@@ -38,7 +38,7 @@
 | May 12 | Write | Rewrite problem statement with evidence backing from research | Lead, Tech 1 | ✅ |
 | May 12 | Research | **[DEPENDENCY]** Empathy map must be complete before SWOT finalizes | — | ✅ |
 | May 19 | Review | Full team review of problem statement, empathy map, SWOT | All | ✅ |
-| May 19 | Write | Incorporate feedback; finalize all three deliverables | Lead |✅— |
+| May 19 | Write | Incorporate feedback; finalize all three deliverables | Lead |✅ |
 | May 26 | Review | Attend DT Training: Ideate & Create | All | — |
 | May 26 | Review | Submit / present Phase 2 deliverables | Simon | — |
 
