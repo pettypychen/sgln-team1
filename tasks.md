@@ -27,18 +27,18 @@
 | Week of | Category | Task | Owner | Status |
 |---------|----------|------|-------|--------|
 | Apr 29 | Research | Identify 5 target stakeholders for interviews or desk research | All | ✅  |
-| May 5 | Research | Conduct 3–4 stakeholder interviews or surveys | Lead, Tech 3 | — |
-| May 5 | Research | Secondary research: industry data, competitor landscape | Tech 1, Tech 2 | — |
-| May 5 | Design | Draft empathy map template; begin populating from early findings | Petty (Figma)| — |
-| May 12 | Research | Synthesize interview insights; tag themes | Lead, Tech 3 | — |
-| May 12 | Design | Finalize empathy map with synthesized data | Designer, Lead | — |
-| May 12 | Write | Draft SWOT analysis (Strengths / Weaknesses / Opportunities / Threats) | Lead | — |
-| May 12 | Write | Rewrite problem statement with evidence backing from research | Lead, Tech 1 | — |
-| May 12 | Research | **[DEPENDENCY]** Empathy map must be complete before SWOT finalizes | — | — |
-| May 19 | Review | Full team review of problem statement, empathy map, SWOT | All | — |
-| May 19 | Write | Incorporate feedback; finalize all three deliverables | Lead | — |
+| May 5 | Research | Conduct 3–4 stakeholder interviews or surveys | Lead, Tech 3 | ✅ |
+| May 5 | Research | Secondary research: industry data, competitor landscape | Tech 1, Tech 2 | ✅ |
+| May 5 | Design | Draft empathy map template; begin populating from early findings | static web | ✅ |
+| May 12 | Research | Synthesize interview insights; tag themes | Lead, Tech 3 | ✅ |
+| May 12 | Design | Finalize empathy map with synthesized data | Designer, Lead | ✅ |
+| May 12 | Write | Draft SWOT analysis (Strengths / Weaknesses / Opportunities / Threats) | Lead | ✅ |
+| May 12 | Write | Rewrite problem statement with evidence backing from research | Lead, Tech 1 | ✅ |
+| May 12 | Research | **[DEPENDENCY]** Empathy map must be complete before SWOT finalizes | — | ✅ |
+| May 19 | Review | Full team review of problem statement, empathy map, SWOT | All | ✅ |
+| May 19 | Write | Incorporate feedback; finalize all three deliverables | Lead |✅— |
 | May 26 | Review | Attend DT Training: Ideate & Create | All | — |
-| May 26 | Review | Submit / present Phase 2 deliverables | Petty | — |
+| May 26 | Review | Submit / present Phase 2 deliverables | Simon | — |
 
 **Critical Path Risk:** Stakeholder access is the single biggest risk — scheduling 3–4 interviews in 2 weeks while everyone is part-time is tight. If interviews slip to Week of May 12, synthesis gets compressed and the SWOT will be shallow. Parallel track: assign desk research to Tech 1 & 2 as a fallback data source so the empathy map is never blank.
 
