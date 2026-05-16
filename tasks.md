@@ -22,6 +22,8 @@
 ## Phase 2: Research & Empathy
 **Milestone: 26 May** | CEO: Simon | Deliverables: Evidence-backed problem statement; Stakeholder empathy map & SWOT; DT Training: Ideate & Create
 
+**Deliverables**: https://sglntechteam1.netlify.app/
+
 *Buffer week: week of May 19 (review & polish only)*
 
 | Week of | Category | Task | Owner | Status |
