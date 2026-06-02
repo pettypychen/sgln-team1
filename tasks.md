@@ -13,7 +13,7 @@
 | Apr 28 | Research | Facilitate topic voting session; document top 3 candidate challenges | All | ✅ |
 | Apr 28 | Write | Draft initial problem/challenge statement from voting results | Petty | ✅  |
 | Apr 29 | Write | Finalize and circulate agreed problem statement | Petty | ✅  |
-| May 3 | Review | All members sign off on problem statement wording | All | — |
+| May 3 | Review | All members sign off on problem statement wording | All | ✅ |
 
 ‼️ *Deadline*: 3 May 2026 Sunday
 
@@ -39,8 +39,8 @@
 | May 12 | Research | **[DEPENDENCY]** Empathy map must be complete before SWOT finalizes | — | ✅ |
 | May 19 | Review | Full team review of problem statement, empathy map, SWOT | All | ✅ |
 | May 19 | Write | Incorporate feedback; finalize all three deliverables | Lead |✅ |
-| May 26 | Review | Attend DT Training: Ideate & Create | All | — |
-| May 26 | Review | Submit / present Phase 2 deliverables | Simon | — |
+| May 26 | Review | Attend DT Training: Ideate & Create | All | ✅ |
+| May 26 | Review | Submit / present Phase 2 deliverables | Simon | ✅ |
 
 **Critical Path Risk:** Stakeholder access is the single biggest risk — scheduling 3–4 interviews in 2 weeks while everyone is part-time is tight. If interviews slip to Week of May 12, synthesis gets compressed and the SWOT will be shallow. Parallel track: assign desk research to Tech 1 & 2 as a fallback data source so the empathy map is never blank.
 
@@ -53,7 +53,7 @@
 
 | Week of | Category | Task | Owner | Status |
 |---------|----------|------|-------|--------|
-| May 26 | Design | Run diverge ideation session (How Might We / crazy 8s); capture all ideas | Designer, Lead | — |
+| May 26 | Design | Run diverge ideation session (How Might We / crazy 8s); capture all ideas | Designer, Lead | ✅ |
 | May 26 | Research | **[DEPENDENCY]** Phase 2 deliverables must be finalized before ideation starts | — | — |
 | May 26 | Build | Tech members assess technical feasibility of top idea candidates | Tech 1, Tech 2, Tech 3 | — |
 | Jun 2 | Design | Run converge session: dot-vote, cluster, select top 1–2 ideas | All | — |
