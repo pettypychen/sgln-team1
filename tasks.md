@@ -47,33 +47,26 @@
 ---
 
 ## Phase 3: Ideate & Create
-**Milestone: 16 Jun** | CEO: Audrey | Deliverables: Presentation deck outline + white paper outline; DT Diverge-Converge ideation; DT Training: Prototype
+**Milestone: 23 Jun** | CEO: Audrey | Deliverables: Presentation deck outline + white paper outline; DT Diverge-Converge ideation; DT Training: Prototype
 
 *Buffer week: week of Jun 9 (review & polish only)*
 
 | Week of | Category | Task | Owner | Status |
 |---------|----------|------|-------|--------|
 | May 26 | Design | Run diverge ideation session (How Might We / crazy 8s); capture all ideas | Designer, Lead | ✅ |
-| May 26 | Research | **[DEPENDENCY]** Phase 2 deliverables must be finalized before ideation starts | — | — |
-| May 26 | Build | Tech members assess technical feasibility of top idea candidates | Tech 1, Tech 2, Tech 3 | — |
-| Jun 2 | Design | Run converge session: dot-vote, cluster, select top 1–2 ideas | All | — |
-| Jun 2 | Write | Draft presentation deck structure (section headers, story arc) | Lead | — |
-| Jun 2 | Write | Draft white paper outline (Abstract, Problem, Approach, Impact, Roadmap) | Lead, Tech 1 | — |
-| Jun 2 | Design | Create visual concept board / first sketch of selected idea | Designer | — |
-| Jun 9 | Review | Full team review of deck outline and white paper structure | All | — |
-| Jun 9 | Write | Refine outlines based on feedback; lock content structure | Lead | — |
-| Jun 9 | Design | Polish concept board into shareable visual | Designer | — |
-| Jun 16 | Review | Attend DT Training: Prototype | All | — |
-| Jun 16 | Review | Present Phase 3 deliverables | Petty | — |
+| May 26 | Research | **[DEPENDENCY]** Phase 2 deliverables must be finalized before ideation starts | — | ✅ |
+| Jun 2 | Design | Run converge session: dot-vote, cluster, select top 1–2 ideas | All | ✅ |
+| Jun 9 | Design | Polish concept board into shareable visual | Designer | ✅ |
+| Jun 16 | Review | Attend DT Training: Prototype | All | ✅ |
 
 **Critical Path Risk:** Diverge-converge ideation with a part-time team can stall if no one has pre-committed thinking. The session risks being a first-contact brainstorm rather than a productive converge. Mitigate: send a "come with 3 ideas" prompt 3 days before the May 26 session. The Lead should also pre-draft a narrative frame so the converge step has a decision lens.
 
 ---
 
 ## Phase 4: Prototype & Strategic Roadmap
-**Milestone: 20 Jul** | CEO: Derrick | Deliverables: Presentation deck (submitted); DT prototype (Vibe-code complete); DT Training: Test
+**Milestone: 20 Jul** | CEO: Derrick | Deliverables: Presentation deck (not started); DT prototype (Vibe-code not started);
 
-*Buffer week: week of Jul 13 (review & polish only)*
+*Buffer week: week of Jul 23 (review & polish only)*
 
 | Week of | Category | Task | Owner | Status |
 |---------|----------|------|-------|--------|
