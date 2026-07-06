@@ -1,0 +1,20 @@
+{
+  "version": "0.0.1",
+  "autoPort": false,
+  "configurations": [
+    {
+      "name": "simworks",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["run", "dev", "--", "--port", "4700", "--strictPort"],
+      "cwd": "app",
+      "port": 4700
+    },
+    {
+      "name": "simworks-covers",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["run", "dev", "--", "--port", "4701", "--strictPort"],
+      "cwd": "app/frontend",
+      "port": 4701
+    }
+  ]
+}
