@@ -1,4 +1,5 @@
 import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
+import { IdeationJourneyPage } from "@/pages/IdeationJourneyPage";
 import { MarketplacePage } from "@/pages/MarketplacePage";
 import { ModuleWorkspacePage } from "@/pages/ModuleWorkspacePage";
 import { ReadyForEvaluationPage } from "@/pages/ReadyForEvaluationPage";
@@ -12,6 +13,7 @@ export function App() {
     <BrowserRouter>
       <Routes>
         <Route path="/" element={<MarketplacePage />} />
+        <Route path="/journey" element={<IdeationJourneyPage />} />
         <Route
           path="/simulations/first-year-associate-ma-due-diligence"
           element={<ModuleWorkspacePage />}
