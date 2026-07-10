@@ -1,8 +1,11 @@
+import { Link } from "react-router-dom";
 import { Logo } from "./Logo";
 
 interface NavLink {
   label: string;
   active?: boolean;
+  /** Router path for links that navigate (the rest are static placeholders). */
+  to?: string;
 }
 
 const NAV_LINKS: NavLink[] = [
@@ -10,6 +13,7 @@ const NAV_LINKS: NavLink[] = [
   { label: "Practice" },
   { label: "Credentials" },
   { label: "Enterprise" },
+  { label: "Journey", to: "/journey" },
 ];
 
 /** User initials shown in the avatar (static in the reference). */
@@ -39,19 +43,22 @@ export function Navbar() {
 
         <div className="flex items-center gap-3 md:gap-7">
           <div className="hidden gap-1 text-[15px] font-medium md:flex">
-            {NAV_LINKS.map((link) => (
-              <span
-                key={link.label}
-                className={
-                  "cursor-pointer rounded-button px-3 py-2 transition-colors " +
-                  (link.active
-                    ? "bg-black text-white"
-                    : "text-muted-deep hover:bg-cloud hover:text-ink")
-                }
-              >
-                {link.label}
-              </span>
-            ))}
+            {NAV_LINKS.map((link) => {
+              const className =
+                "cursor-pointer rounded-button px-3 py-2 transition-colors " +
+                (link.active
+                  ? "bg-black text-white"
+                  : "text-muted-deep hover:bg-cloud hover:text-ink");
+              return link.to ? (
+                <Link key={link.label} to={link.to} className={className}>
+                  {link.label}
+                </Link>
+              ) : (
+                <span key={link.label} className={className}>
+                  {link.label}
+                </span>
+              );
+            })}
           </div>
 
           <div className="flex h-10 w-10 items-center justify-center rounded-button bg-white text-[12px] font-semibold text-ink soft-edge">
