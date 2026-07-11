@@ -6,17 +6,17 @@ Track all backend integration tasks for Firestore + Firebase Auth + Admin UI.
 
 ## Pre-requisites (Firebase Console — no code)
 
-- [ ] Enable Firestore Database in Firebase console (sgln-team1-f8d61)
+- [x] Enable Firestore Database in Firebase console (sgln-team1-f8d61)
 - [ ] Enable Authentication → Google sign-in provider in Firebase console
 
 ---
 
 ## Phase 1: Firebase SDK Setup
 
-- [ ] Install `firebase` npm package in `app/frontend`
-- [ ] Create `app/frontend/src/lib/firebase.ts` — initialise Firebase app, Firestore, and Auth
-- [ ] Add Firebase config env variables to `.env` (API key, project ID, etc.)
-- [ ] Add `.env` to `.gitignore`
+- [x] Install `firebase` npm package in `app/frontend`
+- [x] Create `app/frontend/src/lib/firebase.ts` — initialise Firebase app, Firestore, and Auth
+- [x] Add Firebase config env variables to `.env` (API key, project ID, etc.)
+- [x] Add `.env` to `.gitignore`
 
 ---
 
