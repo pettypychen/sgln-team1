@@ -2,3 +2,4 @@ firebase-debug.log
 .firebase/
 app/frontend/tsconfig.node.tsbuildinfo
 app/frontend/vite.config.js
+app/frontend/.env
