@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 import { Logo } from "./Logo";
+import { APP_VERSION } from "@/lib/version";
 
 interface NavLink {
   label: string;
@@ -30,8 +31,9 @@ export function Navbar() {
             <span className="block text-[15px] font-semibold tracking-wordmark text-ink">
               SIMWORKS
             </span>
-            <span className="hidden text-micro text-muted sm:block">
+            <span className="hidden items-center gap-1.5 text-micro text-muted sm:flex">
               Simulation intelligence
+              <span className="rounded bg-cloud px-1 py-0.5 font-mono text-[10px] text-muted-deep">v{APP_VERSION}</span>
             </span>
           </div>
         </div>
