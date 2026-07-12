@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "tsc -b && vite build",
+    "build": "npm run sync-version && tsc -b && vite build",
     "preview": "vite preview",
     "lint": "eslint .",
     "seed": "tsx --env-file=.env scripts/seed-firestore.ts",
