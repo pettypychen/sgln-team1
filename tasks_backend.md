@@ -22,10 +22,10 @@ Track all backend integration tasks for Firestore + Firebase Auth + Admin UI.
 
 ## Phase 2: Data Migration Script
 
-- [ ] Create `scripts/seed-firestore.ts` — one-time script to seed existing hardcoded simulation data into Firestore
-- [ ] Map `MA_DUE_DILIGENCE_MODULE` structure to Firestore document schema
-- [ ] Run seed script locally to populate Firestore `/simulations` collection
-- [ ] Verify data appears correctly in Firebase console
+- [x] Create `scripts/seed-firestore.ts` — one-time script to seed existing hardcoded simulation data into Firestore
+- [x] Map `MA_DUE_DILIGENCE_MODULE` structure to Firestore document schema
+- [x] Run seed script locally to populate Firestore `/simulations` collection
+- [x] Verify data appears correctly in Firebase console
 
 ---
 
