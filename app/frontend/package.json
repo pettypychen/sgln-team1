@@ -9,9 +9,10 @@
     "preview": "vite preview",
     "lint": "eslint .",
     "seed": "tsx --env-file=.env scripts/seed-firestore.ts",
-    "version:patch": "npm version patch --no-git-tag-version",
-    "version:minor": "npm version minor --no-git-tag-version",
-    "version:major": "npm version major --no-git-tag-version"
+    "sync-version": "tsx scripts/sync-version.ts",
+    "version:patch": "npm version patch --no-git-tag-version && npm run sync-version",
+    "version:minor": "npm version minor --no-git-tag-version && npm run sync-version",
+    "version:major": "npm version major --no-git-tag-version && npm run sync-version"
   },
   "dependencies": {
     "firebase": "^12.16.0",

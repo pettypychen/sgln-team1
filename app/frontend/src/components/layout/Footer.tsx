@@ -43,9 +43,8 @@ export function Footer() {
         ))}
       </div>
 
-      <div className="mx-auto flex max-w-container items-center justify-between border-t border-hairline px-5 py-6 text-small text-muted md:px-12">
-        <span>© 2026 SimWorks. All rights reserved.</span>
-        <span>v{__APP_VERSION__}</span>
+      <div className="mx-auto max-w-container border-t border-hairline px-5 py-6 text-small text-muted md:px-12">
+        © 2026 SimWorks. All rights reserved.
       </div>
     </footer>
   );
