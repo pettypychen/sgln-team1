@@ -31,9 +31,9 @@ Track all backend integration tasks for Firestore + Firebase Auth + Admin UI.
 
 ## Phase 3: Read Layer
 
-- [ ] Create `app/frontend/src/hooks/useSimulation.ts` — fetch simulation by slug from Firestore
-- [ ] Add loading and error states for async data fetch
-- [ ] Update `ModuleWorkspacePage.tsx` to use `useSimulation` hook instead of hardcoded `MA_DUE_DILIGENCE_MODULE` import
+- [x] Create `app/frontend/src/hooks/useSimulation.ts` — fetch simulation by slug from Firestore
+- [x] Add loading and error states for async data fetch
+- [x] Update `ModuleWorkspacePage.tsx` to use `useSimulation` hook instead of hardcoded `MA_DUE_DILIGENCE_MODULE` import
 - [ ] Test that existing simulation loads correctly from Firestore
 
 ---
