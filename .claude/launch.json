@@ -15,6 +15,13 @@
       "runtimeArgs": ["run", "dev", "--", "--port", "4701", "--strictPort"],
       "cwd": "app/frontend",
       "port": 4701
+    },
+    {
+      "name": "simworks-ux",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["run", "dev", "--", "--port", "4712", "--strictPort"],
+      "cwd": "app/frontend",
+      "port": 4712
     }
   ]
 }

@@ -145,7 +145,7 @@ Write a concise summary for the supervising associate in no more than **350 word
 
 ## Expected Work Product Format
 
-Use this structure:
+Use the exact Markdown structure below. Failure to use the requested Markdown template for the deliverables will result in a zero for formatting.
 
 ```markdown
 # Diligence Issue Log
@@ -183,6 +183,7 @@ Use this structure:
 - Treat optional drafting instructions that remain in the agreement as cleanup issues, but do not let them crowd out substantive risks.
 - Be precise about who must confirm each issue: client, opposing counsel, regulatory counsel, tax/accounting, or corporate secretary.
 - Assume the supervising associate values triage, judgment, and clarity more than volume.
+- You do not need prior banking law or M&A experience to complete this. Rely purely on the logic, mechanics, and references within the text provided. Treat the text as a logic puzzle.
 
 ## Submission Checklist
 
