@@ -1,17 +1,26 @@
-import { useMemo } from "react";
+import { useMemo, useState, type CSSProperties, type PointerEvent } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { Navbar } from "@/components/layout/Navbar";
 import { AgentChatPanel } from "@/components/module/AgentChatPanel";
 import { CasePdfViewer } from "@/components/module/CasePdfViewer";
+import { GradingPanel } from "@/components/module/GradingPanel";
 import { ProgressTracker } from "@/components/module/ProgressTracker";
 import { WorkProductPanel } from "@/components/module/WorkProductPanel";
+import {
+  buildWorkProductReadiness,
+  deliverableForStep,
+} from "@/components/module/workProductReadiness";
+import {
+  gradeWorkProduct,
+  type GradeReport,
+} from "@/components/module/workProductGrader";
 import { usePersistentState } from "@/hooks/usePersistentState";
 import { useSimulation } from "@/hooks/useSimulation";
 import type { ChatMessage, ModuleWorkspace, WorkProductDraft } from "@/types";
 
 interface ModuleProgressState {
   completedStepIds: string[];
-  pdfScrollTop: number;
+  pdfPage: number;
   pdfZoom: number;
   chatMessages: ChatMessage[];
   workProduct: WorkProductDraft;
@@ -27,7 +36,7 @@ const INITIAL_WORK_PRODUCT: WorkProductDraft = {
 
 const INITIAL_PROGRESS: ModuleProgressState = {
   completedStepIds: [],
-  pdfScrollTop: 0,
+  pdfPage: 1,
   pdfZoom: 1,
   workProduct: INITIAL_WORK_PRODUCT,
   chatMessages: [
@@ -41,8 +50,52 @@ const INITIAL_PROGRESS: ModuleProgressState = {
   ],
 };
 
+type WorkspaceMode = "balanced" | "reading" | "writing";
+
+const WORKSPACE_MODE_SPLITS: Record<WorkspaceMode, number> = {
+  balanced: 50,
+  reading: 64,
+  writing: 40,
+};
+
+function splitStorageKeyFor(module: ModuleWorkspace) {
+  return `${module.storageKey}:split`;
+}
+
+function getInitialSplitPercent(module: ModuleWorkspace) {
+  if (typeof window === "undefined") {
+    return 50;
+  }
+
+  const stored = Number(window.localStorage.getItem(splitStorageKeyFor(module)));
+  return Number.isFinite(stored) ? Math.min(66, Math.max(38, stored)) : 50;
+}
+
+function modeForSplit(splitPercent: number): WorkspaceMode {
+  if (splitPercent >= 58) {
+    return "reading";
+  }
+
+  if (splitPercent <= 42) {
+    return "writing";
+  }
+
+  return "balanced";
+}
+
 function ModuleWorkspaceContent({ module }: { module: ModuleWorkspace }) {
   const navigate = useNavigate();
+  const [advanceMessage, setAdvanceMessage] = useState("");
+  const [splitPercent, setSplitPercent] = useState(() =>
+    getInitialSplitPercent(module),
+  );
+  const [isProgressOpen, setIsProgressOpen] = useState(false);
+  const [isAgentOpen, setIsAgentOpen] = useState(false);
+  const [isGradingOpen, setIsGradingOpen] = useState(false);
+  const [gradingStatus, setGradingStatus] = useState<"loading" | "ready">(
+    "loading",
+  );
+  const [gradeReport, setGradeReport] = useState<GradeReport | null>(null);
   const [progress, setProgress] = usePersistentState<ModuleProgressState>(
     module.storageKey,
     INITIAL_PROGRESS,
@@ -55,6 +108,52 @@ function ModuleWorkspaceContent({ module }: { module: ModuleWorkspace }) {
     [module.steps, progress.completedStepIds],
   );
   const workProduct = progress.workProduct ?? INITIAL_WORK_PRODUCT;
+  const workProductReadiness = useMemo(
+    () => buildWorkProductReadiness(workProduct),
+    [workProduct],
+  );
+  const currentStepDeliverable = deliverableForStep(currentStepId);
+  const currentStepValidationMessage =
+    currentStepDeliverable &&
+    !workProductReadiness[currentStepDeliverable].ready
+      ? advanceMessage
+      : "";
+  const completeCount = progress.completedStepIds.length;
+  const allStepsComplete = completeCount === module.steps.length;
+  const workspaceMode = modeForSplit(splitPercent);
+
+  function updateSplitPercent(nextPercent: number) {
+    const clamped = Math.min(66, Math.max(38, Math.round(nextPercent)));
+    setSplitPercent(clamped);
+    window.localStorage.setItem(splitStorageKeyFor(module), String(clamped));
+  }
+
+  function applyWorkspaceMode(mode: WorkspaceMode) {
+    updateSplitPercent(WORKSPACE_MODE_SPLITS[mode]);
+  }
+
+  function handleDividerPointerDown(event: PointerEvent<HTMLButtonElement>) {
+    const container = event.currentTarget.parentElement;
+    if (!container) {
+      return;
+    }
+
+    event.currentTarget.setPointerCapture(event.pointerId);
+    const rect = container.getBoundingClientRect();
+
+    function handlePointerMove(moveEvent: globalThis.PointerEvent) {
+      const nextPercent = ((moveEvent.clientX - rect.left) / rect.width) * 100;
+      updateSplitPercent(nextPercent);
+    }
+
+    function handlePointerUp() {
+      window.removeEventListener("pointermove", handlePointerMove);
+      window.removeEventListener("pointerup", handlePointerUp);
+    }
+
+    window.addEventListener("pointermove", handlePointerMove);
+    window.addEventListener("pointerup", handlePointerUp);
+  }
 
   function completeCurrentStep() {
     const nextStep = module.steps.find(
@@ -65,7 +164,17 @@ function ModuleWorkspaceContent({ module }: { module: ModuleWorkspace }) {
       return;
     }
 
+    const requiredDeliverable = deliverableForStep(nextStep.id);
+    if (
+      requiredDeliverable &&
+      !workProductReadiness[requiredDeliverable].ready
+    ) {
+      setAdvanceMessage(workProductReadiness[requiredDeliverable].message);
+      return;
+    }
+
     const completedStepIds = [...progress.completedStepIds, nextStep.id];
+    setAdvanceMessage("");
     setProgress((current) => ({
       ...current,
       completedStepIds,
@@ -76,76 +185,230 @@ function ModuleWorkspaceContent({ module }: { module: ModuleWorkspace }) {
     }
   }
 
-  return (
-    <div className="eleven-canvas min-h-screen bg-paper text-ink">
-      <Navbar />
-      <main className="mx-auto max-w-container px-4 pb-8 pt-5 md:px-8 lg:px-12">
-        <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-          <Link
-            to="/"
-            className="rounded-button bg-white px-4 py-2 text-small font-medium text-muted-deep soft-edge transition-colors hover:bg-cloud hover:text-ink"
-          >
-            Back to dashboard
-          </Link>
-          <div className="flex flex-wrap items-center gap-2 text-small text-muted-deep">
-            <span className="rounded-button bg-white px-3 py-1.5 soft-edge">
-              {module.caseCode}
-            </span>
-            <span className="rounded-button bg-manila px-3 py-1.5 warm-lift">
-              {module.evidenceType} open
-            </span>
-          </div>
-        </div>
+  function runGrading() {
+    setGradingStatus("loading");
+    setGradeReport(null);
+    window.setTimeout(() => {
+      setGradeReport(gradeWorkProduct(workProduct));
+      setGradingStatus("ready");
+    }, 1100);
+  }
 
-        <header className="mb-5 rounded-panel bg-white px-5 py-5 soft-edge md:px-6">
-          <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-end">
-            <div>
-              <p className="m-0 text-small font-medium text-oxblood">
-                {module.category} · Simulation workspace
+  function openGrading() {
+    setIsGradingOpen(true);
+    runGrading();
+  }
+
+  return (
+    <div className="min-h-screen bg-[#eeede9] text-ink">
+      <header className="sticky top-0 z-40 border-b border-hairline bg-[#fbfaf7]/95 backdrop-blur">
+        <div className="mx-auto flex min-h-16 max-w-[1720px] flex-wrap items-center justify-between gap-3 px-4 py-3 md:px-6">
+          <div className="flex min-w-0 items-center gap-3">
+            <Link
+              to="/"
+              className="inline-flex min-h-10 items-center rounded-button bg-white px-4 py-2 text-small font-medium text-muted-deep soft-edge transition-colors hover:bg-cloud hover:text-ink"
+            >
+              Back
+            </Link>
+            <div className="min-w-0">
+              <p className="m-0 truncate text-micro font-medium text-muted">
+                {module.caseCode} · {module.category}
               </p>
-              <h1 className="m-0 mt-2 max-w-[16ch] font-display text-[42px] font-light leading-[1.04] text-ink md:text-[58px]">
+              <h1 className="m-0 truncate text-label font-semibold text-ink">
                 {module.title}
               </h1>
             </div>
-            <div className="max-w-[460px] rounded-panel bg-cloud p-4 text-small text-muted-deep">
-              <strong className="block text-ink">{module.artifactLabel}</strong>
-              Review the packet, draft the issue log, request list, and associate
-              summary in the work product panel, then advance each checklist step.
-            </div>
           </div>
-        </header>
 
-        <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_460px]">
+          <div
+            className="flex flex-wrap items-center gap-2 text-small text-muted-deep"
+            aria-live="polite"
+          >
+            <span className="rounded-button bg-white px-3 py-1.5 soft-edge">
+              {workProductReadiness.readyCount}/3 ready
+            </span>
+            <span className="hidden rounded-button bg-white px-3 py-1.5 font-mono text-micro soft-edge md:inline-flex">
+              Issues {workProductReadiness.issueLog.count}/12 · Requests{" "}
+              {workProductReadiness.requestList.count}/10 · Summary{" "}
+              {workProductReadiness.associateSummary.count}/350
+            </span>
+            <button
+              type="button"
+              className="rounded-button bg-white px-3 py-1.5 text-small font-medium text-ink soft-edge transition-colors hover:bg-cloud"
+              onClick={() => setIsProgressOpen(true)}
+            >
+              Progress {completeCount}/{module.steps.length}
+            </button>
+            <button
+              type="button"
+              className="rounded-button bg-white px-3 py-1.5 text-small font-medium text-ink soft-edge transition-colors hover:bg-cloud"
+              onClick={() => setIsAgentOpen(true)}
+            >
+              Ask AI
+            </button>
+            <button
+              type="button"
+              className="rounded-button bg-black px-4 py-2 text-small font-medium text-white transition-colors hover:bg-graphite"
+              onClick={
+                allStepsComplete
+                  ? () => navigate(module.readyPath)
+                  : completeCurrentStep
+              }
+            >
+              {allStepsComplete ? "Evaluate" : "Complete step"}
+            </button>
+          </div>
+        </div>
+      </header>
+
+      <main className="mx-auto flex max-w-[1720px] flex-col gap-3 px-4 py-4 md:px-6">
+        {currentStepValidationMessage ? (
+          <div className="rounded-panel border border-oxblood/30 bg-manila px-4 py-3 text-small text-oxblood">
+            {currentStepValidationMessage}
+          </div>
+        ) : null}
+
+        <div className="flex flex-wrap items-center justify-between gap-3 rounded-panel border border-hairline bg-[#fbfaf7] px-3 py-2 soft-edge">
+          <div className="flex items-center gap-2">
+            <span className="rounded-button bg-manila px-3 py-1.5 text-micro font-medium text-muted-deep warm-lift">
+              {module.evidenceType} open
+            </span>
+            <span className="text-small text-muted-deep">
+              Read the packet, then draft the issue log, requests, and summary.
+            </span>
+          </div>
+          <div className="grid grid-cols-3 gap-1 rounded-button bg-cloud p-1">
+            {(["balanced", "reading", "writing"] as WorkspaceMode[]).map(
+              (mode) => (
+                <button
+                  key={mode}
+                  type="button"
+                  className={
+                    "rounded-button px-3 py-1.5 text-small font-medium capitalize transition-colors " +
+                    (workspaceMode === mode
+                      ? "bg-black text-white"
+                      : "text-muted-deep hover:bg-white hover:text-ink")
+                  }
+                  onClick={() => applyWorkspaceMode(mode)}
+                >
+                  {mode}
+                </button>
+              ),
+            )}
+          </div>
+        </div>
+
+        <section
+          className="relative grid min-h-[calc(100vh-168px)] gap-3 lg:grid-cols-[minmax(0,var(--source-fr))_12px_minmax(0,var(--work-fr))]"
+          style={
+            {
+              "--source-fr": `${splitPercent}fr`,
+              "--work-fr": `${100 - splitPercent}fr`,
+            } as CSSProperties
+          }
+        >
           <CasePdfViewer
             document={module.casePdf}
-            scrollTop={progress.pdfScrollTop}
+            page={progress.pdfPage}
             zoom={progress.pdfZoom}
-            onScrollTopChange={(pdfScrollTop) =>
-              setProgress((current) => ({ ...current, pdfScrollTop }))
+            onPageChange={(pdfPage) =>
+              setProgress((current) => ({ ...current, pdfPage }))
             }
             onZoomChange={(pdfZoom) =>
               setProgress((current) => ({ ...current, pdfZoom }))
             }
           />
 
-          <aside className="grid gap-4 xl:sticky xl:top-[84px] xl:max-h-[calc(100vh-104px)] xl:overflow-y-auto">
-            <ProgressTracker
-              steps={module.steps}
-              completedStepIds={progress.completedStepIds}
-              currentStepId={currentStepId}
-              onCompleteCurrent={completeCurrentStep}
-              onOpenEvaluation={() => navigate(module.readyPath)}
-            />
-            <WorkProductPanel
-              draft={workProduct}
-              currentStepId={currentStepId}
-              onDraftChange={(nextWorkProduct) =>
-                setProgress((current) => ({
-                  ...current,
-                  workProduct: nextWorkProduct,
-                }))
-              }
-            />
+          <button
+            type="button"
+            className="hidden cursor-col-resize rounded-button bg-black/10 transition-colors hover:bg-black/30 lg:block"
+            aria-label="Resize source and work product panes"
+            onPointerDown={handleDividerPointerDown}
+          />
+
+          <WorkProductPanel
+            draft={workProduct}
+            currentStepId={currentStepId}
+            onDraftChange={(nextWorkProduct) =>
+              setProgress((current) => ({
+                ...current,
+                workProduct: nextWorkProduct,
+              }))
+            }
+            onSubmitForGrading={openGrading}
+          />
+        </section>
+      </main>
+
+      {isProgressOpen ? (
+        <div className="fixed inset-0 z-50 bg-black/24" role="presentation">
+          <button
+            type="button"
+            className="absolute inset-0 h-full w-full cursor-default"
+            aria-label="Close progress drawer"
+            onClick={() => setIsProgressOpen(false)}
+          />
+          <aside className="absolute right-0 top-0 flex h-full w-full max-w-[460px] flex-col bg-[#fbfaf7] p-4 shadow-[-24px_0_60px_rgba(0,0,0,0.18)]">
+            <div className="mb-3 flex items-center justify-between gap-3">
+              <div>
+                <p className="m-0 text-micro font-medium text-muted">
+                  Simulation progress
+                </p>
+                <h2 className="m-0 text-card font-light leading-tight text-ink">
+                  Checklist
+                </h2>
+              </div>
+              <button
+                type="button"
+                className="flex h-10 w-10 items-center justify-center rounded-button bg-white text-label font-medium text-ink soft-edge"
+                aria-label="Close progress drawer"
+                onClick={() => setIsProgressOpen(false)}
+              >
+                ×
+              </button>
+            </div>
+            <div className="min-h-0 overflow-y-auto">
+              <ProgressTracker
+                steps={module.steps}
+                completedStepIds={progress.completedStepIds}
+                currentStepId={currentStepId}
+                readiness={workProductReadiness}
+                validationMessage={currentStepValidationMessage}
+                onCompleteCurrent={completeCurrentStep}
+                onOpenEvaluation={() => navigate(module.readyPath)}
+              />
+            </div>
+          </aside>
+        </div>
+      ) : null}
+
+      {isAgentOpen ? (
+        <div className="fixed inset-0 z-50 bg-black/24" role="presentation">
+          <button
+            type="button"
+            className="absolute inset-0 h-full w-full cursor-default"
+            aria-label="Close AI drawer"
+            onClick={() => setIsAgentOpen(false)}
+          />
+          <aside className="absolute right-0 top-0 flex h-full w-full max-w-[480px] flex-col bg-[#fbfaf7] p-4 shadow-[-24px_0_60px_rgba(0,0,0,0.18)]">
+            <div className="mb-3 flex items-center justify-between gap-3">
+              <div>
+                <p className="m-0 text-micro font-medium text-muted">
+                  Optional support
+                </p>
+                <h2 className="m-0 text-card font-light leading-tight text-ink">
+                  Ask AI
+                </h2>
+              </div>
+              <button
+                type="button"
+                className="flex h-10 w-10 items-center justify-center rounded-button bg-white text-label font-medium text-ink soft-edge"
+                aria-label="Close AI drawer"
+                onClick={() => setIsAgentOpen(false)}
+              >
+                ×
+              </button>
+            </div>
             <AgentChatPanel
               module={module}
               messages={progress.chatMessages}
@@ -155,12 +418,22 @@ function ModuleWorkspaceContent({ module }: { module: ModuleWorkspace }) {
             />
           </aside>
         </div>
-      </main>
+      ) : null}
+
+      {isGradingOpen ? (
+        <GradingPanel
+          status={gradingStatus}
+          report={gradeReport}
+          onClose={() => setIsGradingOpen(false)}
+          onRerun={runGrading}
+          onOpenEvaluation={() => navigate(module.readyPath)}
+        />
+      ) : null}
     </div>
   );
 }
 
-/** Module workspace — loads simulation data from Firestore by slug. */
+/** Module workspace - loads simulation data from Firestore by slug. */
 export function ModuleWorkspacePage() {
   const { slug = "" } = useParams<{ slug: string }>();
   const { module, loading, error } = useSimulation(slug);
@@ -170,7 +443,7 @@ export function ModuleWorkspacePage() {
       <div className="eleven-canvas min-h-screen bg-paper text-ink">
         <Navbar />
         <main className="flex min-h-[60vh] items-center justify-center">
-          <p className="text-muted-deep">Loading simulation…</p>
+          <p className="text-muted-deep">Loading simulation...</p>
         </main>
       </div>
     );
@@ -187,5 +460,5 @@ export function ModuleWorkspacePage() {
     );
   }
 
-  return <ModuleWorkspaceContent module={module} />;
+  return <ModuleWorkspaceContent key={module.storageKey} module={module} />;
 }

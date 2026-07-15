@@ -32,63 +32,79 @@ This evaluation measures whether a junior clerk can convert a merger agreement f
 
 ### 1. Agreement Comprehension and Transaction Mapping - 15 points
 
-| Performance | Score | Indicators |
+Award points for each transaction-mapping element that is accurately reflected in the submission. Do not award credit for a generic statement unless it is tied to the facts of this case.
+
+| Mapping Element | Points | Awarding Rule |
 | --- | ---: | --- |
-| Strong | 13-15 | Correctly identifies the parties, survivor, bank-merger context, approval architecture, consideration mechanics, asset/liability transfer, and closing dependency chain. |
-| Competent | 10-12 | Understands the basic merger structure and most core sections, with minor omissions. |
-| Developing | 6-9 | Recognizes this is a merger agreement but misses several core mechanics or confuses signing and closing issues. |
-| Not Yet Competent | 0-5 | Treats the document as a generic contract without mapping the transaction or approval path. |
+| Parties and roles | 2 | Identifies Rivergate National Bank as the surviving national bank and Harbor Community Bank as the state-chartered merging bank. |
+| Transaction direction | 2 | States that Harbor merges into Rivergate and that Rivergate survives under its national-bank charter. |
+| Approval architecture | 3 | Identifies OCC approval, shareholder approval, and a possible state-law or state-regulator overlay. Award 1 point for each. |
+| Signing versus closing dependencies | 2 | Distinguishes items needed before signature from items needed for approval or closing. |
+| Financial and consideration mechanics | 2 | Recognizes that capital figures, financial statements, valuation support, exchange ratio, cash, and fractional share terms are source-document-dependent. |
+| Asset and liability transfer | 2 | Recognizes that broad asset vesting and liability assumption, including trust department liabilities, require diligence support. |
+| Timing and closing mechanics | 2 | Identifies the blank outside date, missing closing deliverables, or incomplete termination/closing conditions as timing or closing risks. |
 
 ### 2. Substantive Issue Spotting - 30 points
 
-Award credit for identifying and explaining material issues, not merely listing blanks.
+Award credit only when the submission identifies the issue and gives a case-specific reason or next step. Mere repetition of a blank field without consequence earns no credit for that item.
 
-| Issue Category | Points | Expected Coverage |
-| --- | ---: | --- |
-| Party identity and authority | 4 | Missing party names, charter details, locations, capital figures, and board resolutions. |
-| Regulatory approval | 5 | OCC approval, national bank merger statute, state-bank overlay, regulatory timing, and specialist review. |
-| Shareholder approval | 4 | Two-thirds approval, potential higher state-law threshold, meeting mechanics, notice, record date, and dissenters' rights inquiry. |
-| Financial condition / capital | 5 | Capital, surplus, undivided profits, acceptable assets, book/fair value support, capital adequacy, and accounting adjustments. |
-| Consideration mechanics | 4 | Exchange ratio, cash payout, fractional shares, scrip trustee mechanics, shareholder list, and securities/regulatory review. |
-| Asset and liability transfer | 4 | Broad asset vesting, assumption of all liabilities, trust department liabilities, litigation/regulatory claims, and off-balance-sheet items. |
-| Interim covenants and closing conditions | 2 | Dividend restriction, asset-disposition limits, ordinary-course standard, missing covenants, and exceptions. |
-| Governance and closing documents | 2 | Board composition, articles attachment, director eligibility, execution blocks, certificates, and secretary/officer deliverables. |
+| Issue Category | Points | Deterministic Scoring Rule | Model Issue Elements |
+| --- | ---: | --- | --- |
+| Party identity and authority | 4 | Award 4 if the learner identifies at least 4 of the 5 listed elements; 3 for 3 elements; 2 for 2 elements; 1 for 1 element; 0 for none. | legal names / addresses / charter details; capital, surplus, or undivided-profit blanks; missing board resolutions; missing officer authorization or incumbency evidence; need to confirm transaction direction across ancillary documents. |
+| Regulatory approval | 5 | Award 5 if the learner identifies at least 3 of the 5 listed elements; 3 for 2 elements; 1 for 1 element; 0 for none. | OCC approval or merger certificate; national-bank approval path; possible state banking regulator or state merger statute; regulatory timetable / filing responsibility / approval conditions; specialist regulatory counsel review for branch, trust, capital, or notice issues. |
+| Shareholder approval | 4 | Award 4 if the learner identifies at least 3 of the 5 listed elements; 3 for 2 elements; 1 for 1 element; 0 for none. | two-thirds approval requirement; possible higher state-law threshold for Harbor; record date / notice / meeting mechanics; shareholder list or outstanding share count; voting classes, beneficial ownership, or dissenters' / appraisal rights. |
+| Financial condition / capital | 5 | Award 5 if the learner identifies at least 4 of the 6 listed elements; 4 for 3 elements; 2 for 2 elements; 1 for 1 element; 0 for none. | missing capital, surplus, or undivided-profit figures; missing audited or interim financial statements; missing regulatory call reports or capital adequacy analysis; acceptable-assets schedule; book value / fair value / adjustment support; blank statement-of-condition date or no-material-adverse-change support. |
+| Consideration mechanics | 4 | Award 4 if the learner identifies at least 3 of the 5 listed elements; 3 for 2 elements; 1 for 1 element; 0 for none. | exchange ratio is blank or unsupported; cash consideration is blank or unsupported; fractional share / cash-in-lieu treatment is unresolved; scrip trustee / transfer agent / exchange agent mechanics remain as optional notes; securities, tax, or shareholder communication review is needed. |
+| Asset and liability transfer | 4 | Award 4 if the learner identifies at least 3 of the 5 listed elements; 3 for 2 elements; 1 for 1 element; 0 for none. | broad asset vesting requires asset schedules or transfer mechanics; broad assumption of liabilities; trust department liabilities require trust account / fiduciary diligence; litigation, regulatory inquiries, enforcement actions, customer claims, or contingent liabilities; off-balance-sheet commitments, third-party consents, leases, real estate, or branch operations. |
+| Interim covenants and closing conditions | 2 | Award 2 if the learner identifies at least 2 of the 4 listed elements; 1 for 1 element; 0 for none. | thin dividend restriction; ordinary-course / adequate-value standard is undefined; no exceptions, leakage controls, related-party restrictions, or consent rights; missing closing conditions, bring-downs, approval evidence, or legal opinions. |
+| Governance and closing documents | 2 | Award 2 if the learner identifies at least 2 of the 4 listed elements; 1 for 1 element; 0 for none. | blank surviving board composition; missing director eligibility, conflicts, regulatory approvals, or resignations; missing articles of association / required amendments; incomplete execution blocks, certificates, secretary/officer deliverables, or closing checklist. |
 
 ### 3. Risk Prioritization and Judgment - 15 points
 
-| Performance | Score | Indicators |
+| Judgment Element | Points | Awarding Rule |
 | --- | ---: | --- |
-| Strong | 13-15 | Distinguishes gating issues from cleanup items; assigns sensible high/medium/low risks; explains why approvals, capital support, consideration, liabilities, and outside date matter. |
-| Competent | 10-12 | Generally sensible risk levels, with one or two overstatements or missed priorities. |
-| Developing | 6-9 | Lists issues but risk ratings are inconsistent, overly mechanical, or not tied to signing/closing impact. |
-| Not Yet Competent | 0-5 | Cannot distinguish formatting blanks from transaction risks. |
+| Risk labels are used consistently | 3 | Award 3 if every issue-log entry uses only high, medium, or low; 2 if one or two entries omit or vary the label; 0 if risk labels are mostly absent or nonstandard. |
+| High-risk items are correctly prioritized | 4 | Award 4 if at least 4 high-risk entries are drawn from the acceptable gating issue list in Section 5; 3 if 3 entries are; 2 if 2 entries are; 1 if 1 entry is; 0 if none are. |
+| Cleanup items are not over-weighted | 3 | Award 3 if purely clerical blanks or optional drafting notes are mostly low/medium and do not dominate the top risks; 1-2 if prioritization is mixed; 0 if clerical blanks are treated as the main gating issues. |
+| Impact explanation is case-specific | 3 | Award 3 if most high/medium risks explain signing, regulatory approval, shareholder approval, or closing impact; 1-2 if explanations are generic; 0 if consequences are missing. |
+| Next steps match the risk | 2 | Award 2 if proposed next steps route issues to the correct source or specialist; 1 if routing is inconsistent; 0 if next steps are vague or absent. |
 
 ### 4. Diligence Request Quality - 15 points
 
-| Performance | Score | Indicators |
+| Request Element | Points | Awarding Rule |
 | --- | ---: | --- |
-| Strong | 13-15 | Requests are specific, grouped logically, tied to agreement sections, and directed to the right source or specialist. |
-| Competent | 10-12 | Includes at least 10 useful requests, with minor vagueness or missing grouping. |
-| Developing | 6-9 | Requests are partially useful but broad, repetitive, or not connected to transaction risks. |
-| Not Yet Competent | 0-5 | Requests are generic and would not help the deal team obtain documents or confirmations. |
+| Minimum request count | 3 | Award 3 if the list includes at least 10 distinct diligence requests; 2 for 8-9; 1 for 5-7; 0 for fewer than 5. |
+| Specificity | 4 | Award 4 if at least 8 requests name a specific document, schedule, confirmation, analysis, or review; 3 for 6-7; 2 for 4-5; 1 for 1-3; 0 for none. |
+| Coverage of required topics | 4 | Award 1 point for each covered topic, up to 4: corporate authority; regulatory/shareholder approvals; financial/capital/consideration; liabilities/operations/closing documents. |
+| Logical grouping | 2 | Award 2 if requests are grouped under clear headings that substantially match the case template; 1 if grouping is partial; 0 if ungrouped. |
+| Source or specialist routing | 2 | Award 2 if at least 5 requests identify the likely source or reviewer by role, such as client, opposing counsel, corporate secretary, regulatory counsel, tax/accounting, or transfer agent; 1 for 2-4; 0 for fewer than 2. |
 
 ### 5. Associate-Facing Communication - 15 points
 
-| Performance | Score | Indicators |
+For the "top three gating issues" prompt, acceptable gating issues are limited to the following list: OCC regulatory approval; state banking regulator approval or state merger-law overlay; state-law shareholder vote threshold or shareholder approval mechanics; missing financial statements, capital adequacy support, call reports, or valuation support; incomplete exchange ratio, cash, fractional share, or scrip mechanics; missing liability, litigation, regulatory-inquiry, contingent-obligation, or trust department schedules; blank outside date or inadequate termination rights; missing closing conditions, closing certificates, approval evidence, legal opinions, articles, or execution formalities; unresolved board authority, director eligibility, or corporate approvals.
+
+| Summary Element | Points | Awarding Rule |
 | --- | ---: | --- |
-| Strong | 13-15 | Summary is concise, commercially useful, under 350 words, and clearly states readiness, top three gating issues, first workstream, and specialist input. |
-| Competent | 10-12 | Summary answers most prompts and is understandable, but could be tighter or more decisive. |
-| Developing | 6-9 | Summary is too long, too vague, or reads like a list without judgment. |
-| Not Yet Competent | 0-5 | Summary does not help a supervising associate decide next steps. |
+| Word limit | 3 | Award 3 if the Associate Summary is 350 words or fewer; 0 if it exceeds 350 words. |
+| Readiness answer | 2 | Award 2 if the summary clearly says whether the agreement is ready for signature; 1 if implied but not direct; 0 if absent. |
+| Top three gating issues | 6 | Award 6 if the summary clearly identifies exactly three, or clearly prioritizes three, acceptable gating issues from the list above; 4 if it identifies 2 acceptable gating issues; 2 if it identifies 1; 0 if none. If the summary lists more than three issues without identifying the top three, cap this row at 4. |
+| First workstream | 2 | Award 2 if the summary names a logical first workstream, such as regulatory approval path, corporate authority/shareholder approvals, or financial/capital/consideration support; 1 if vague; 0 if absent. |
+| Specialist input | 2 | Award 2 if the summary identifies at least one relevant specialist role, such as regulatory counsel, tax/accounting, securities, trust/fiduciary, or corporate secretary; 1 if specialist input is mentioned without role; 0 if absent. |
 
 ### 6. Professional Format and Completeness - 10 points
 
-| Performance | Score | Indicators |
+The learner must use the exact Markdown headers requested in the case. Required headers are `# Diligence Issue Log`, `# Diligence Request List`, `## Corporate Authority`, `## Regulatory and Shareholder Approval`, `## Financial / Capital / Consideration`, `## Liabilities and Operations`, `## Closing Documents`, and `# Associate Summary`. If the response does not include all three required top-level headers exactly as written - `# Diligence Issue Log`, `# Diligence Request List`, and `# Associate Summary` - award 0 points for this competency.
+
+| Format Element | Points | Awarding Rule |
 | --- | ---: | --- |
-| Strong | 9-10 | Clean tables/headings, no material omissions, consistent risk labels, professional tone, and no unnecessary legalese. |
-| Competent | 7-8 | Complete and readable, with minor formatting or tone issues. |
-| Developing | 4-6 | Missing some required components or hard to scan. |
-| Not Yet Competent | 0-3 | Incomplete, disorganized, or not usable by a deal team. |
+| Required top-level headers | 3 | Award 3 only if all three required top-level headers appear exactly as written. If any are missing or materially altered, the total score for this competency is 0. |
+| Issue-log table structure | 2 | Award 2 if the issue log uses the exact requested table columns: Section, Issue, Why It Matters, Risk, Next Step; 1 if it is a table but columns differ; 0 if not a table. |
+| Required issue/request counts | 2 | Award 1 point if there are at least 12 issue-log entries and 1 point if there are at least 10 diligence requests. |
+| Request-list headings | 1 | Award 1 only if all five requested second-level headings appear exactly as written; 0 if any requested second-level heading is missing or materially altered. |
+| Associate Summary word count | 1 | Award 1 if the Associate Summary is 350 words or fewer; 0 if it exceeds 350 words. |
+| Professional polish | 1 | Award 1 if the submission is readable, concise, and free of distracting legalese or obvious proofreading problems; 0 if not. |
+
+Automatic format constraints: exceeding the 350-word Associate Summary limit loses the word-count point above. Missing the exact requested top-level Markdown headers results in 0 points for this competency even if the content is otherwise strong.
 
 ## Model Issue List
 
