@@ -7,6 +7,12 @@ interface AgentChatPanelProps {
   onMessagesChange: (messages: ChatMessage[]) => void;
 }
 
+const PROMPT_CHIPS = [
+  "Find gating issues",
+  "Suggest request categories",
+  "Check summary structure",
+];
+
 function buildAgentResponse(question: string, moduleTitle: string) {
   const normalized = question.toLowerCase();
 
@@ -16,6 +22,14 @@ function buildAgentResponse(question: string, moduleTitle: string) {
 
   if (normalized.includes("risk") || normalized.includes("issue")) {
     return "Start with approval and closing gates: OCC and state-bank approvals, shareholder vote mechanics, capital and acceptable-asset support, consideration mechanics, broad liability assumption, trust department exposure, and the blank outside date. For each issue, tie the next step to a specific document, confirmation, or specialist review.";
+  }
+
+  if (normalized.includes("request") || normalized.includes("confirmation")) {
+    return "Group requests by authority, regulatory approvals, shareholder mechanics, financial and capital support, consideration mechanics, liability schedules, trust department exposure, interim conduct, governance, and closing deliverables. Each request should resolve one or more issue-log rows.";
+  }
+
+  if (normalized.includes("summary") || normalized.includes("structure")) {
+    return "Structure the summary in four tight moves: readiness conclusion, top gating issues, next workstream, and specialist input. Keep it under 350 words and avoid turning the summary into a full issue log.";
   }
 
   if (normalized.includes("memo") || normalized.includes("draft")) {
@@ -87,13 +101,7 @@ export function AgentChatPanel({
     }, 620);
   }
 
-  function handleSubmit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    const question = draft.trim();
-    if (!question) {
-      return;
-    }
-
+  function sendQuestion(question: string) {
     const userMessage: ChatMessage = {
       id: window.crypto.randomUUID(),
       role: "user",
@@ -109,6 +117,16 @@ export function AgentChatPanel({
     }, 80);
   }
 
+  function handleSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    const question = draft.trim();
+    if (!question) {
+      return;
+    }
+
+    sendQuestion(question);
+  }
+
   return (
     <section className="flex min-h-[420px] flex-col rounded-panel bg-white soft-edge xl:min-h-0">
       <div className="border-b border-hairline px-4 py-3">
@@ -116,6 +134,27 @@ export function AgentChatPanel({
         <h2 className="m-0 mt-1 text-label font-semibold text-ink">
           Ask about this case
         </h2>
+        <p className="m-0 mt-1 text-micro text-muted-deep">
+          Optional support. Evaluation depends on your work product, not chat.
+        </p>
+      </div>
+
+      <div className="border-b border-hairline bg-manila/60 px-4 py-3">
+        <p className="m-0 mb-2 text-micro font-medium text-muted">
+          Optional prompts
+        </p>
+        <div className="flex flex-wrap gap-2">
+          {PROMPT_CHIPS.map((prompt) => (
+            <button
+              key={prompt}
+              type="button"
+              className="rounded-button bg-white px-3 py-1.5 text-small text-ink soft-edge transition-colors hover:bg-cloud"
+              onClick={() => sendQuestion(prompt)}
+            >
+              {prompt}
+            </button>
+          ))}
+        </div>
       </div>
 
       <div className="min-h-0 flex-1 space-y-3 overflow-y-auto px-4 py-4">
