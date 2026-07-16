@@ -26,17 +26,28 @@ export interface WorkProductReadiness {
   allReady: boolean;
 }
 
+function isIssueDataRow(line: string) {
+  const normalized = line.trim();
+  if (
+    !normalized.startsWith("|") ||
+    normalized.includes("---") ||
+    normalized.toLowerCase().includes("section | issue")
+  ) {
+    return false;
+  }
+
+  const cells = normalized
+    .split("|")
+    .slice(1, -1)
+    .map((cell) => cell.trim());
+
+  return [cells[0], cells[1], cells[3]].every(
+    (cell) => cell && cell.length > 0,
+  );
+}
+
 export function countIssueRows(value: string) {
-  return value
-    .split("\n")
-    .filter((line) => {
-      const normalized = line.trim();
-      return (
-        normalized.startsWith("|") &&
-        !normalized.includes("---") &&
-        !normalized.toLowerCase().includes("section | issue")
-      );
-    }).length;
+  return value.split("\n").filter(isIssueDataRow).length;
 }
 
 export function countRequests(value: string) {

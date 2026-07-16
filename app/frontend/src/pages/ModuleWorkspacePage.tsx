@@ -1,10 +1,11 @@
 import { useMemo, useState, type CSSProperties, type PointerEvent } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
+import { Navbar } from "@/components/layout/Navbar";
 import { AgentChatPanel } from "@/components/module/AgentChatPanel";
 import { CasePdfViewer } from "@/components/module/CasePdfViewer";
+import { GradingPanel } from "@/components/module/GradingPanel";
 import { ProgressTracker } from "@/components/module/ProgressTracker";
 import { WorkProductPanel } from "@/components/module/WorkProductPanel";
-import { GradingPanel } from "@/components/module/GradingPanel";
 import {
   buildWorkProductReadiness,
   deliverableForStep,
@@ -14,8 +15,8 @@ import {
   type GradeReport,
 } from "@/components/module/workProductGrader";
 import { usePersistentState } from "@/hooks/usePersistentState";
-import { MA_DUE_DILIGENCE_MODULE } from "@/data/moduleWorkspace";
-import type { ChatMessage, WorkProductDraft } from "@/types";
+import { useSimulation } from "@/hooks/useSimulation";
+import type { ChatMessage, ModuleWorkspace, WorkProductDraft } from "@/types";
 
 interface ModuleProgressState {
   completedStepIds: string[];
@@ -49,16 +50,24 @@ const INITIAL_PROGRESS: ModuleProgressState = {
   ],
 };
 
-const SPLIT_STORAGE_KEY = "simworks:first-year-associate-ma-due-diligence:split";
-
 type WorkspaceMode = "balanced" | "reading" | "writing";
 
-function getInitialSplitPercent() {
+const WORKSPACE_MODE_SPLITS: Record<WorkspaceMode, number> = {
+  balanced: 50,
+  reading: 64,
+  writing: 40,
+};
+
+function splitStorageKeyFor(module: ModuleWorkspace) {
+  return `${module.storageKey}:split`;
+}
+
+function getInitialSplitPercent(module: ModuleWorkspace) {
   if (typeof window === "undefined") {
     return 50;
   }
 
-  const stored = Number(window.localStorage.getItem(SPLIT_STORAGE_KEY));
+  const stored = Number(window.localStorage.getItem(splitStorageKeyFor(module)));
   return Number.isFinite(stored) ? Math.min(66, Math.max(38, stored)) : 50;
 }
 
@@ -74,12 +83,12 @@ function modeForSplit(splitPercent: number): WorkspaceMode {
   return "balanced";
 }
 
-/** Module workspace for the active M&A due diligence simulation. */
-export function ModuleWorkspacePage() {
-  const module = MA_DUE_DILIGENCE_MODULE;
+function ModuleWorkspaceContent({ module }: { module: ModuleWorkspace }) {
   const navigate = useNavigate();
   const [advanceMessage, setAdvanceMessage] = useState("");
-  const [splitPercent, setSplitPercent] = useState(getInitialSplitPercent);
+  const [splitPercent, setSplitPercent] = useState(() =>
+    getInitialSplitPercent(module),
+  );
   const [isProgressOpen, setIsProgressOpen] = useState(false);
   const [isAgentOpen, setIsAgentOpen] = useState(false);
   const [isGradingOpen, setIsGradingOpen] = useState(false);
@@ -116,21 +125,11 @@ export function ModuleWorkspacePage() {
   function updateSplitPercent(nextPercent: number) {
     const clamped = Math.min(66, Math.max(38, Math.round(nextPercent)));
     setSplitPercent(clamped);
-    window.localStorage.setItem(SPLIT_STORAGE_KEY, String(clamped));
+    window.localStorage.setItem(splitStorageKeyFor(module), String(clamped));
   }
 
   function applyWorkspaceMode(mode: WorkspaceMode) {
-    if (mode === "reading") {
-      updateSplitPercent(64);
-      return;
-    }
-
-    if (mode === "writing") {
-      updateSplitPercent(40);
-      return;
-    }
-
-    updateSplitPercent(50);
+    updateSplitPercent(WORKSPACE_MODE_SPLITS[mode]);
   }
 
   function handleDividerPointerDown(event: PointerEvent<HTMLButtonElement>) {
@@ -432,4 +431,34 @@ export function ModuleWorkspacePage() {
       ) : null}
     </div>
   );
+}
+
+/** Module workspace - loads simulation data from Firestore by slug. */
+export function ModuleWorkspacePage() {
+  const { slug = "" } = useParams<{ slug: string }>();
+  const { module, loading, error } = useSimulation(slug);
+
+  if (loading) {
+    return (
+      <div className="eleven-canvas min-h-screen bg-paper text-ink">
+        <Navbar />
+        <main className="flex min-h-[60vh] items-center justify-center">
+          <p className="text-muted-deep">Loading simulation...</p>
+        </main>
+      </div>
+    );
+  }
+
+  if (error || !module) {
+    return (
+      <div className="eleven-canvas min-h-screen bg-paper text-ink">
+        <Navbar />
+        <main className="flex min-h-[60vh] items-center justify-center">
+          <p className="text-muted-deep">{error ?? "Simulation not found."}</p>
+        </main>
+      </div>
+    );
+  }
+
+  return <ModuleWorkspaceContent key={module.storageKey} module={module} />;
 }

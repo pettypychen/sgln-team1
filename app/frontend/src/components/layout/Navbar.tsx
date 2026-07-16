@@ -1,8 +1,12 @@
+import { Link } from "react-router-dom";
 import { Logo } from "./Logo";
+import { APP_VERSION } from "@/lib/version";
 
 interface NavLink {
   label: string;
   active?: boolean;
+  /** Router path for links that navigate (the rest are static placeholders). */
+  to?: string;
 }
 
 const NAV_LINKS: NavLink[] = [
@@ -10,6 +14,7 @@ const NAV_LINKS: NavLink[] = [
   { label: "Practice" },
   { label: "Credentials" },
   { label: "Enterprise" },
+  { label: "Journey", to: "/journey" },
 ];
 
 /** User initials shown in the avatar (static in the reference). */
@@ -26,8 +31,9 @@ export function Navbar() {
             <span className="block text-[15px] font-semibold tracking-wordmark text-ink">
               SIMWORKS
             </span>
-            <span className="hidden text-micro text-muted sm:block">
+            <span className="hidden items-center gap-1.5 text-micro text-muted sm:flex">
               Simulation intelligence
+              <span className="rounded bg-cloud px-1 py-0.5 font-mono text-[10px] text-muted-deep">v{APP_VERSION}</span>
             </span>
           </div>
         </div>
@@ -39,19 +45,22 @@ export function Navbar() {
 
         <div className="flex items-center gap-3 md:gap-7">
           <div className="hidden gap-1 text-[15px] font-medium md:flex">
-            {NAV_LINKS.map((link) => (
-              <span
-                key={link.label}
-                className={
-                  "cursor-pointer rounded-button px-3 py-2 transition-colors " +
-                  (link.active
-                    ? "bg-black text-white"
-                    : "text-muted-deep hover:bg-cloud hover:text-ink")
-                }
-              >
-                {link.label}
-              </span>
-            ))}
+            {NAV_LINKS.map((link) => {
+              const className =
+                "cursor-pointer rounded-button px-3 py-2 transition-colors " +
+                (link.active
+                  ? "bg-black text-white"
+                  : "text-muted-deep hover:bg-cloud hover:text-ink");
+              return link.to ? (
+                <Link key={link.label} to={link.to} className={className}>
+                  {link.label}
+                </Link>
+              ) : (
+                <span key={link.label} className={className}>
+                  {link.label}
+                </span>
+              );
+            })}
           </div>
 
           <div className="flex h-10 w-10 items-center justify-center rounded-button bg-white text-[12px] font-semibold text-ink soft-edge">
