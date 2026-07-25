@@ -14,9 +14,12 @@ export function App() {
       <Routes>
         <Route path="/" element={<MarketplacePage />} />
         <Route path="/journey" element={<IdeationJourneyPage />} />
-        <Route path="/simulations/:slug" element={<ModuleWorkspacePage />} />
         <Route
-          path="/simulations/:slug/ready"
+          path="/simulations/first-year-associate-ma-due-diligence"
+          element={<ModuleWorkspacePage />}
+        />
+        <Route
+          path="/simulations/first-year-associate-ma-due-diligence/ready"
           element={<ReadyForEvaluationPage />}
         />
         <Route path="*" element={<Navigate to="/" replace />} />
