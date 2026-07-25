@@ -1,13 +1,13 @@
 import { useMemo } from "react";
-import { Link, useNavigate, useParams } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Navbar } from "@/components/layout/Navbar";
 import { AgentChatPanel } from "@/components/module/AgentChatPanel";
 import { CasePdfViewer } from "@/components/module/CasePdfViewer";
 import { ProgressTracker } from "@/components/module/ProgressTracker";
 import { WorkProductPanel } from "@/components/module/WorkProductPanel";
+import { MA_DUE_DILIGENCE_MODULE } from "@/data/moduleWorkspace";
 import { usePersistentState } from "@/hooks/usePersistentState";
-import { useSimulation } from "@/hooks/useSimulation";
-import type { ChatMessage, ModuleWorkspace, WorkProductDraft } from "@/types";
+import type { ChatMessage, WorkProductDraft } from "@/types";
 
 interface ModuleProgressState {
   completedStepIds: string[];
@@ -41,7 +41,9 @@ const INITIAL_PROGRESS: ModuleProgressState = {
   ],
 };
 
-function ModuleWorkspaceContent({ module }: { module: ModuleWorkspace }) {
+/** Module workspace — loads simulation data from the hardcoded content module. */
+export function ModuleWorkspacePage() {
+  const module = MA_DUE_DILIGENCE_MODULE;
   const navigate = useNavigate();
   const [progress, setProgress] = usePersistentState<ModuleProgressState>(
     module.storageKey,
@@ -79,6 +81,7 @@ function ModuleWorkspaceContent({ module }: { module: ModuleWorkspace }) {
   return (
     <div className="eleven-canvas min-h-screen bg-paper text-ink">
       <Navbar />
+
       <main className="mx-auto max-w-container px-4 pb-8 pt-5 md:px-8 lg:px-12">
         <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
           <Link
@@ -160,32 +163,3 @@ function ModuleWorkspaceContent({ module }: { module: ModuleWorkspace }) {
   );
 }
 
-/** Module workspace — loads simulation data from Firestore by slug. */
-export function ModuleWorkspacePage() {
-  const { slug = "" } = useParams<{ slug: string }>();
-  const { module, loading, error } = useSimulation(slug);
-
-  if (loading) {
-    return (
-      <div className="eleven-canvas min-h-screen bg-paper text-ink">
-        <Navbar />
-        <main className="flex min-h-[60vh] items-center justify-center">
-          <p className="text-muted-deep">Loading simulation…</p>
-        </main>
-      </div>
-    );
-  }
-
-  if (error || !module) {
-    return (
-      <div className="eleven-canvas min-h-screen bg-paper text-ink">
-        <Navbar />
-        <main className="flex min-h-[60vh] items-center justify-center">
-          <p className="text-muted-deep">{error ?? "Simulation not found."}</p>
-        </main>
-      </div>
-    );
-  }
-
-  return <ModuleWorkspaceContent module={module} />;
-}
