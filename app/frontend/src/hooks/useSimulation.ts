@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { doc, getDoc } from "firebase/firestore";
+import { MA_DUE_DILIGENCE_MODULE } from "@/data/moduleWorkspace";
 import { db } from "@/lib/firebase";
 import type { ModuleWorkspace } from "@/types";
 
@@ -15,9 +16,24 @@ export function useSimulation(slug: string): UseSimulationResult {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!slug) return;
     setLoading(true);
     setError(null);
+
+    if (!slug) {
+      setModule(null);
+      setError("Simulation not found.");
+      setLoading(false);
+      return;
+    }
+
+    if (!db) {
+      const localModule =
+        slug === MA_DUE_DILIGENCE_MODULE.id ? MA_DUE_DILIGENCE_MODULE : null;
+      setModule(localModule);
+      setError(localModule ? null : "Simulation not found.");
+      setLoading(false);
+      return;
+    }
 
     getDoc(doc(db, "simulations", slug))
       .then((snapshot) => {

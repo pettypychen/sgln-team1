@@ -1,12 +1,12 @@
 import { useState } from "react";
 import type { ModuleStep } from "@/types";
-import type { WorkProductReadiness } from "./workProductReadiness";
+import type { ConversationCoverage } from "./conversationCoverage";
 
 interface ProgressTrackerProps {
   steps: ModuleStep[];
   completedStepIds: string[];
   currentStepId: string;
-  readiness: WorkProductReadiness;
+  readiness: ConversationCoverage;
   validationMessage: string;
   onCompleteCurrent: () => void;
   onOpenEvaluation: () => void;
@@ -24,30 +24,30 @@ function stepState(
   return stepId === currentStepId ? "Current" : "Incomplete";
 }
 
-function outputForStep(stepId: string, readiness: WorkProductReadiness) {
+function outputForStep(stepId: string, readiness: ConversationCoverage) {
   if (stepId === "identify-issues") {
     return {
-      label: "Requires 12 issue rows",
+      label: "Cover the gating issues with the agent",
       ready: readiness.issueLog.ready,
     };
   }
 
   if (stepId === "draft-requests") {
     return {
-      label: "Requires 10 requests",
+      label: "Build the request list in conversation",
       ready: readiness.requestList.ready,
     };
   }
 
   if (stepId === "final-check") {
     return {
-      label: "Requires 1-350 words",
+      label: "Give your readiness call",
       ready: readiness.associateSummary.ready,
     };
   }
 
   return {
-    label: "Requires packet review",
+    label: "Review the packet",
     ready: true,
   };
 }

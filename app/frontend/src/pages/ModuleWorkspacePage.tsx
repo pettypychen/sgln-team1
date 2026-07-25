@@ -1,19 +1,17 @@
 import { useMemo, useState, type CSSProperties, type PointerEvent } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { Navbar } from "@/components/layout/Navbar";
-import { AgentChatPanel } from "@/components/module/AgentChatPanel";
+import { AgentCasePanel } from "@/components/module/AgentCasePanel";
 import { CasePdfViewer } from "@/components/module/CasePdfViewer";
 import { GradingPanel } from "@/components/module/GradingPanel";
 import { ProgressTracker } from "@/components/module/ProgressTracker";
-import { WorkProductPanel } from "@/components/module/WorkProductPanel";
 import {
-  buildWorkProductReadiness,
-  deliverableForStep,
-} from "@/components/module/workProductReadiness";
-import {
-  gradeWorkProduct,
-  type GradeReport,
-} from "@/components/module/workProductGrader";
+  buildConversationCoverage,
+  coverageForStep,
+} from "@/components/module/conversationCoverage";
+import { deliverableForStep } from "@/components/module/workProductReadiness";
+import { gradeConversation } from "@/components/module/conversationGrader";
+import type { GradeReport } from "@/components/module/workProductGrader";
 import { usePersistentState } from "@/hooks/usePersistentState";
 import { useSimulation } from "@/hooks/useSimulation";
 import type { ChatMessage, ModuleWorkspace, WorkProductDraft } from "@/types";
@@ -90,7 +88,6 @@ function ModuleWorkspaceContent({ module }: { module: ModuleWorkspace }) {
     getInitialSplitPercent(module),
   );
   const [isProgressOpen, setIsProgressOpen] = useState(false);
-  const [isAgentOpen, setIsAgentOpen] = useState(false);
   const [isGradingOpen, setIsGradingOpen] = useState(false);
   const [gradingStatus, setGradingStatus] = useState<"loading" | "ready">(
     "loading",
@@ -107,17 +104,14 @@ function ModuleWorkspaceContent({ module }: { module: ModuleWorkspace }) {
         ?.id ?? module.steps[module.steps.length - 1].id,
     [module.steps, progress.completedStepIds],
   );
-  const workProduct = progress.workProduct ?? INITIAL_WORK_PRODUCT;
-  const workProductReadiness = useMemo(
-    () => buildWorkProductReadiness(workProduct),
-    [workProduct],
+  const coverage = useMemo(
+    () => buildConversationCoverage(progress.chatMessages),
+    [progress.chatMessages],
   );
   const currentStepDeliverable = deliverableForStep(currentStepId);
+  const currentStepCoverage = coverageForStep(coverage, currentStepDeliverable);
   const currentStepValidationMessage =
-    currentStepDeliverable &&
-    !workProductReadiness[currentStepDeliverable].ready
-      ? advanceMessage
-      : "";
+    currentStepCoverage && !currentStepCoverage.ready ? advanceMessage : "";
   const completeCount = progress.completedStepIds.length;
   const allStepsComplete = completeCount === module.steps.length;
   const workspaceMode = modeForSplit(splitPercent);
@@ -165,11 +159,9 @@ function ModuleWorkspaceContent({ module }: { module: ModuleWorkspace }) {
     }
 
     const requiredDeliverable = deliverableForStep(nextStep.id);
-    if (
-      requiredDeliverable &&
-      !workProductReadiness[requiredDeliverable].ready
-    ) {
-      setAdvanceMessage(workProductReadiness[requiredDeliverable].message);
+    const requiredCoverage = coverageForStep(coverage, requiredDeliverable);
+    if (requiredCoverage && !requiredCoverage.ready) {
+      setAdvanceMessage(requiredCoverage.message);
       return;
     }
 
@@ -189,7 +181,7 @@ function ModuleWorkspaceContent({ module }: { module: ModuleWorkspace }) {
     setGradingStatus("loading");
     setGradeReport(null);
     window.setTimeout(() => {
-      setGradeReport(gradeWorkProduct(workProduct));
+      setGradeReport(gradeConversation(progress.chatMessages));
       setGradingStatus("ready");
     }, 1100);
   }
@@ -225,12 +217,13 @@ function ModuleWorkspaceContent({ module }: { module: ModuleWorkspace }) {
             aria-live="polite"
           >
             <span className="rounded-button bg-white px-3 py-1.5 soft-edge">
-              {workProductReadiness.readyCount}/3 ready
+              {coverage.readyCount}/3 ready
             </span>
             <span className="hidden rounded-button bg-white px-3 py-1.5 font-mono text-micro soft-edge md:inline-flex">
-              Issues {workProductReadiness.issueLog.count}/12 · Requests{" "}
-              {workProductReadiness.requestList.count}/10 · Summary{" "}
-              {workProductReadiness.associateSummary.count}/350
+              Issues {coverage.issueLog.count}/{coverage.issueLog.target} ·
+              Requests {coverage.requestList.count}/{coverage.requestList.target}{" "}
+              · Summary {coverage.associateSummary.count}/
+              {coverage.associateSummary.target}
             </span>
             <button
               type="button"
@@ -238,13 +231,6 @@ function ModuleWorkspaceContent({ module }: { module: ModuleWorkspace }) {
               onClick={() => setIsProgressOpen(true)}
             >
               Progress {completeCount}/{module.steps.length}
-            </button>
-            <button
-              type="button"
-              className="rounded-button bg-white px-3 py-1.5 text-small font-medium text-ink soft-edge transition-colors hover:bg-cloud"
-              onClick={() => setIsAgentOpen(true)}
-            >
-              Ask AI
             </button>
             <button
               type="button"
@@ -274,7 +260,7 @@ function ModuleWorkspaceContent({ module }: { module: ModuleWorkspace }) {
               {module.evidenceType} open
             </span>
             <span className="text-small text-muted-deep">
-              Read the packet, then draft the issue log, requests, and summary.
+              Read the packet, then work the case with the AI agent on the right.
             </span>
           </div>
           <div className="grid grid-cols-3 gap-1 rounded-button bg-cloud p-1">
@@ -322,20 +308,18 @@ function ModuleWorkspaceContent({ module }: { module: ModuleWorkspace }) {
           <button
             type="button"
             className="hidden cursor-col-resize rounded-button bg-black/10 transition-colors hover:bg-black/30 lg:block"
-            aria-label="Resize source and work product panes"
+            aria-label="Resize source and agent panes"
             onPointerDown={handleDividerPointerDown}
           />
 
-          <WorkProductPanel
-            draft={workProduct}
-            currentStepId={currentStepId}
-            onDraftChange={(nextWorkProduct) =>
-              setProgress((current) => ({
-                ...current,
-                workProduct: nextWorkProduct,
-              }))
+          <AgentCasePanel
+            module={module}
+            messages={progress.chatMessages}
+            coverage={coverage}
+            onMessagesChange={(chatMessages) =>
+              setProgress((current) => ({ ...current, chatMessages }))
             }
-            onSubmitForGrading={openGrading}
+            onSubmitForEvaluation={openGrading}
           />
         </section>
       </main>
@@ -372,50 +356,12 @@ function ModuleWorkspaceContent({ module }: { module: ModuleWorkspace }) {
                 steps={module.steps}
                 completedStepIds={progress.completedStepIds}
                 currentStepId={currentStepId}
-                readiness={workProductReadiness}
+                readiness={coverage}
                 validationMessage={currentStepValidationMessage}
                 onCompleteCurrent={completeCurrentStep}
                 onOpenEvaluation={() => navigate(module.readyPath)}
               />
             </div>
-          </aside>
-        </div>
-      ) : null}
-
-      {isAgentOpen ? (
-        <div className="fixed inset-0 z-50 bg-black/24" role="presentation">
-          <button
-            type="button"
-            className="absolute inset-0 h-full w-full cursor-default"
-            aria-label="Close AI drawer"
-            onClick={() => setIsAgentOpen(false)}
-          />
-          <aside className="absolute right-0 top-0 flex h-full w-full max-w-[480px] flex-col bg-[#fbfaf7] p-4 shadow-[-24px_0_60px_rgba(0,0,0,0.18)]">
-            <div className="mb-3 flex items-center justify-between gap-3">
-              <div>
-                <p className="m-0 text-micro font-medium text-muted">
-                  Optional support
-                </p>
-                <h2 className="m-0 text-card font-light leading-tight text-ink">
-                  Ask AI
-                </h2>
-              </div>
-              <button
-                type="button"
-                className="flex h-10 w-10 items-center justify-center rounded-button bg-white text-label font-medium text-ink soft-edge"
-                aria-label="Close AI drawer"
-                onClick={() => setIsAgentOpen(false)}
-              >
-                ×
-              </button>
-            </div>
-            <AgentChatPanel
-              module={module}
-              messages={progress.chatMessages}
-              onMessagesChange={(chatMessages) =>
-                setProgress((current) => ({ ...current, chatMessages }))
-              }
-            />
           </aside>
         </div>
       ) : null}

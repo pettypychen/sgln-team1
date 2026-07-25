@@ -1,0 +1,16 @@
+{
+  "name": "sgln-agent-functions",
+  "description": "Serverless proxy that dispatches case-agent turns to Anthropic, OpenAI, or Gemini with server-side keys.",
+  "private": true,
+  "main": "index.js",
+  "engines": {
+    "node": "20"
+  },
+  "scripts": {
+    "serve": "firebase emulators:start --only functions",
+    "deploy": "firebase deploy --only functions"
+  },
+  "dependencies": {
+    "firebase-functions": "^6.1.0"
+  }
+}

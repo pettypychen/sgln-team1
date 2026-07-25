@@ -5,6 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "test:local-fallback": "tsx scripts/verify-local-fallback.ts",
     "build": "npm run sync-version && tsc -b && vite build",
     "preview": "vite preview",
     "lint": "eslint .",
