@@ -1,10 +1,13 @@
 import { useState } from "react";
 import type { ModuleStep } from "@/types";
+import type { WorkProductReadiness } from "./workProductReadiness";
 
 interface ProgressTrackerProps {
   steps: ModuleStep[];
   completedStepIds: string[];
   currentStepId: string;
+  readiness: WorkProductReadiness;
+  validationMessage: string;
   onCompleteCurrent: () => void;
   onOpenEvaluation: () => void;
 }
@@ -21,20 +24,50 @@ function stepState(
   return stepId === currentStepId ? "Current" : "Incomplete";
 }
 
+function outputForStep(stepId: string, readiness: WorkProductReadiness) {
+  if (stepId === "identify-issues") {
+    return {
+      label: "Requires 12 issue rows",
+      ready: readiness.issueLog.ready,
+    };
+  }
+
+  if (stepId === "draft-requests") {
+    return {
+      label: "Requires 10 requests",
+      ready: readiness.requestList.ready,
+    };
+  }
+
+  if (stepId === "final-check") {
+    return {
+      label: "Requires 1-350 words",
+      ready: readiness.associateSummary.ready,
+    };
+  }
+
+  return {
+    label: "Requires packet review",
+    ready: true,
+  };
+}
+
 /** Persistent checklist for user-controlled module advancement. */
 export function ProgressTracker({
   steps,
   completedStepIds,
   currentStepId,
+  readiness,
+  validationMessage,
   onCompleteCurrent,
   onOpenEvaluation,
 }: ProgressTrackerProps) {
-  const [isExpanded, setIsExpanded] = useState(false);
+  const [isExpanded, setIsExpanded] = useState(true);
   const completeCount = completedStepIds.length;
   const allComplete = completeCount === steps.length;
 
   return (
-    <section className="rounded-panel bg-white p-4 soft-edge xl:max-h-[430px] xl:overflow-y-auto">
+    <section className="rounded-panel bg-white p-4 soft-edge">
       <div className="flex items-start justify-between gap-4">
         <div>
           <p className="m-0 text-micro font-medium text-muted">Progress tracker</p>
@@ -78,6 +111,7 @@ export function ProgressTracker({
           <ol className="m-0 space-y-2 p-0">
             {steps.map((step, index) => {
               const state = stepState(step.id, completedStepIds, currentStepId);
+              const output = outputForStep(step.id, readiness);
 
               return (
                 <li
@@ -115,6 +149,23 @@ export function ProgressTracker({
                       <p className="m-0 mt-1 text-small text-muted-deep">
                         {step.description}
                       </p>
+                      <div className="mt-2 flex flex-wrap items-center gap-2">
+                        <span className="rounded-button bg-white px-2 py-1 text-micro text-muted-deep soft-edge">
+                          {output.label}
+                        </span>
+                        {state !== "Complete" && step.id !== "open-packet" ? (
+                          <span
+                            className={
+                              "rounded-button px-2 py-1 text-micro " +
+                              (output.ready
+                                ? "bg-black text-white"
+                                : "bg-manila text-muted-deep")
+                            }
+                          >
+                            {output.ready ? "Ready" : "Needs work"}
+                          </span>
+                        ) : null}
+                      </div>
                     </div>
                   </div>
                 </li>
@@ -129,6 +180,11 @@ export function ProgressTracker({
           >
             {allComplete ? "Go to evaluation" : "Complete current step"}
           </button>
+          {validationMessage ? (
+            <p className="m-0 mt-3 rounded-panel border border-oxblood/30 bg-manila px-3 py-2 text-small text-oxblood">
+              {validationMessage}
+            </p>
+          ) : null}
         </div>
       ) : null}
     </section>
