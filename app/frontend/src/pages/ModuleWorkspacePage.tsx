@@ -1,6 +1,5 @@
 import { useMemo, useState, type CSSProperties, type PointerEvent } from "react";
-import { Link, useNavigate, useParams } from "react-router-dom";
-import { Navbar } from "@/components/layout/Navbar";
+import { Link, useNavigate } from "react-router-dom";
 import { AgentChatPanel } from "@/components/module/AgentChatPanel";
 import { CasePdfViewer } from "@/components/module/CasePdfViewer";
 import { GradingPanel } from "@/components/module/GradingPanel";
@@ -14,8 +13,8 @@ import {
   gradeWorkProduct,
   type GradeReport,
 } from "@/components/module/workProductGrader";
+import { MA_DUE_DILIGENCE_MODULE } from "@/data/moduleWorkspace";
 import { usePersistentState } from "@/hooks/usePersistentState";
-import { useSimulation } from "@/hooks/useSimulation";
 import type { ChatMessage, ModuleWorkspace, WorkProductDraft } from "@/types";
 
 interface ModuleProgressState {
@@ -433,32 +432,7 @@ function ModuleWorkspaceContent({ module }: { module: ModuleWorkspace }) {
   );
 }
 
-/** Module workspace - loads simulation data from Firestore by slug. */
+/** Module workspace — reads simulation data from the hardcoded content module. */
 export function ModuleWorkspacePage() {
-  const { slug = "" } = useParams<{ slug: string }>();
-  const { module, loading, error } = useSimulation(slug);
-
-  if (loading) {
-    return (
-      <div className="eleven-canvas min-h-screen bg-paper text-ink">
-        <Navbar />
-        <main className="flex min-h-[60vh] items-center justify-center">
-          <p className="text-muted-deep">Loading simulation...</p>
-        </main>
-      </div>
-    );
-  }
-
-  if (error || !module) {
-    return (
-      <div className="eleven-canvas min-h-screen bg-paper text-ink">
-        <Navbar />
-        <main className="flex min-h-[60vh] items-center justify-center">
-          <p className="text-muted-deep">{error ?? "Simulation not found."}</p>
-        </main>
-      </div>
-    );
-  }
-
-  return <ModuleWorkspaceContent key={module.storageKey} module={module} />;
+  return <ModuleWorkspaceContent module={MA_DUE_DILIGENCE_MODULE} />;
 }
