@@ -119,6 +119,6 @@ The chat panel shows a dropdown of AI providers. A provider appears only when it
 
 **Localhost** — set keys in `app/frontend/.env` (gitignored). Only Anthropic Claude is implemented for direct local calls; selecting another model shows "AI model not implemented yet." until its call path is added.
 
-**Production** — keys are stored as Firebase secrets (see [functions/README.md](./functions/README.md)). Set `VITE_AGENT_ENDPOINT=/api/agent` in `.env` to route calls through the Function proxy. All configured providers become available.
+**Production** — API keys are stored as Firebase secrets (see [functions/README.md](./functions/README.md)). `VITE_AGENT_ENDPOINT=/api/agent` is injected at build time by the GitHub Actions workflow, routing all model calls through the Function proxy. All configured providers become available.
 
 If no keys are set, the dropdown shows "No AI model configured" and the workspace uses the built-in scripted agent.
