@@ -20,7 +20,32 @@ must never ship a key to the browser.
 { "content": "…assistant reply…" }
 ```
 
-## One-time setup
+## Local development (emulator + local keys)
+
+Run the AI locally against your own API keys — no Firebase project access needed.
+
+```bash
+# 1. Copy the secrets template and fill in your key(s)
+cd functions
+cp .secret.local.example .secret.local
+# Edit .secret.local and paste your Anthropic / OpenAI / Gemini key
+
+# 2. Start the Functions emulator (leave this terminal running)
+npm run serve
+
+# 3. In app/frontend/.env, uncomment and set:
+#    VITE_AGENT_ENDPOINT=http://127.0.0.1:5001/sgln-team1-f8d61/us-central1/agentChat
+#    VITE_AGENT_PROVIDER=anthropic
+
+# 4. Start the Vite dev server in a separate terminal
+cd ../app/frontend && npm run dev
+```
+
+The emulator reads keys from `functions/.secret.local` (gitignored). Only set
+the keys for the providers you want — a request for a provider with no key
+returns `503`.
+
+## Production setup (one-time)
 
 Requires the Firebase **Blaze** (pay-as-you-go) plan — 2nd-gen functions and
 outbound network calls need it.
@@ -46,6 +71,15 @@ cd ../app/frontend && npm run build && cd ../.. && firebase deploy --only hostin
 
 You only need to set the keys for the providers you actually use. A request for
 a provider with no configured key returns `503`.
+
+## Updating a secret
+
+To rotate or change a key, run the set command again — it overwrites the existing value:
+
+```bash
+firebase functions:secrets:set ANTHROPIC_API_KEY
+firebase deploy --only functions
+```
 
 ## Model overrides (optional)
 
