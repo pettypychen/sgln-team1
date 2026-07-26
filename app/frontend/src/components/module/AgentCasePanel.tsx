@@ -16,7 +16,7 @@ const PROVIDER_LABEL: Record<AgentProvider, string> = {
   gemini: "Google Gemini",
   zai: "Z.ai",
   alibaba: "Alibaba Qwen",
-  deepseek: "DeepSeek",
+  openrouter: "OpenRouter",
 };
 import { buildSystemPrompt } from "./caseRubric";
 import type {

@@ -9,7 +9,7 @@ Firebase Functions (2nd gen) that keep all API keys server-side. The frontend is
 ```jsonc
 // request
 {
-  "provider": "anthropic",   // "anthropic" | "openai" | "gemini" | "zai" | "alibaba" | "deepseek"
+  "provider": "anthropic",   // "anthropic" | "openai" | "gemini" | "zai" | "alibaba" | "openrouter"
   "system": "…system prompt…",
   "messages": [{ "role": "user", "content": "…" }]
 }
@@ -28,7 +28,7 @@ VITE_ANTHROPIC_API_KEY=sk-ant-your-key-here
 # VITE_GOOGLE_API_KEY=your-key-here
 # VITE_ZAI_API_KEY=your-key-here
 # VITE_ALIBABA_API_KEY=your-key-here
-# VITE_DEEPSEEK_API_KEY=your-key-here
+# VITE_OPENROUTER_API_KEY=your-key-here
 ```
 
 ### Production
@@ -43,7 +43,7 @@ firebase functions:secrets:set OPENAI_API_KEY
 firebase functions:secrets:set GEMINI_API_KEY
 firebase functions:secrets:set ZAI_API_KEY
 firebase functions:secrets:set ALIBABA_API_KEY
-firebase functions:secrets:set DEEPSEEK_API_KEY
+firebase functions:secrets:set OPENROUTER_API_KEY
 
 firebase deploy --only functions
 ```
