@@ -14,8 +14,14 @@
     letter-spacing: 0;
   }
 
+  /* Light backgrounds (cloud, white, manila) */
   ::selection {
-    background: #f5f2ef;
+    background: rgba(0, 0, 0, 0.12);
+  }
+
+  /* Dark message bubbles (user turns in the chat) */
+  .bg-black ::selection {
+    background: rgba(255, 255, 255, 0.25);
   }
 }
 
