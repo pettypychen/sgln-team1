@@ -34,4 +34,4 @@ jobs:
           channelId: live
           projectId: sgln-team1-f8d61
       - name: Deploy Functions
-        run: cd functions && npm ci && npx firebase-tools deploy --only functions:agentChat --project sgln-team1-f8d61
+        run: cd functions && npm ci && npx firebase-tools deploy --only functions:agentChat --force --project sgln-team1-f8d61
