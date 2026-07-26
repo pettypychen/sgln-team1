@@ -254,7 +254,7 @@ async function sendViaOpenRouterDevProxy(request: AgentTurnRequest): Promise<str
       method: "POST",
       headers: { "content-type": "application/json" },
       body: JSON.stringify({
-        model: readEnv("VITE_OPENROUTER_MODEL") ?? "openrouter/auto",
+        model: readEnv("VITE_OPENROUTER_MODEL") ?? "meta-llama/llama-3.1-8b-instruct:free",
         max_tokens: 700,
         messages: [
           { role: "system", content: request.system },
@@ -279,9 +279,11 @@ async function sendViaOpenRouterDevProxy(request: AgentTurnRequest): Promise<str
   }
 
   const data = (await response.json()) as {
-    choices?: { message?: { content?: string } }[];
+    choices?: { message?: { content?: string | null; reasoning_content?: string } }[];
   };
-  const text = data.choices?.[0]?.message?.content?.trim() ?? "";
+  // Some reasoning models return content: null with reasoning_content populated first.
+  const msg = data.choices?.[0]?.message;
+  const text = (msg?.content ?? msg?.reasoning_content ?? "").trim();
   if (!text) throw new AgentRequestError("OpenRouter returned an empty response");
   return text;
 }
