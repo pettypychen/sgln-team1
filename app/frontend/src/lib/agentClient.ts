@@ -63,20 +63,17 @@ export function isAgentConfigured(): boolean {
   return Boolean(getAgentEndpoint()) || Boolean(readEnv("VITE_ANTHROPIC_API_KEY"));
 }
 
-/** Call Anthropic directly from the browser using a local .env key. */
-async function sendDirect(request: AgentTurnRequest): Promise<string> {
-  const apiKey = readEnv("VITE_ANTHROPIC_API_KEY")!;
-
+/**
+ * Call Anthropic via the Vite dev proxy (/api/anthropic → api.anthropic.com).
+ * The proxy injects the API key server-side so it never appears in browser
+ * network requests and there are no CORS issues.
+ */
+async function sendViaDevProxy(request: AgentTurnRequest): Promise<string> {
   let response: Response;
   try {
-    response = await fetch("https://api.anthropic.com/v1/messages", {
+    response = await fetch("/api/anthropic/v1/messages", {
       method: "POST",
-      headers: {
-        "content-type": "application/json",
-        "x-api-key": apiKey,
-        "anthropic-version": "2023-06-01",
-        "anthropic-dangerous-direct-browser-access": "true",
-      },
+      headers: { "content-type": "application/json" },
       body: JSON.stringify({
         model: "claude-sonnet-5",
         max_tokens: 700,
@@ -118,7 +115,7 @@ export async function sendAgentTurn(request: AgentTurnRequest): Promise<string> 
   // Local dev shortcut: call Anthropic directly if no proxy is configured
   if (!endpoint) {
     if (readEnv("VITE_ANTHROPIC_API_KEY")) {
-      return sendDirect(request);
+      return sendViaDevProxy(request);
     }
     throw new AgentNotConfiguredError();
   }
