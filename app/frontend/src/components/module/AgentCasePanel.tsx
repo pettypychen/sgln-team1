@@ -2,17 +2,21 @@ import { FormEvent, useMemo, useRef, useState } from "react";
 import type { ChatMessage, ModuleWorkspace } from "@/types";
 import {
   AgentNotConfiguredError,
+  AgentNotImplementedError,
+  getConfiguredProviders,
   getDefaultProvider,
-  isAgentConfigured,
   sendAgentTurn,
   type AgentProvider,
   type AgentTurnMessage,
 } from "@/lib/agentClient";
 
 const PROVIDER_LABEL: Record<AgentProvider, string> = {
-  anthropic: "Claude",
-  openai: "GPT-4o",
-  gemini: "Gemini",
+  anthropic: "Anthropic Claude",
+  openai: "OpenAI",
+  gemini: "Google Gemini",
+  zai: "Z.ai",
+  alibaba: "Alibaba Qwen",
+  deepseek: "DeepSeek",
 };
 import { buildSystemPrompt } from "./caseRubric";
 import type {
@@ -88,10 +92,15 @@ export function AgentCasePanel({
   const messagesRef = useRef(messages);
   messagesRef.current = messages;
 
+  const providerOptions = getConfiguredProviders();
+  const live = providerOptions.length > 0;
+  const [selectedProvider, setSelectedProvider] = useState<AgentProvider>(
+    () => providerOptions[0] ?? getDefaultProvider(),
+  );
+  const agentLabel = live ? PROVIDER_LABEL[selectedProvider] : "Agent";
+
   const canSend = draft.trim().length > 0 && !isThinking;
   const systemPrompt = useMemo(() => buildSystemPrompt(module), [module]);
-  const live = isAgentConfigured();
-  const agentLabel = live ? PROVIDER_LABEL[getDefaultProvider()] : "Agent";
 
   const dimensions: CoverageDimension[] = [
     coverage.issueLog,
@@ -123,11 +132,15 @@ export function AgentCasePanel({
       return;
     }
 
-    sendAgentTurn({ system: systemPrompt, messages: toTurnMessages(history) })
+    sendAgentTurn({ system: systemPrompt, messages: toTurnMessages(history), provider: selectedProvider })
       .then((content) => finish(content, "sent"))
       .catch((error) => {
         if (error instanceof AgentNotConfiguredError) {
           finish(buildScriptedResponse(question, module.title), "sent");
+          return;
+        }
+        if (error instanceof AgentNotImplementedError) {
+          finish("AI model not implemented yet.", "failed");
           return;
         }
         console.error("[AgentCasePanel] request failed:", error);
@@ -316,9 +329,23 @@ export function AgentCasePanel({
           }}
         />
         <div className="mt-3 flex items-center justify-between gap-3">
-          <span className="text-micro text-muted">
-            {live ? getDefaultProvider() : "scripted"} · ⌘/Ctrl+Enter to send
-          </span>
+          <div className="flex items-center gap-2">
+            {live ? (
+              <select
+                value={selectedProvider}
+                onChange={(e) => setSelectedProvider(e.target.value as AgentProvider)}
+                disabled={isThinking}
+                className="rounded border border-hairline bg-transparent py-0.5 pl-1.5 pr-6 text-micro text-muted outline-none focus:border-black disabled:opacity-50"
+              >
+                {providerOptions.map((p) => (
+                  <option key={p} value={p}>{PROVIDER_LABEL[p]}</option>
+                ))}
+              </select>
+            ) : (
+              <span className="text-micro text-muted">No AI model configured</span>
+            )}
+            <span className="text-micro text-muted">· ⌘/Ctrl+Enter to send</span>
+          </div>
           <button
             type="submit"
             className="rounded-button bg-black px-4 py-2 text-small font-medium text-white transition-colors hover:bg-graphite disabled:cursor-not-allowed disabled:bg-slate-mid"
