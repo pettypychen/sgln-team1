@@ -106,41 +106,19 @@ If no live agent endpoint is configured, the learner workspace uses its scripted
 
 ## AI model selector
 
-The chat panel in the learner workspace shows a dropdown of AI providers. A provider appears in the dropdown only when its key is present and non-empty.
+The chat panel shows a dropdown of AI providers. A provider appears only when its key is configured.
 
-### Supported providers
-
-| Provider | Key | Local dev status |
+| Provider | Localhost key | Production secret |
 | --- | --- | --- |
-| Anthropic Claude | `VITE_ANTHROPIC_API_KEY` | Implemented |
-| OpenAI | `VITE_OPENAI_API_KEY` | Not yet implemented |
-| Google Gemini | `VITE_GOOGLE_API_KEY` | Not yet implemented |
-| Z.ai | `VITE_ZAI_API_KEY` | Not yet implemented |
-| Alibaba Qwen | `VITE_ALIBABA_API_KEY` | Not yet implemented |
-| DeepSeek | `VITE_DEEPSEEK_API_KEY` | Not yet implemented |
+| Anthropic Claude | `VITE_ANTHROPIC_API_KEY` | `ANTHROPIC_API_KEY` |
+| OpenAI | `VITE_OPENAI_API_KEY` | `OPENAI_API_KEY` |
+| Google Gemini | `VITE_GOOGLE_API_KEY` | `GEMINI_API_KEY` |
+| Z.ai | `VITE_ZAI_API_KEY` | `ZAI_API_KEY` |
+| Alibaba Qwen | `VITE_ALIBABA_API_KEY` | `ALIBABA_API_KEY` |
+| DeepSeek | `VITE_DEEPSEEK_API_KEY` | `DEEPSEEK_API_KEY` |
 
-### Local dev
+**Localhost** — set keys in `app/frontend/.env` (gitignored). Only Anthropic Claude is implemented for direct local calls; selecting another model shows "AI model not implemented yet." until its call path is added.
 
-Add any subset of the keys to `app/frontend/.env` (gitignored) and restart the dev server. Only providers with a key set appear in the dropdown.
+**Production** — keys are stored as Firebase secrets (see [functions/README.md](./functions/README.md)). Set `VITE_AGENT_ENDPOINT=/api/agent` in `.env` to route calls through the Function proxy. All configured providers become available.
 
-```bash
-# app/frontend/.env
-VITE_ANTHROPIC_API_KEY=sk-ant-your-key-here
-
-# Enable additional providers once their local-dev path is implemented:
-# VITE_OPENAI_API_KEY=sk-your-key-here
-# VITE_GOOGLE_API_KEY=your-key-here
-# VITE_ZAI_API_KEY=your-key-here
-# VITE_ALIBABA_API_KEY=your-key-here
-# VITE_DEEPSEEK_API_KEY=your-key-here
-```
-
-Selecting an unimplemented provider shows **"AI model not implemented yet."** in the chat. If no keys are set, the dropdown shows **"No AI model configured"** and the workspace falls back to the scripted demo agent.
-
-### Production
-
-Set `VITE_AGENT_ENDPOINT=/api/agent` to route all model calls through the Firebase Function proxy, which holds the real API keys as Firebase secrets. All six providers appear in the dropdown; the Function returns an error for any provider it has not been given a secret for.
-
-## AI proxy
-
-The serverless functions keep provider keys and evaluator access codes out of the static frontend. See [functions/README.md](./functions/README.md) for agent, evaluation, notification, and deployment configuration.
+If no keys are set, the dropdown shows "No AI model configured" and the workspace uses the built-in scripted agent.
