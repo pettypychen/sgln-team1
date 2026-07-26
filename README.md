@@ -114,7 +114,7 @@ The chat panel shows a dropdown of AI providers. A provider appears only when it
 | OpenAI | `VITE_OPENAI_API_KEY` | `OPENAI_API_KEY` |
 | Google Gemini | `VITE_GOOGLE_API_KEY` | `GEMINI_API_KEY` |
 | Z.ai (GLM) | `VITE_ZAI_API_KEY` | `ZAI_API_KEY` |
-| Alibaba Qwen | `VITE_ALIBABA_API_KEY` | `ALIBABA_API_KEY` |
+| Alibaba Qwen (DashScope) | `VITE_ALIBABA_API_KEY` | `ALIBABA_API_KEY` |
 | DeepSeek | `VITE_DEEPSEEK_API_KEY` | `DEEPSEEK_API_KEY` |
 
 **Localhost** — set keys in `app/frontend/.env` (gitignored). Only Anthropic Claude is implemented for direct local calls; selecting another model shows "AI model not implemented yet." until its call path is added.
