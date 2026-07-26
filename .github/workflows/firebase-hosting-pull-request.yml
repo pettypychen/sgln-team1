@@ -23,7 +23,6 @@ jobs:
           echo "VITE_FIREBASE_MESSAGING_SENDER_ID=${{ secrets.VITE_FIREBASE_MESSAGING_SENDER_ID }}" >> .env
           echo "VITE_FIREBASE_APP_ID=${{ secrets.VITE_FIREBASE_APP_ID }}" >> .env
           echo "VITE_AGENT_ENDPOINT=/api/agent" >> .env
-          echo "VITE_ENABLED_PROVIDERS=${{ secrets.VITE_ENABLED_PROVIDERS }}" >> .env
       - run: cd app/frontend && npm ci && npm run build
       - uses: FirebaseExtended/action-hosting-deploy@v0
         with:

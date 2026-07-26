@@ -6,13 +6,12 @@
  *   2. VITE_*_API_KEY set → call the provider directly (local dev shortcut)
  *   3. Neither set → throw AgentNotConfiguredError → scripted fallback in the UI
  *
- * Provider availability:
- *   - Production (VITE_AGENT_ENDPOINT): all providers shown; the Function holds
- *     its own secrets and will error for any provider it hasn't been given a key for.
- *   - Local dev: only providers with a VITE_*_API_KEY in .env appear in the dropdown.
- *
- * The direct key path is intentionally local-dev only: .env is gitignored so
- * the key never gets committed or shipped in a production build.
+ * Provider availability (both local dev and production):
+ *   A provider appears in the dropdown only when its VITE_*_API_KEY is present.
+ *   - Local dev: set the real key in .env → Vite proxy injects it server-side.
+ *   - Production: CI injects each VITE_*_API_KEY from GitHub Secrets at build time
+ *     (any non-empty value signals the provider is configured; actual calls go
+ *     through the Function which holds the real key as a Firebase secret).
  */
 
 export type AgentProvider = "anthropic" | "openai" | "gemini" | "zai" | "alibaba" | "openrouter";
@@ -85,26 +84,30 @@ export function getAgentEndpoint(): string | undefined {
   return readEnv("VITE_AGENT_ENDPOINT");
 }
 
-/**
- * Returns providers available for selection in the UI.
- *
- * - Production (VITE_AGENT_ENDPOINT set): reads VITE_ENABLED_PROVIDERS
- *   (comma-separated list injected by the CI workflow) to show only the
- *   providers whose Firebase secrets are actually configured.
- * - Local dev: only providers that have a VITE_*_API_KEY set in .env.
- */
+/** Returns providers that have a VITE_*_API_KEY set — local dev only. */
 export function getConfiguredProviders(): AgentProvider[] {
-  if (getAgentEndpoint()) {
-    const enabled = readEnv("VITE_ENABLED_PROVIDERS");
-    if (enabled) {
-      return enabled
-        .split(",")
-        .map((s) => s.trim() as AgentProvider)
-        .filter((p) => ALL_PROVIDERS.includes(p));
-    }
+  return ALL_PROVIDERS.filter((p) => Boolean(readEnv(PROVIDER_ENV_KEY[p])));
+}
+
+/**
+ * Fetches configured providers from the Function (production) or falls back
+ * to the synchronous VITE_*_API_KEY check (local dev).
+ */
+export async function fetchConfiguredProviders(): Promise<AgentProvider[]> {
+  const endpoint = getAgentEndpoint();
+  if (!endpoint) {
+    return getConfiguredProviders();
+  }
+  try {
+    const response = await fetch(endpoint, { method: "GET" });
+    if (!response.ok) return [];
+    const data = (await response.json()) as { providers?: string[] };
+    return (data.providers ?? []).filter((p): p is AgentProvider =>
+      ALL_PROVIDERS.includes(p as AgentProvider),
+    );
+  } catch {
     return [];
   }
-  return ALL_PROVIDERS.filter((p) => Boolean(readEnv(PROVIDER_ENV_KEY[p])));
 }
 
 export function getDefaultProvider(): AgentProvider {

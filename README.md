@@ -108,7 +108,7 @@ If no live agent endpoint is configured, the learner workspace uses its scripted
 
 The chat panel shows a dropdown of AI providers. A provider appears only when its key is configured.
 
-| Provider | Localhost key | Production secret |
+| Provider | Localhost `.env` key | Firebase secret |
 | --- | --- | --- |
 | Anthropic Claude | `VITE_ANTHROPIC_API_KEY` | `ANTHROPIC_API_KEY` |
 | OpenAI | `VITE_OPENAI_API_KEY` | `OPENAI_API_KEY` |
@@ -117,8 +117,8 @@ The chat panel shows a dropdown of AI providers. A provider appears only when it
 | Alibaba Qwen (DashScope) | `VITE_ALIBABA_API_KEY` | `ALIBABA_API_KEY` |
 | OpenRouter | `VITE_OPENROUTER_API_KEY` | `OPENROUTER_API_KEY` |
 
-**Localhost** — set keys in `app/frontend/.env` (gitignored). Only Anthropic Claude is implemented for direct local calls; selecting another model shows "AI model not implemented yet." until its call path is added.
+**Localhost** — set the key in `app/frontend/.env` (gitignored). The Vite dev proxy injects it server-side. Restart the dev server after editing `.env`.
 
-**Production** — API keys are stored as Firebase secrets (see [functions/README.md](./functions/README.md)). `VITE_AGENT_ENDPOINT=/api/agent` is injected at build time by the GitHub Actions workflow, routing all model calls through the Function proxy. All configured providers become available.
+**Production** — only Firebase secrets are needed. When `VITE_AGENT_ENDPOINT` is set, the frontend calls `GET /api/agent` on mount and the Function returns which providers have a secret configured. No GitHub Secrets for provider keys required. See [functions/README.md](./functions/README.md) for how to set Firebase secrets.
 
 If no keys are set, the dropdown shows "No AI model configured" and the workspace uses the built-in scripted agent.

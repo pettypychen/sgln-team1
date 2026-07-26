@@ -6,15 +6,14 @@
  * conversation turn to whichever provider the request asks for.
  *
  * Contract:
- *   POST { provider: "anthropic" | "openai" | "gemini",
+ *   POST { provider: "anthropic" | "openai" | "gemini" | "zai" | "alibaba" | "openrouter",
  *          system: string,
  *          messages: [{ role: "user" | "assistant", content: string }] }
  *   -> 200 { content: string }
  *   -> 4xx/5xx { error: string }
  *
- * Keys are provided as secrets (see README): ANTHROPIC_API_KEY,
- * OPENAI_API_KEY, GEMINI_API_KEY. Models can be overridden with the optional
- * ANTHROPIC_MODEL / OPENAI_MODEL / GEMINI_MODEL environment variables.
+ * Keys are provided as secrets (see README). Models can be overridden with
+ * optional *_MODEL environment variables.
  */
 
 const { onRequest } = require("firebase-functions/v2/https");
@@ -30,11 +29,26 @@ const { publicCredentialPage } = require("./publicCredential");
 const ANTHROPIC_API_KEY = defineSecret("ANTHROPIC_API_KEY");
 const OPENAI_API_KEY = defineSecret("OPENAI_API_KEY");
 const GEMINI_API_KEY = defineSecret("GEMINI_API_KEY");
+const ZAI_API_KEY = defineSecret("ZAI_API_KEY");
+const ALIBABA_API_KEY = defineSecret("ALIBABA_API_KEY");
+const OPENROUTER_API_KEY = defineSecret("OPENROUTER_API_KEY");
+
+const ALL_SECRETS = [
+  ANTHROPIC_API_KEY,
+  OPENAI_API_KEY,
+  GEMINI_API_KEY,
+  ZAI_API_KEY,
+  ALIBABA_API_KEY,
+  OPENROUTER_API_KEY,
+];
 
 const DEFAULT_MODELS = {
   anthropic: "claude-sonnet-5",
   openai: "gpt-4o",
   gemini: "gemini-2.0-flash",
+  zai: "glm-4.5-flash",
+  alibaba: "qwen3.7-flash",
+  openrouter: "deepseek/deepseek-r1",
 };
 
 const MAX_TOKENS = 700;
@@ -45,7 +59,7 @@ function validateBody(body) {
     return "Request body must be JSON.";
   }
   const { provider, system, messages } = body;
-  if (!["anthropic", "openai", "gemini"].includes(provider)) {
+  if (!["anthropic", "openai", "gemini", "zai", "alibaba", "openrouter"].includes(provider)) {
     return "Unknown provider.";
   }
   if (typeof system !== "string" || system.length === 0) {
@@ -155,21 +169,105 @@ async function callGemini(apiKey, system, messages) {
     .trim();
 }
 
+async function callZai(apiKey, system, messages) {
+  const response = await fetch("https://api.z.ai/api/paas/v4/chat/completions", {
+    method: "POST",
+    headers: {
+      "content-type": "application/json",
+      authorization: `Bearer ${apiKey}`,
+    },
+    body: JSON.stringify({
+      model: process.env.ZAI_MODEL || DEFAULT_MODELS.zai,
+      max_tokens: MAX_TOKENS,
+      messages: [
+        { role: "system", content: system },
+        ...messages.map((m) => ({ role: m.role, content: m.content })),
+      ],
+    }),
+  });
+
+  if (!response.ok) {
+    throw new Error(`Z.ai API error (${response.status})`);
+  }
+  const data = await response.json();
+  return (data.choices?.[0]?.message?.content || "").trim();
+}
+
+async function callAlibaba(apiKey, system, messages) {
+  const response = await fetch(
+    "https://dashscope-intl.aliyuncs.com/compatible-mode/v1/chat/completions",
+    {
+      method: "POST",
+      headers: {
+        "content-type": "application/json",
+        authorization: `Bearer ${apiKey}`,
+      },
+      body: JSON.stringify({
+        model: process.env.ALIBABA_MODEL || DEFAULT_MODELS.alibaba,
+        max_tokens: MAX_TOKENS,
+        messages: [
+          { role: "system", content: system },
+          ...messages.map((m) => ({ role: m.role, content: m.content })),
+        ],
+      }),
+    },
+  );
+
+  if (!response.ok) {
+    throw new Error(`Alibaba Qwen API error (${response.status})`);
+  }
+  const data = await response.json();
+  return (data.choices?.[0]?.message?.content || "").trim();
+}
+
+async function callOpenRouter(apiKey, system, messages) {
+  const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+    method: "POST",
+    headers: {
+      "content-type": "application/json",
+      authorization: `Bearer ${apiKey}`,
+      "HTTP-Referer": "https://sgln-team1-f8d61.web.app",
+      "X-Title": "SimWorks",
+    },
+    body: JSON.stringify({
+      model: process.env.OPENROUTER_MODEL || DEFAULT_MODELS.openrouter,
+      max_tokens: MAX_TOKENS,
+      messages: [
+        { role: "system", content: system },
+        ...messages.map((m) => ({ role: m.role, content: m.content })),
+      ],
+    }),
+  });
+
+  if (!response.ok) {
+    throw new Error(`OpenRouter API error (${response.status})`);
+  }
+  const data = await response.json();
+  const msg = data.choices?.[0]?.message;
+  return (msg?.content ?? msg?.reasoning_content ?? "").trim();
+}
+
 const KEY_FOR_PROVIDER = {
   anthropic: ANTHROPIC_API_KEY,
   openai: OPENAI_API_KEY,
   gemini: GEMINI_API_KEY,
+  zai: ZAI_API_KEY,
+  alibaba: ALIBABA_API_KEY,
+  openrouter: OPENROUTER_API_KEY,
 };
 
 const DISPATCH = {
   anthropic: callAnthropic,
   openai: callOpenAI,
   gemini: callGemini,
+  zai: callZai,
+  alibaba: callAlibaba,
+  openrouter: callOpenRouter,
 };
 
 exports.agentChat = onRequest(
   {
-    secrets: [ANTHROPIC_API_KEY, OPENAI_API_KEY, GEMINI_API_KEY],
+    secrets: ALL_SECRETS,
     cors: true,
     region: "us-central1",
   },
@@ -178,8 +276,22 @@ exports.agentChat = onRequest(
       res.status(204).send("");
       return;
     }
+
+    // GET /api/agent → return which providers have a Firebase secret configured.
+    // The frontend calls this on mount to populate the provider dropdown without
+    // needing any VITE_*_API_KEY baked into the production build.
+    if (req.method === "GET") {
+      const configured = Object.entries(KEY_FOR_PROVIDER)
+        .filter(([, secret]) => {
+          try { return Boolean(secret.value()); } catch { return false; }
+        })
+        .map(([provider]) => provider);
+      res.status(200).json({ providers: configured });
+      return;
+    }
+
     if (req.method !== "POST") {
-      res.status(405).json({ error: "Use POST." });
+      res.status(405).json({ error: "Use POST for chat, GET for provider list." });
       return;
     }
 

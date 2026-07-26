@@ -35,6 +35,8 @@ VITE_ANTHROPIC_API_KEY=sk-ant-your-key-here
 
 API keys are stored as Firebase secrets. `VITE_AGENT_ENDPOINT=/api/agent` is injected at build time by the GitHub Actions workflow — there is no `.env` file in production.
 
+When `VITE_AGENT_ENDPOINT` is set, the frontend calls `GET /api/agent` on mount to discover which providers have a secret configured. Only providers with a non-empty secret appear in the dropdown — no GitHub Secrets needed for provider detection.
+
 Store keys as Firebase secrets, then deploy:
 
 ```bash
@@ -54,7 +56,14 @@ To rotate a key, run `firebase functions:secrets:set <KEY>` again and redeploy.
 
 ### Model overrides (optional)
 
-Defaults: `claude-sonnet-5`, `gpt-4o`, `gemini-2.0-flash`. Override per provider with environment variables on the function: `ANTHROPIC_MODEL`, `OPENAI_MODEL`, `GEMINI_MODEL`.
+| Provider | Default model | Override env var |
+| --- | --- | --- |
+| Anthropic Claude | `claude-sonnet-5` | `ANTHROPIC_MODEL` |
+| OpenAI | `gpt-4o` | `OPENAI_MODEL` |
+| Google Gemini | `gemini-2.0-flash` | `GEMINI_MODEL` |
+| Z.ai (GLM) | `glm-4.5-flash` | `ZAI_MODEL` |
+| Alibaba Qwen | `qwen3.7-flash` | `ALIBABA_MODEL` |
+| OpenRouter | `deepseek/deepseek-r1` | `OPENROUTER_MODEL` |
 
 ## Evaluation, credentials, and email
 

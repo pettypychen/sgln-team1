@@ -1,8 +1,10 @@
-import { FormEvent, useMemo, useRef, useState } from "react";
+import { FormEvent, useEffect, useMemo, useRef, useState } from "react";
 import type { ChatMessage, ModuleWorkspace } from "@/types";
 import {
   AgentNotConfiguredError,
   AgentNotImplementedError,
+  fetchConfiguredProviders,
+  getAgentEndpoint,
   getConfiguredProviders,
   getDefaultProvider,
   sendAgentTurn,
@@ -92,12 +94,26 @@ export function AgentCasePanel({
   const messagesRef = useRef(messages);
   messagesRef.current = messages;
 
-  const providerOptions = getConfiguredProviders();
-  const live = providerOptions.length > 0;
+  // In production (VITE_AGENT_ENDPOINT set), providers are fetched from the
+  // Function on mount. In local dev they're resolved synchronously from VITE_*_API_KEY.
+  const initialProviders = getAgentEndpoint() ? [] : getConfiguredProviders();
+  const [providerOptions, setProviderOptions] = useState<AgentProvider[]>(initialProviders);
+  const [providersLoading, setProvidersLoading] = useState(() => Boolean(getAgentEndpoint()));
   const [selectedProvider, setSelectedProvider] = useState<AgentProvider>(
-    () => providerOptions[0] ?? getDefaultProvider(),
+    () => initialProviders[0] ?? getDefaultProvider(),
   );
-  const agentLabel = live ? PROVIDER_LABEL[selectedProvider] : "Agent";
+
+  useEffect(() => {
+    if (!getAgentEndpoint()) return;
+    fetchConfiguredProviders().then((providers) => {
+      setProviderOptions(providers);
+      if (providers.length > 0) setSelectedProvider(providers[0]);
+      setProvidersLoading(false);
+    });
+  }, []);
+
+  const live = providerOptions.length > 0;
+  const agentLabel = providersLoading ? "Loading…" : live ? PROVIDER_LABEL[selectedProvider] : "Agent";
 
   const canSend = draft.trim().length > 0 && !isThinking;
   const systemPrompt = useMemo(() => buildSystemPrompt(module), [module]);
