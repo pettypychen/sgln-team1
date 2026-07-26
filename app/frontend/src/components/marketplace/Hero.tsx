@@ -8,6 +8,8 @@ interface HeroProps {
   continueSim?: ContinueSimulation;
   /** Total number of scenarios available in the marketplace catalog. */
   scenarioCount: number;
+  /** Total number of professional pathways represented in the catalog. */
+  pathwayCount: number;
   accent?: string;
   onBrowse?: () => void;
   onOpenContinue?: () => void;
@@ -17,6 +19,7 @@ interface HeroProps {
 export function Hero({
   continueSim,
   scenarioCount,
+  pathwayCount,
   accent,
   onBrowse,
   onOpenContinue,
@@ -54,7 +57,7 @@ export function Hero({
           </div>
           <div className="rounded-panel bg-white p-3 soft-edge md:p-4">
             <strong className="block font-display text-[30px] font-light leading-none text-ink md:text-[34px]">
-              3
+              {pathwayCount}
             </strong>
             <span className="mt-2 block text-micro text-muted-deep md:text-small">
               pathways

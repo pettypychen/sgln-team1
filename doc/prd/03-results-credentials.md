@@ -124,6 +124,13 @@ Each case has one core badge. A higher case outcome such as Distinction uses a s
 
 Example: Kopi Run may use a deep-brown enamel kopi cup with a cream swirl inside a crimson-and-gold geometric medallion.
 
+Design references:
+
+- [Apple Fitness+ awards](https://www.apple.com/apple-fitness-plus/)
+- [Apple Watch User Guide: See your awards](https://support.apple.com/en-euro/guide/watch/apd3bf6d85a6/watchos)
+
+Use these references for collection hierarchy, accomplishment states, and restrained presentation only. Produce original SimWorks forms, symbols, materials, and motion.
+
 ## Badge detail view
 
 Selecting a badge opens:
@@ -235,4 +242,3 @@ Before release, test the four badges together:
 - The collection feels playful without looking juvenile.
 - Locked states invite completion without implying failure.
 - Public cards remain legible in LinkedIn's link-preview crop.
-

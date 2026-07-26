@@ -1,7 +1,10 @@
 firebase-debug.log
+firestore-debug.log
+pubsub-debug.log
 .firebase/
-app/frontend/tsconfig.node.tsbuildinfo
+app/frontend/*.tsbuildinfo
 app/frontend/vite.config.js
+app/frontend/vite.config.d.ts
 app/frontend/.env
 
 # Claude Code local files

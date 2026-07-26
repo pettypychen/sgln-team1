@@ -23,11 +23,12 @@ export const CATEGORY_FILTERS: CategoryFilter[] = [
   "LEGAL",
   "ACCOUNTING",
   "BUSINESS ANALYST",
+  "ONBOARDING",
 ];
 
 /** Marketplace catalog. */
 export const SIMULATIONS: Simulation[] = [
-  { id: 1, cat: "ACCOUNTING", title: "Month-End Close Under Pressure", meta: "30 min · Beginner · 3,015 completed", cover: monthEndClose },
+  { id: 1, slug: "month-end-close-under-pressure", cat: "ACCOUNTING", title: "Month-End Close Under Pressure", meta: "30 min · Beginner · 3,015 completed", cover: monthEndClose },
   { id: 2, cat: "BUSINESS ANALYST", title: "Requirements Gathering Workshop", meta: "35 min · Beginner · 1,780 completed", cover: requirementsGathering },
   { id: 3, cat: "LEGAL", title: "Drafting a Commercial Lease", meta: "50 min · Advanced · 860 completed", cover: commercialLease },
   { id: 4, cat: "ACCOUNTING", title: "Reconciling a Messy Ledger", meta: "40 min · Intermediate · 1,420 completed", cover: reconcileLedger },
@@ -43,6 +44,13 @@ export const SIMULATIONS: Simulation[] = [
     title: FIRST_YEAR_ASSOCIATE_MA_DUE_DILIGENCE_CONTENT.title,
     meta: `${FIRST_YEAR_ASSOCIATE_MA_DUE_DILIGENCE_CONTENT.estimatedMinutes} min · ${FIRST_YEAR_ASSOCIATE_MA_DUE_DILIGENCE_CONTENT.difficulty} · 0 completed`,
     cover: maDueDiligence,
+  },
+  {
+    id: 11,
+    slug: "kopi-run",
+    cat: "ONBOARDING",
+    title: "Kopi Run",
+    meta: "5 min · Beginner · New",
   },
 ];
 

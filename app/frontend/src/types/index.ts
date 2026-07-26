@@ -1,7 +1,11 @@
 /** Shared domain types for SimWorks. */
 
 /** A simulation category. `ALL` is the filter-only pseudo-category. */
-export type Category = "LEGAL" | "ACCOUNTING" | "BUSINESS ANALYST";
+export type Category =
+  | "LEGAL"
+  | "ACCOUNTING"
+  | "BUSINESS ANALYST"
+  | "ONBOARDING";
 
 export type CategoryFilter = "ALL" | Category;
 

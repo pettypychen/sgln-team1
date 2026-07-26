@@ -1,0 +1,31 @@
+Journal ID,Posting date,Account code,Account name,Description,Debit,Credit,Posting status,Vendor or counterparty,Source reference
+JUL-001,2026-07-02,6100,Office supplies,Printer supplies,428.00,0.00,Posted,Paper Harbour,INV-PH-771
+JUL-001,2026-07-02,2000,Accounts payable,Printer supplies,0.00,428.00,Posted,Paper Harbour,INV-PH-771
+JUL-002,2026-07-05,6200,Software expense,Workflow subscription,1200.00,0.00,Posted,Cloud Lattice,INV-CL-201
+JUL-002,2026-07-05,2000,Accounts payable,Workflow subscription,0.00,1200.00,Posted,Cloud Lattice,INV-CL-201
+JUL-003,2026-07-09,6300,Professional fees,Design services,2400.00,0.00,Posted,North Quay Studio,INV-NQ-109
+JUL-003,2026-07-09,2000,Accounts payable,Design services,0.00,2400.00,Posted,North Quay Studio,INV-NQ-109
+JUL-004,2026-07-10,6300,Professional fees,Design services duplicate,2400.00,0.00,Posted,North Quay Studio,INV-NQ-109
+JUL-004,2026-07-10,2000,Accounts payable,Design services duplicate,0.00,2400.00,Posted,North Quay Studio,INV-NQ-109
+JUL-005,2026-07-15,6400,Utilities,July electricity estimate,880.00,0.00,Posted,Marina Utilities,EST-MU-07
+JUL-005,2026-07-15,2100,Accrued expenses,July electricity estimate,0.00,880.00,Posted,Marina Utilities,EST-MU-07
+JUL-006,2026-07-18,6500,Travel expense,Client visit transport,186.40,0.00,Posted,CityCab,REC-CC-881
+JUL-006,2026-07-18,1000,Cash,Client visit transport,0.00,186.40,Posted,CityCab,REC-CC-881
+JUL-007,2026-07-22,6600,Repairs and maintenance,Aircon service,950.00,0.00,Unposted,Cool Current,INV-CC-440
+JUL-007,2026-07-22,2000,Accounts payable,Aircon service,0.00,950.00,Unposted,Cool Current,INV-CC-440
+JUL-008,2026-07-25,1200,Prepaid insurance,Annual insurance premium,12000.00,0.00,Posted,Merlion Mutual,INV-MM-800
+JUL-008,2026-07-25,1000,Cash,Annual insurance premium,0.00,12000.00,Posted,Merlion Mutual,INV-MM-800
+JUL-009,2026-07-27,6700,Marketing expense,Campaign deposit,5000.00,0.00,Posted,Orchid Media,DEP-OM-112
+JUL-009,2026-07-27,1000,Cash,Campaign deposit,0.00,5000.00,Posted,Orchid Media,DEP-OM-112
+AUG-001,2026-08-01,6800,Training expense,July workshop,1800.00,0.00,Posted,Tanjong Learning,INV-TL-330
+AUG-001,2026-08-01,2000,Accounts payable,July workshop,0.00,1800.00,Posted,Tanjong Learning,INV-TL-330
+JUL-010,2026-07-29,6900,Miscellaneous expense,Executive electronics,3200.00,0.00,Posted,Tech Parade,INV-TP-992
+JUL-010,2026-07-29,1000,Cash,Executive electronics,0.00,3200.00,Posted,Tech Parade,INV-TP-992
+JUL-011,2026-07-30,1100,Accounts receivable,July support revenue,7600.00,0.00,Posted,Red Dot Retail,SOW-RD-04
+JUL-011,2026-07-30,4000,Service revenue,July support revenue,0.00,7600.00,Posted,Red Dot Retail,SOW-RD-04
+JUL-012,2026-07-31,1000,Cash,Customer receipt,4100.00,0.00,Posted,Harbour Foods,RCPT-HF-78
+JUL-012,2026-07-31,1100,Accounts receivable,Customer receipt,0.00,4100.00,Posted,Harbour Foods,RCPT-HF-78
+JUL-013,2026-07-31,7000,Depreciation expense,Monthly depreciation,1350.00,0.00,Draft,Internal,FA-2026-07
+JUL-013,2026-07-31,1500,Accumulated depreciation,Monthly depreciation,0.00,1350.00,Draft,Internal,FA-2026-07
+JUL-014,2026-07-31,7100,Bank fees,July bank charges,75.00,0.00,Posted,Straits Bank,BANK-07
+JUL-014,2026-07-31,1000,Cash,July bank charges,0.00,75.00,Posted,Straits Bank,BANK-07

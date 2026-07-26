@@ -8,6 +8,8 @@ max_score: 100
 passing_score: 70
 distinction_score: 88
 version: 1
+caseVersion: 1.0.0
+rubricVersion: 1.0.0
 ---
 
 # Competency Evaluation

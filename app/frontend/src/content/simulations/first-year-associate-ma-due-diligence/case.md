@@ -9,6 +9,8 @@ estimated_minutes: 45
 source_document: "Sample Agreement - Merger"
 content_type: case
 version: 1
+caseVersion: 1.0.0
+rubricVersion: 1.0.0
 ---
 
 # First-Year Associate: M&A Due Diligence

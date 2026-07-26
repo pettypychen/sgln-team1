@@ -20,6 +20,12 @@
 const { onRequest } = require("firebase-functions/v2/https");
 const { defineSecret } = require("firebase-functions/params");
 const logger = require("firebase-functions/logger");
+const { evaluationApi, processEvaluationJob } = require("./evaluation");
+const {
+  deliverEvaluationNotification,
+  retryEvaluationNotifications,
+} = require("./notifications");
+const { publicCredentialPage } = require("./publicCredential");
 
 const ANTHROPIC_API_KEY = defineSecret("ANTHROPIC_API_KEY");
 const OPENAI_API_KEY = defineSecret("OPENAI_API_KEY");
@@ -205,3 +211,9 @@ exports.agentChat = onRequest(
     }
   },
 );
+
+exports.evaluationApi = evaluationApi;
+exports.processEvaluationJob = processEvaluationJob;
+exports.deliverEvaluationNotification = deliverEvaluationNotification;
+exports.retryEvaluationNotifications = retryEvaluationNotifications;
+exports.publicCredentialPage = publicCredentialPage;

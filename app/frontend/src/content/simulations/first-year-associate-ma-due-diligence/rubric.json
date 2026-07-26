@@ -1,0 +1,16 @@
+{
+  "caseId": "first-year-associate-ma-due-diligence",
+  "caseVersion": "1.0.0",
+  "rubricVersion": "1.0.0",
+  "caseThreshold": 56,
+  "interactionThreshold": 14,
+  "criteria": [
+    {"id":"legal-transaction-map","dimension":"case_outcome","label":"Transaction map","description":"Accurately maps the parties, structure, approvals, and closing sequence.","maxPoints":12},
+    {"id":"legal-issue-log","dimension":"case_outcome","label":"Diligence issue log","description":"Identifies at least twelve case-specific issues and explains their consequence.","maxPoints":24},
+    {"id":"legal-request-list","dimension":"case_outcome","label":"Targeted request list","description":"Requests evidence that resolves the identified risks.","maxPoints":18},
+    {"id":"legal-summary","dimension":"case_outcome","label":"Associate summary","description":"States readiness, gating issues, next workstream, and specialist input.","maxPoints":16},
+    {"id":"legal-source-use","dimension":"ai_interaction","label":"Evidence-grounded prompting","description":"Uses packet references and asks the AI to connect advice to source evidence.","maxPoints":10},
+    {"id":"legal-challenge","dimension":"ai_interaction","label":"Verification and challenge","description":"Checks AI claims and corrects unsupported or inaccurate suggestions.","maxPoints":10},
+    {"id":"legal-judgment","dimension":"ai_interaction","label":"Professional judgment","description":"Uses AI as support without delegating the final legal judgment.","maxPoints":10,"criticalFailure":true}
+  ]
+}
