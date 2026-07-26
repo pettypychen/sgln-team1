@@ -248,20 +248,13 @@ async function sendViaQwenDevProxy(request: AgentTurnRequest): Promise<string> {
  * OpenRouter is OpenAI-compatible and routes to any underlying model.
  */
 async function sendViaOpenRouterDevProxy(request: AgentTurnRequest): Promise<string> {
-  const model = readEnv("VITE_OPENROUTER_MODEL");
-  if (!model) {
-    throw new AgentRequestError(
-      "VITE_OPENROUTER_MODEL is not set. Add a model slug to .env (e.g. deepseek/deepseek-r1:free). Browse free models at https://openrouter.ai/models?q=:free",
-    );
-  }
-
   let response: Response;
   try {
     response = await fetch("/api/openrouter/chat/completions", {
       method: "POST",
       headers: { "content-type": "application/json" },
       body: JSON.stringify({
-        model,
+        model: readEnv("VITE_OPENROUTER_MODEL") ?? "deepseek/deepseek-r1",
         max_tokens: 700,
         messages: [
           { role: "system", content: request.system },
