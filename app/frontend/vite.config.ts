@@ -60,6 +60,23 @@ export default defineConfig(({ mode }) => {
               },
             }
           : {}),
+        ...(env.VITE_OPENROUTER_API_KEY
+          ? {
+              "/api/openrouter": {
+                target: "https://openrouter.ai",
+                changeOrigin: true,
+                rewrite: (p) => p.replace(/^\/api\/openrouter/, "/api/v1"),
+                configure: (proxy) => {
+                  proxy.on("proxyReq", (proxyReq) => {
+                    proxyReq.setHeader("Authorization", `Bearer ${env.VITE_OPENROUTER_API_KEY}`);
+                    proxyReq.setHeader("HTTP-Referer", "https://sgln-team1-f8d61.web.app");
+                    proxyReq.setHeader("X-Title", "SimWorks");
+                    proxyReq.removeHeader("origin");
+                  });
+                },
+              },
+            }
+          : {}),
       },
     },
   };

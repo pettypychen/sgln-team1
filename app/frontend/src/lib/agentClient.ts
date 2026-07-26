@@ -15,7 +15,7 @@
  * the key never gets committed or shipped in a production build.
  */
 
-export type AgentProvider = "anthropic" | "openai" | "gemini" | "zai" | "alibaba" | "deepseek";
+export type AgentProvider = "anthropic" | "openai" | "gemini" | "zai" | "alibaba" | "openrouter";
 
 export interface AgentTurnMessage {
   role: "user" | "assistant";
@@ -62,7 +62,7 @@ const PROVIDER_ENV_KEY: Record<AgentProvider, string> = {
   gemini: "VITE_GOOGLE_API_KEY",
   zai: "VITE_ZAI_API_KEY",
   alibaba: "VITE_ALIBABA_API_KEY",
-  deepseek: "VITE_DEEPSEEK_API_KEY",
+  openrouter: "VITE_OPENROUTER_API_KEY",
 };
 
 /** Canonical display order for the provider dropdown. */
@@ -72,7 +72,7 @@ export const ALL_PROVIDERS: AgentProvider[] = [
   "gemini",
   "zai",
   "alibaba",
-  "deepseek",
+  "openrouter",
 ];
 
 function readEnv(key: string): string | undefined {
@@ -243,6 +243,51 @@ async function sendViaQwenDevProxy(request: AgentTurnRequest): Promise<string> {
   return text;
 }
 
+/**
+ * Call OpenRouter via the Vite dev proxy (/api/openrouter → openrouter.ai/api/v1).
+ * OpenRouter is OpenAI-compatible and routes to any underlying model.
+ */
+async function sendViaOpenRouterDevProxy(request: AgentTurnRequest): Promise<string> {
+  let response: Response;
+  try {
+    response = await fetch("/api/openrouter/chat/completions", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({
+        model: readEnv("VITE_OPENROUTER_MODEL") ?? "deepseek/deepseek-r1",
+        max_tokens: 700,
+        messages: [
+          { role: "system", content: request.system },
+          ...request.messages,
+        ],
+      }),
+      signal: request.signal,
+    });
+  } catch (error) {
+    throw new AgentRequestError(
+      error instanceof Error ? error.message : "Network error contacting OpenRouter",
+    );
+  }
+
+  if (!response.ok) {
+    let detail = `OpenRouter request failed (${response.status})`;
+    try {
+      const body = (await response.json()) as { error?: { message?: string } };
+      if (body?.error?.message) detail = body.error.message;
+    } catch { /* non-JSON body */ }
+    throw new AgentRequestError(detail, response.status);
+  }
+
+  const data = (await response.json()) as {
+    choices?: { message?: { content?: string | null; reasoning_content?: string } }[];
+  };
+  // Some reasoning models return content: null with reasoning_content populated first.
+  const msg = data.choices?.[0]?.message;
+  const text = (msg?.content ?? msg?.reasoning_content ?? "").trim();
+  if (!text) throw new AgentRequestError("OpenRouter returned an empty response");
+  return text;
+}
+
 /** Send one conversation turn and return the reply text. */
 export async function sendAgentTurn(request: AgentTurnRequest): Promise<string> {
   const endpoint = getAgentEndpoint();
@@ -297,6 +342,10 @@ export async function sendAgentTurn(request: AgentTurnRequest): Promise<string> 
 
   if (provider === "alibaba") {
     return sendViaQwenDevProxy(request);
+  }
+
+  if (provider === "openrouter") {
+    return sendViaOpenRouterDevProxy(request);
   }
 
   // Other providers are not yet implemented for local dev direct calls.
