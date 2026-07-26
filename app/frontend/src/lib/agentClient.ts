@@ -124,7 +124,7 @@ async function sendViaAnthropicDevProxy(request: AgentTurnRequest): Promise<stri
       method: "POST",
       headers: { "content-type": "application/json" },
       body: JSON.stringify({
-        model: "claude-sonnet-5",
+        model: readEnv("VITE_ANTHROPIC_MODEL") ?? "claude-sonnet-5",
         max_tokens: 700,
         system: request.system,
         messages: request.messages,
@@ -168,7 +168,7 @@ async function sendViaZaiDevProxy(request: AgentTurnRequest): Promise<string> {
       method: "POST",
       headers: { "content-type": "application/json" },
       body: JSON.stringify({
-        model: "glm-4.5-flash",
+        model: readEnv("VITE_ZAI_MODEL") ?? "glm-4.5-flash",
         max_tokens: 700,
         messages: [
           { role: "system", content: request.system },
