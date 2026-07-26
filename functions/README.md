@@ -35,6 +35,8 @@ VITE_ANTHROPIC_API_KEY=sk-ant-your-key-here
 
 API keys are stored as Firebase secrets. `VITE_AGENT_ENDPOINT=/api/agent` is injected at build time by the GitHub Actions workflow — there is no `.env` file in production.
 
+When `VITE_AGENT_ENDPOINT` is set, the frontend calls `GET /api/agent` on mount to discover which providers have a secret configured. Only providers with a non-empty secret appear in the dropdown — no GitHub Secrets needed for provider detection.
+
 Store keys as Firebase secrets, then deploy:
 
 ```bash

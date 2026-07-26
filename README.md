@@ -108,7 +108,7 @@ If no live agent endpoint is configured, the learner workspace uses its scripted
 
 The chat panel shows a dropdown of AI providers. A provider appears only when its key is configured.
 
-| Provider | `VITE_*` key | Firebase secret |
+| Provider | Localhost `.env` key | Firebase secret |
 | --- | --- | --- |
 | Anthropic Claude | `VITE_ANTHROPIC_API_KEY` | `ANTHROPIC_API_KEY` |
 | OpenAI | `VITE_OPENAI_API_KEY` | `OPENAI_API_KEY` |
@@ -117,11 +117,8 @@ The chat panel shows a dropdown of AI providers. A provider appears only when it
 | Alibaba Qwen (DashScope) | `VITE_ALIBABA_API_KEY` | `ALIBABA_API_KEY` |
 | OpenRouter | `VITE_OPENROUTER_API_KEY` | `OPENROUTER_API_KEY` |
 
-**Localhost** — set the `VITE_*` key in `app/frontend/.env` (gitignored). The Vite dev proxy injects it server-side. Restart the dev server after editing `.env`.
+**Localhost** — set the key in `app/frontend/.env` (gitignored). The Vite dev proxy injects it server-side. Restart the dev server after editing `.env`.
 
-**Production** — two keys per provider are required:
-
-1. **GitHub Secret** (`VITE_*_API_KEY`) — set the same name from the `VITE_*` column as a GitHub Secret. The CI workflow injects it at build time so the dropdown knows which providers are configured. Any non-empty value works.
-2. **Firebase secret** (right column) — the real API key, stored as a Firebase secret. The Function proxy reads it server-side when handling actual chat requests. See [functions/README.md](./functions/README.md) for how to set Firebase secrets.
+**Production** — only Firebase secrets are needed. When `VITE_AGENT_ENDPOINT` is set, the frontend calls `GET /api/agent` on mount and the Function returns which providers have a secret configured. No GitHub Secrets for provider keys required. See [functions/README.md](./functions/README.md) for how to set Firebase secrets.
 
 If no keys are set, the dropdown shows "No AI model configured" and the workspace uses the built-in scripted agent.

@@ -84,9 +84,30 @@ export function getAgentEndpoint(): string | undefined {
   return readEnv("VITE_AGENT_ENDPOINT");
 }
 
-/** Returns providers that have a VITE_*_API_KEY set (local dev or CI-injected). */
+/** Returns providers that have a VITE_*_API_KEY set — local dev only. */
 export function getConfiguredProviders(): AgentProvider[] {
   return ALL_PROVIDERS.filter((p) => Boolean(readEnv(PROVIDER_ENV_KEY[p])));
+}
+
+/**
+ * Fetches configured providers from the Function (production) or falls back
+ * to the synchronous VITE_*_API_KEY check (local dev).
+ */
+export async function fetchConfiguredProviders(): Promise<AgentProvider[]> {
+  const endpoint = getAgentEndpoint();
+  if (!endpoint) {
+    return getConfiguredProviders();
+  }
+  try {
+    const response = await fetch(endpoint, { method: "GET" });
+    if (!response.ok) return [];
+    const data = (await response.json()) as { providers?: string[] };
+    return (data.providers ?? []).filter((p): p is AgentProvider =>
+      ALL_PROVIDERS.includes(p as AgentProvider),
+    );
+  } catch {
+    return [];
+  }
 }
 
 export function getDefaultProvider(): AgentProvider {

@@ -276,8 +276,22 @@ exports.agentChat = onRequest(
       res.status(204).send("");
       return;
     }
+
+    // GET /api/agent → return which providers have a Firebase secret configured.
+    // The frontend calls this on mount to populate the provider dropdown without
+    // needing any VITE_*_API_KEY baked into the production build.
+    if (req.method === "GET") {
+      const configured = Object.entries(KEY_FOR_PROVIDER)
+        .filter(([, secret]) => {
+          try { return Boolean(secret.value()); } catch { return false; }
+        })
+        .map(([provider]) => provider);
+      res.status(200).json({ providers: configured });
+      return;
+    }
+
     if (req.method !== "POST") {
-      res.status(405).json({ error: "Use POST." });
+      res.status(405).json({ error: "Use POST for chat, GET for provider list." });
       return;
     }
 

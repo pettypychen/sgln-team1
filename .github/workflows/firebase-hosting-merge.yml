@@ -21,12 +21,6 @@ jobs:
           echo "VITE_FIREBASE_MESSAGING_SENDER_ID=${{ secrets.VITE_FIREBASE_MESSAGING_SENDER_ID }}" >> .env
           echo "VITE_FIREBASE_APP_ID=${{ secrets.VITE_FIREBASE_APP_ID }}" >> .env
           echo "VITE_AGENT_ENDPOINT=/api/agent" >> .env
-          echo "VITE_ANTHROPIC_API_KEY=${{ secrets.VITE_ANTHROPIC_API_KEY }}" >> .env
-          echo "VITE_OPENAI_API_KEY=${{ secrets.VITE_OPENAI_API_KEY }}" >> .env
-          echo "VITE_GOOGLE_API_KEY=${{ secrets.VITE_GOOGLE_API_KEY }}" >> .env
-          echo "VITE_ZAI_API_KEY=${{ secrets.VITE_ZAI_API_KEY }}" >> .env
-          echo "VITE_ALIBABA_API_KEY=${{ secrets.VITE_ALIBABA_API_KEY }}" >> .env
-          echo "VITE_OPENROUTER_API_KEY=${{ secrets.VITE_OPENROUTER_API_KEY }}" >> .env
       - run: cd app/frontend && npm ci && npm run build
       - uses: FirebaseExtended/action-hosting-deploy@v0
         with:
