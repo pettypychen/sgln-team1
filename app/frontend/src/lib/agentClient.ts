@@ -3,14 +3,19 @@
  *
  * Priority order:
  *   1. VITE_AGENT_ENDPOINT set → call the serverless proxy (production / staging)
- *   2. VITE_ANTHROPIC_API_KEY set → call Anthropic directly (local dev shortcut)
+ *   2. VITE_*_API_KEY set → call the provider directly (local dev shortcut)
  *   3. Neither set → throw AgentNotConfiguredError → scripted fallback in the UI
+ *
+ * Provider availability:
+ *   - Production (VITE_AGENT_ENDPOINT): all providers shown; the Function holds
+ *     its own secrets and will error for any provider it hasn't been given a key for.
+ *   - Local dev: only providers with a VITE_*_API_KEY in .env appear in the dropdown.
  *
  * The direct key path is intentionally local-dev only: .env is gitignored so
  * the key never gets committed or shipped in a production build.
  */
 
-export type AgentProvider = "anthropic" | "openai" | "gemini";
+export type AgentProvider = "anthropic" | "openai" | "gemini" | "zai" | "alibaba" | "deepseek";
 
 export interface AgentTurnMessage {
   role: "user" | "assistant";
@@ -41,6 +46,35 @@ export class AgentRequestError extends Error {
   }
 }
 
+export class AgentNotImplementedError extends Error {
+  provider: AgentProvider;
+  constructor(provider: AgentProvider) {
+    super(`${provider} is not implemented yet`);
+    this.name = "AgentNotImplementedError";
+    this.provider = provider;
+  }
+}
+
+/** Maps each provider to the env var that gates its availability in local dev. */
+const PROVIDER_ENV_KEY: Record<AgentProvider, string> = {
+  anthropic: "VITE_ANTHROPIC_API_KEY",
+  openai: "VITE_OPENAI_API_KEY",
+  gemini: "VITE_GOOGLE_API_KEY",
+  zai: "VITE_ZAI_API_KEY",
+  alibaba: "VITE_ALIBABA_API_KEY",
+  deepseek: "VITE_DEEPSEEK_API_KEY",
+};
+
+/** Canonical display order for the provider dropdown. */
+export const ALL_PROVIDERS: AgentProvider[] = [
+  "anthropic",
+  "openai",
+  "gemini",
+  "zai",
+  "alibaba",
+  "deepseek",
+];
+
 function readEnv(key: string): string | undefined {
   const value = (import.meta.env as Record<string, string | undefined>)[key];
   return value && value.trim().length > 0 ? value.trim() : undefined;
@@ -51,16 +85,31 @@ export function getAgentEndpoint(): string | undefined {
   return readEnv("VITE_AGENT_ENDPOINT");
 }
 
+/**
+ * Returns providers available for selection in the UI.
+ *
+ * - Production (VITE_AGENT_ENDPOINT set): all providers, since the Function
+ *   proxy holds its own secrets server-side.
+ * - Local dev: only providers that have a VITE_*_API_KEY set in .env.
+ */
+export function getConfiguredProviders(): AgentProvider[] {
+  if (getAgentEndpoint()) {
+    return ALL_PROVIDERS;
+  }
+  return ALL_PROVIDERS.filter((p) => Boolean(readEnv(PROVIDER_ENV_KEY[p])));
+}
+
 export function getDefaultProvider(): AgentProvider {
   const configured = readEnv("VITE_AGENT_PROVIDER");
-  if (configured === "openai" || configured === "gemini" || configured === "anthropic") {
-    return configured;
+  if (configured && ALL_PROVIDERS.includes(configured as AgentProvider)) {
+    return configured as AgentProvider;
   }
-  return "anthropic";
+  const providers = getConfiguredProviders();
+  return providers.length > 0 ? providers[0] : "anthropic";
 }
 
 export function isAgentConfigured(): boolean {
-  return Boolean(getAgentEndpoint()) || Boolean(readEnv("VITE_ANTHROPIC_API_KEY"));
+  return Boolean(getAgentEndpoint()) || getConfiguredProviders().length > 0;
 }
 
 /**
@@ -68,7 +117,7 @@ export function isAgentConfigured(): boolean {
  * The proxy injects the API key server-side so it never appears in browser
  * network requests and there are no CORS issues.
  */
-async function sendViaDevProxy(request: AgentTurnRequest): Promise<string> {
+async function sendViaAnthropicDevProxy(request: AgentTurnRequest): Promise<string> {
   let response: Response;
   try {
     response = await fetch("/api/anthropic/v1/messages", {
@@ -111,45 +160,51 @@ async function sendViaDevProxy(request: AgentTurnRequest): Promise<string> {
 /** Send one conversation turn and return the reply text. */
 export async function sendAgentTurn(request: AgentTurnRequest): Promise<string> {
   const endpoint = getAgentEndpoint();
+  const provider = request.provider ?? getDefaultProvider();
 
-  // Local dev shortcut: call Anthropic directly if no proxy is configured
-  if (!endpoint) {
-    if (readEnv("VITE_ANTHROPIC_API_KEY")) {
-      return sendViaDevProxy(request);
+  // Production path: route through the serverless Function proxy.
+  if (endpoint) {
+    let response: Response;
+    try {
+      response = await fetch(endpoint, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          provider,
+          system: request.system,
+          messages: request.messages,
+        }),
+        signal: request.signal,
+      });
+    } catch (error) {
+      throw new AgentRequestError(
+        error instanceof Error ? error.message : "Network error contacting the agent",
+      );
     }
+
+    if (!response.ok) {
+      let detail = `Agent request failed (${response.status})`;
+      try {
+        const body = (await response.json()) as { error?: string };
+        if (body?.error) detail = body.error;
+      } catch { /* non-JSON error body */ }
+      throw new AgentRequestError(detail, response.status);
+    }
+
+    const data = (await response.json()) as { content?: string };
+    if (!data.content) throw new AgentRequestError("Agent returned an empty response");
+    return data.content;
+  }
+
+  // Local dev path: call the provider directly using its VITE_*_API_KEY.
+  if (!readEnv(PROVIDER_ENV_KEY[provider])) {
     throw new AgentNotConfiguredError();
   }
 
-  const provider = request.provider ?? getDefaultProvider();
-
-  let response: Response;
-  try {
-    response = await fetch(endpoint, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        provider,
-        system: request.system,
-        messages: request.messages,
-      }),
-      signal: request.signal,
-    });
-  } catch (error) {
-    throw new AgentRequestError(
-      error instanceof Error ? error.message : "Network error contacting the agent",
-    );
+  if (provider === "anthropic") {
+    return sendViaAnthropicDevProxy(request);
   }
 
-  if (!response.ok) {
-    let detail = `Agent request failed (${response.status})`;
-    try {
-      const body = (await response.json()) as { error?: string };
-      if (body?.error) detail = body.error;
-    } catch { /* non-JSON error body */ }
-    throw new AgentRequestError(detail, response.status);
-  }
-
-  const data = (await response.json()) as { content?: string };
-  if (!data.content) throw new AgentRequestError("Agent returned an empty response");
-  return data.content;
+  // Other providers are not yet implemented for local dev direct calls.
+  throw new AgentNotImplementedError(provider);
 }
