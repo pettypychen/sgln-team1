@@ -13,22 +13,39 @@ export default defineConfig(({ mode }) => {
       },
     },
     server: {
-      proxy: env.VITE_ANTHROPIC_API_KEY
-        ? {
-            "/api/anthropic": {
-              target: "https://api.anthropic.com",
-              changeOrigin: true,
-              rewrite: (p) => p.replace(/^\/api\/anthropic/, ""),
-              configure: (proxy) => {
-                proxy.on("proxyReq", (proxyReq) => {
-                  proxyReq.setHeader("x-api-key", env.VITE_ANTHROPIC_API_KEY);
-                  proxyReq.setHeader("anthropic-version", "2023-06-01");
-                  proxyReq.removeHeader("origin");
-                });
+      proxy: {
+        ...(env.VITE_ANTHROPIC_API_KEY
+          ? {
+              "/api/anthropic": {
+                target: "https://api.anthropic.com",
+                changeOrigin: true,
+                rewrite: (p) => p.replace(/^\/api\/anthropic/, ""),
+                configure: (proxy) => {
+                  proxy.on("proxyReq", (proxyReq) => {
+                    proxyReq.setHeader("x-api-key", env.VITE_ANTHROPIC_API_KEY);
+                    proxyReq.setHeader("anthropic-version", "2023-06-01");
+                    proxyReq.removeHeader("origin");
+                  });
+                },
               },
-            },
-          }
-        : undefined,
+            }
+          : {}),
+        ...(env.VITE_ZAI_API_KEY
+          ? {
+              "/api/zai": {
+                target: "https://api.z.ai",
+                changeOrigin: true,
+                rewrite: (p) => p.replace(/^\/api\/zai/, "/api/paas/v4"),
+                configure: (proxy) => {
+                  proxy.on("proxyReq", (proxyReq) => {
+                    proxyReq.setHeader("Authorization", `Bearer ${env.VITE_ZAI_API_KEY}`);
+                    proxyReq.removeHeader("origin");
+                  });
+                },
+              },
+            }
+          : {}),
+      },
     },
   };
 });
