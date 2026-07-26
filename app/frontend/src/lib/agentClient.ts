@@ -124,7 +124,7 @@ async function sendViaAnthropicDevProxy(request: AgentTurnRequest): Promise<stri
       method: "POST",
       headers: { "content-type": "application/json" },
       body: JSON.stringify({
-        model: "claude-sonnet-5",
+        model: readEnv("VITE_ANTHROPIC_MODEL") ?? "claude-sonnet-5",
         max_tokens: 700,
         system: request.system,
         messages: request.messages,
@@ -154,6 +154,49 @@ async function sendViaAnthropicDevProxy(request: AgentTurnRequest): Promise<stri
     .trim();
 
   if (!text) throw new AgentRequestError("Anthropic returned an empty response");
+  return text;
+}
+
+/**
+ * Call Z.ai via the Vite dev proxy (/api/zai → api.z.ai/api/paas/v4).
+ * Z.ai uses an OpenAI-compatible chat completions format.
+ */
+async function sendViaZaiDevProxy(request: AgentTurnRequest): Promise<string> {
+  let response: Response;
+  try {
+    response = await fetch("/api/zai/chat/completions", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({
+        model: readEnv("VITE_ZAI_MODEL") ?? "glm-4.5-flash",
+        max_tokens: 700,
+        messages: [
+          { role: "system", content: request.system },
+          ...request.messages,
+        ],
+      }),
+      signal: request.signal,
+    });
+  } catch (error) {
+    throw new AgentRequestError(
+      error instanceof Error ? error.message : "Network error contacting Z.ai",
+    );
+  }
+
+  if (!response.ok) {
+    let detail = `Z.ai request failed (${response.status})`;
+    try {
+      const body = (await response.json()) as { error?: { message?: string } };
+      if (body?.error?.message) detail = body.error.message;
+    } catch { /* non-JSON body */ }
+    throw new AgentRequestError(detail, response.status);
+  }
+
+  const data = (await response.json()) as {
+    choices?: { message?: { content?: string } }[];
+  };
+  const text = data.choices?.[0]?.message?.content?.trim() ?? "";
+  if (!text) throw new AgentRequestError("Z.ai returned an empty response");
   return text;
 }
 
@@ -203,6 +246,10 @@ export async function sendAgentTurn(request: AgentTurnRequest): Promise<string> 
 
   if (provider === "anthropic") {
     return sendViaAnthropicDevProxy(request);
+  }
+
+  if (provider === "zai") {
+    return sendViaZaiDevProxy(request);
   }
 
   // Other providers are not yet implemented for local dev direct calls.
