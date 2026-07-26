@@ -88,13 +88,21 @@ export function getAgentEndpoint(): string | undefined {
 /**
  * Returns providers available for selection in the UI.
  *
- * - Production (VITE_AGENT_ENDPOINT set): all providers, since the Function
- *   proxy holds its own secrets server-side.
+ * - Production (VITE_AGENT_ENDPOINT set): reads VITE_ENABLED_PROVIDERS
+ *   (comma-separated list injected by the CI workflow) to show only the
+ *   providers whose Firebase secrets are actually configured.
  * - Local dev: only providers that have a VITE_*_API_KEY set in .env.
  */
 export function getConfiguredProviders(): AgentProvider[] {
   if (getAgentEndpoint()) {
-    return ALL_PROVIDERS;
+    const enabled = readEnv("VITE_ENABLED_PROVIDERS");
+    if (enabled) {
+      return enabled
+        .split(",")
+        .map((s) => s.trim() as AgentProvider)
+        .filter((p) => ALL_PROVIDERS.includes(p));
+    }
+    return [];
   }
   return ALL_PROVIDERS.filter((p) => Boolean(readEnv(PROVIDER_ENV_KEY[p])));
 }
