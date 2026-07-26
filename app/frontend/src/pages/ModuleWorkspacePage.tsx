@@ -1,6 +1,5 @@
 import { useMemo, useState, type CSSProperties, type PointerEvent } from "react";
-import { Link, useNavigate, useParams } from "react-router-dom";
-import { Navbar } from "@/components/layout/Navbar";
+import { Link, useNavigate } from "react-router-dom";
 import { AgentCasePanel } from "@/components/module/AgentCasePanel";
 import { CasePdfViewer } from "@/components/module/CasePdfViewer";
 import { GradingPanel } from "@/components/module/GradingPanel";
@@ -9,15 +8,9 @@ import {
   buildConversationCoverage,
   coverageForStep,
 } from "@/components/module/conversationCoverage";
-import {
-  buildWorkProductReadiness,
-  deliverableForStep,
-} from "@/components/module/workProductReadiness";
+import { deliverableForStep } from "@/components/module/workProductReadiness";
 import { gradeConversation } from "@/components/module/conversationGrader";
-import {
-  gradeWorkProduct,
-  type GradeReport,
-} from "@/components/module/workProductGrader";
+import type { GradeReport } from "@/components/module/workProductGrader";
 import { MA_DUE_DILIGENCE_MODULE } from "@/data/moduleWorkspace";
 import { usePersistentState } from "@/hooks/usePersistentState";
 import type { ChatMessage, ModuleWorkspace, WorkProductDraft } from "@/types";
