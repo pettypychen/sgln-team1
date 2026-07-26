@@ -20,30 +20,42 @@ must never ship a key to the browser.
 { "content": "…assistant reply…" }
 ```
 
-## Local development (emulator + local keys)
+## Local development
 
-Run the AI locally against your own API keys — no Firebase project access needed.
+The simplest way to test locally is the **direct key** approach — no emulator needed:
+
+```bash
+# In app/frontend/.env (gitignored — never committed):
+VITE_ANTHROPIC_API_KEY=sk-ant-your-key-here
+```
+
+Then run `npm run dev` as normal. The frontend calls Anthropic directly from
+the browser using your local key. Priority order in the client:
+
+1. `VITE_AGENT_ENDPOINT` set → uses the serverless proxy (production)
+2. `VITE_ANTHROPIC_API_KEY` set → calls Anthropic directly (local dev)
+3. Neither set → scripted fallback (demo mode, no keys required)
+
+### Alternative: Functions emulator
+
+If you need to test the full proxy path locally (e.g. to test multi-provider
+routing or the Function code itself):
 
 ```bash
 # 1. Copy the secrets template and fill in your key(s)
 cd functions
 cp .secret.local.example .secret.local
-# Edit .secret.local and paste your Anthropic / OpenAI / Gemini key
 
 # 2. Start the Functions emulator (leave this terminal running)
 npm run serve
 
-# 3. In app/frontend/.env, uncomment and set:
+# 3. In app/frontend/.env, set:
 #    VITE_AGENT_ENDPOINT=http://127.0.0.1:5001/sgln-team1-f8d61/us-central1/agentChat
 #    VITE_AGENT_PROVIDER=anthropic
 
 # 4. Start the Vite dev server in a separate terminal
 cd ../app/frontend && npm run dev
 ```
-
-The emulator reads keys from `functions/.secret.local` (gitignored). Only set
-the keys for the providers you want — a request for a provider with no key
-returns `503`.
 
 ## Production setup (one-time)
 

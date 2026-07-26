@@ -1,13 +1,13 @@
 /**
  * Provider-agnostic client for the case agent.
  *
- * Calls a serverless proxy (Firebase Function) that holds the real API keys and
- * dispatches to Anthropic, OpenAI, or Gemini. The proxy contract is a single
- * POST with `{ provider, system, messages }` returning `{ content }`.
+ * Priority order:
+ *   1. VITE_AGENT_ENDPOINT set → call the serverless proxy (production / staging)
+ *   2. VITE_ANTHROPIC_API_KEY set → call Anthropic directly (local dev shortcut)
+ *   3. Neither set → throw AgentNotConfiguredError → scripted fallback in the UI
  *
- * When no endpoint is configured (local dev, preview, or a demo without keys)
- * the client throws `AgentNotConfiguredError` so callers can fall back to the
- * built-in scripted responses and keep the app fully usable.
+ * The direct key path is intentionally local-dev only: .env is gitignored so
+ * the key never gets committed or shipped in a production build.
  */
 
 export type AgentProvider = "anthropic" | "openai" | "gemini";
@@ -60,13 +60,66 @@ export function getDefaultProvider(): AgentProvider {
 }
 
 export function isAgentConfigured(): boolean {
-  return Boolean(getAgentEndpoint());
+  return Boolean(getAgentEndpoint()) || Boolean(readEnv("VITE_ANTHROPIC_API_KEY"));
 }
 
-/** Send one conversation turn through the proxy and return the reply text. */
+/** Call Anthropic directly from the browser using a local .env key. */
+async function sendDirect(request: AgentTurnRequest): Promise<string> {
+  const apiKey = readEnv("VITE_ANTHROPIC_API_KEY")!;
+
+  let response: Response;
+  try {
+    response = await fetch("https://api.anthropic.com/v1/messages", {
+      method: "POST",
+      headers: {
+        "content-type": "application/json",
+        "x-api-key": apiKey,
+        "anthropic-version": "2023-06-01",
+        "anthropic-dangerous-direct-browser-access": "true",
+      },
+      body: JSON.stringify({
+        model: "claude-sonnet-5",
+        max_tokens: 700,
+        system: request.system,
+        messages: request.messages,
+      }),
+      signal: request.signal,
+    });
+  } catch (error) {
+    throw new AgentRequestError(
+      error instanceof Error ? error.message : "Network error contacting Anthropic",
+    );
+  }
+
+  if (!response.ok) {
+    let detail = `Anthropic request failed (${response.status})`;
+    try {
+      const body = (await response.json()) as { error?: { message?: string } };
+      if (body?.error?.message) detail = body.error.message;
+    } catch { /* non-JSON body */ }
+    throw new AgentRequestError(detail, response.status);
+  }
+
+  const data = (await response.json()) as { content?: { type: string; text: string }[] };
+  const text = (data.content ?? [])
+    .filter((block) => block.type === "text")
+    .map((block) => block.text)
+    .join("\n")
+    .trim();
+
+  if (!text) throw new AgentRequestError("Anthropic returned an empty response");
+  return text;
+}
+
+/** Send one conversation turn and return the reply text. */
 export async function sendAgentTurn(request: AgentTurnRequest): Promise<string> {
   const endpoint = getAgentEndpoint();
+
+  // Local dev shortcut: call Anthropic directly if no proxy is configured
   if (!endpoint) {
+    if (readEnv("VITE_ANTHROPIC_API_KEY")) {
+      return sendDirect(request);
+    }
     throw new AgentNotConfiguredError();
   }
 
@@ -94,18 +147,12 @@ export async function sendAgentTurn(request: AgentTurnRequest): Promise<string> 
     let detail = `Agent request failed (${response.status})`;
     try {
       const body = (await response.json()) as { error?: string };
-      if (body?.error) {
-        detail = body.error;
-      }
-    } catch {
-      /* non-JSON error body — keep the generic message */
-    }
+      if (body?.error) detail = body.error;
+    } catch { /* non-JSON error body */ }
     throw new AgentRequestError(detail, response.status);
   }
 
   const data = (await response.json()) as { content?: string };
-  if (!data.content) {
-    throw new AgentRequestError("Agent returned an empty response");
-  }
+  if (!data.content) throw new AgentRequestError("Agent returned an empty response");
   return data.content;
 }
