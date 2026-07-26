@@ -45,6 +45,21 @@ export default defineConfig(({ mode }) => {
               },
             }
           : {}),
+        ...(env.VITE_ALIBABA_API_KEY
+          ? {
+              "/api/qwen": {
+                target: "https://dashscope-intl.aliyuncs.com",
+                changeOrigin: true,
+                rewrite: (p) => p.replace(/^\/api\/qwen/, "/compatible-mode/v1"),
+                configure: (proxy) => {
+                  proxy.on("proxyReq", (proxyReq) => {
+                    proxyReq.setHeader("Authorization", `Bearer ${env.VITE_ALIBABA_API_KEY}`);
+                    proxyReq.removeHeader("origin");
+                  });
+                },
+              },
+            }
+          : {}),
       },
     },
   };
