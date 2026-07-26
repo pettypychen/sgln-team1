@@ -9,15 +9,18 @@
     "rewrites": [
       {
         "source": "/api/agent",
-        "function": "agentChat"
+        "function": "agentChat",
+        "region": "us-central1"
       },
       {
         "source": "/api/evaluation/**",
-        "function": "evaluationApi"
+        "function": "evaluationApi",
+        "region": "us-central1"
       },
       {
         "source": "/verify/**",
-        "function": "publicCredentialPage"
+        "function": "publicCredentialPage",
+        "region": "us-central1"
       },
       {
         "source": "**",
