@@ -20,7 +20,41 @@ must never ship a key to the browser.
 { "content": "…assistant reply…" }
 ```
 
-## One-time setup
+## Local development
+
+The simplest way to test locally is the **direct key** approach — no emulator needed:
+
+```bash
+# In app/frontend/.env (gitignored — never committed):
+VITE_ANTHROPIC_API_KEY=sk-ant-your-key-here
+```
+
+Then run `npm run dev` as normal. The frontend calls Anthropic directly from
+the browser using your local key. Priority order in the client:
+
+1. `VITE_AGENT_ENDPOINT` set → uses the serverless proxy (production)
+2. `VITE_ANTHROPIC_API_KEY` set → calls Anthropic directly (local dev)
+3. Neither set → scripted fallback (demo mode, no keys required)
+
+### Alternative: Functions emulator
+
+If you need to test the full proxy path locally (e.g. to test multi-provider
+routing or the Function code itself), create `functions/.secret.local` (gitignored)
+with your keys and start the emulator:
+
+```bash
+# functions/.secret.local
+ANTHROPIC_API_KEY=sk-ant-your-key-here
+
+# Start emulator (separate terminal)
+cd functions && npm run serve
+
+# In app/frontend/.env, set:
+# VITE_AGENT_ENDPOINT=http://127.0.0.1:5001/sgln-team1-f8d61/us-central1/agentChat
+# VITE_AGENT_PROVIDER=anthropic
+```
+
+## Production setup (one-time)
 
 Requires the Firebase **Blaze** (pay-as-you-go) plan — 2nd-gen functions and
 outbound network calls need it.
@@ -46,6 +80,15 @@ cd ../app/frontend && npm run build && cd ../.. && firebase deploy --only hostin
 
 You only need to set the keys for the providers you actually use. A request for
 a provider with no configured key returns `503`.
+
+## Updating a secret
+
+To rotate or change a key, run the set command again — it overwrites the existing value:
+
+```bash
+firebase functions:secrets:set ANTHROPIC_API_KEY
+firebase deploy --only functions
+```
 
 ## Model overrides (optional)
 

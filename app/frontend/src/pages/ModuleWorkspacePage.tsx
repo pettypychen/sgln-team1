@@ -331,13 +331,11 @@ function ModuleWorkspaceContent({ module }: { module: ModuleWorkspace }) {
       </main>
 
       {isProgressOpen ? (
-        <div className="fixed inset-0 z-50 bg-black/24" role="presentation">
-          <button
-            type="button"
-            className="absolute inset-0 h-full w-full cursor-default"
-            aria-label="Close progress drawer"
-            onClick={() => setIsProgressOpen(false)}
-          />
+        <div
+          className="fixed inset-0 z-50 bg-black/24"
+          role="presentation"
+          onClick={(e) => { if (e.target === e.currentTarget) setIsProgressOpen(false); }}
+        >
           <aside className="absolute right-0 top-0 flex h-full w-full max-w-[460px] flex-col bg-[#fbfaf7] p-4 shadow-[-24px_0_60px_rgba(0,0,0,0.18)]">
             <div className="mb-3 flex items-center justify-between gap-3">
               <div>

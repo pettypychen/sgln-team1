@@ -5,8 +5,15 @@ import {
   getDefaultProvider,
   isAgentConfigured,
   sendAgentTurn,
+  type AgentProvider,
   type AgentTurnMessage,
 } from "@/lib/agentClient";
+
+const PROVIDER_LABEL: Record<AgentProvider, string> = {
+  anthropic: "Claude",
+  openai: "GPT-4o",
+  gemini: "Gemini",
+};
 import { buildSystemPrompt } from "./caseRubric";
 import type {
   ConversationCoverage,
@@ -84,6 +91,7 @@ export function AgentCasePanel({
   const canSend = draft.trim().length > 0 && !isThinking;
   const systemPrompt = useMemo(() => buildSystemPrompt(module), [module]);
   const live = isAgentConfigured();
+  const agentLabel = live ? PROVIDER_LABEL[getDefaultProvider()] : "Agent";
 
   const dimensions: CoverageDimension[] = [
     coverage.issueLog,
@@ -122,6 +130,7 @@ export function AgentCasePanel({
           finish(buildScriptedResponse(question, module.title), "sent");
           return;
         }
+        console.error("[AgentCasePanel] request failed:", error);
         finish(
           "The agent response failed. Your case progress is safe — retry when ready.",
           "failed",
@@ -265,10 +274,14 @@ export function AgentCasePanel({
                 : "mr-8 bg-cloud text-muted-deep")
             }
           >
-            <p className="m-0 whitespace-pre-wrap">{message.content}</p>
+            <p className="m-0 whitespace-pre-wrap">
+              {message.id === "agent-welcome" && live
+                ? `Connected to ${agentLabel}. Reason through the case here — I'll challenge your analysis, help you spot gaps, and structure your diligence response. What would you like to work on first?`
+                : message.content}
+            </p>
             {message.status === "loading" && (
               <p className="m-0 mt-2 font-mono text-micro text-muted">
-                Agent is responding
+                {live ? `${agentLabel} is responding…` : "Agent is responding"}
               </p>
             )}
             {message.status === "failed" && (
