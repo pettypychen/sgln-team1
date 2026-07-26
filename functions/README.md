@@ -39,22 +39,19 @@ the browser using your local key. Priority order in the client:
 ### Alternative: Functions emulator
 
 If you need to test the full proxy path locally (e.g. to test multi-provider
-routing or the Function code itself):
+routing or the Function code itself), create `functions/.secret.local` (gitignored)
+with your keys and start the emulator:
 
 ```bash
-# 1. Copy the secrets template and fill in your key(s)
-cd functions
-cp .secret.local.example .secret.local
+# functions/.secret.local
+ANTHROPIC_API_KEY=sk-ant-your-key-here
 
-# 2. Start the Functions emulator (leave this terminal running)
-npm run serve
+# Start emulator (separate terminal)
+cd functions && npm run serve
 
-# 3. In app/frontend/.env, set:
-#    VITE_AGENT_ENDPOINT=http://127.0.0.1:5001/sgln-team1-f8d61/us-central1/agentChat
-#    VITE_AGENT_PROVIDER=anthropic
-
-# 4. Start the Vite dev server in a separate terminal
-cd ../app/frontend && npm run dev
+# In app/frontend/.env, set:
+# VITE_AGENT_ENDPOINT=http://127.0.0.1:5001/sgln-team1-f8d61/us-central1/agentChat
+# VITE_AGENT_PROVIDER=anthropic
 ```
 
 ## Production setup (one-time)
