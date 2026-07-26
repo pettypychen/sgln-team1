@@ -1,0 +1,16 @@
+{
+  "caseId": "month-end-close-under-pressure",
+  "caseVersion": "1.0.0",
+  "rubricVersion": "1.0.0",
+  "caseThreshold": 52,
+  "interactionThreshold": 14,
+  "criteria": [
+    {"id":"close-exceptions","dimension":"case_outcome","label":"Exception identification","description":"Finds the deterministic duplicate, timing, unposted, accrual, unusual, and treatment exceptions.","maxPoints":24},
+    {"id":"close-calculations","dimension":"case_outcome","label":"Calculation verification","description":"Recalculates affected totals and clearly distinguishes verified from unresolved amounts.","maxPoints":18},
+    {"id":"close-priority","dimension":"case_outcome","label":"Close blocker prioritization","description":"Prioritizes items that prevent a reliable close.","maxPoints":14},
+    {"id":"close-update","dimension":"case_outcome","label":"Manager update","description":"Provides a concise readiness summary, owners, and next actions.","maxPoints":14},
+    {"id":"close-prompting","dimension":"ai_interaction","label":"Structured artifact use","description":"Directs AI across the ledger, checklist, and manager notes.","maxPoints":10},
+    {"id":"close-challenge","dimension":"ai_interaction","label":"Calculation challenge","description":"Detects and corrects an AI calculation or classification error.","maxPoints":12,"criticalFailure":true},
+    {"id":"close-boundary","dimension":"ai_interaction","label":"Control boundary","description":"Proposes investigation or corrections without claiming to post entries.","maxPoints":8}
+  ]
+}

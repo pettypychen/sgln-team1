@@ -12,12 +12,40 @@
         "function": "agentChat"
       },
       {
+        "source": "/api/evaluation/**",
+        "function": "evaluationApi"
+      },
+      {
+        "source": "/verify/**",
+        "function": "publicCredentialPage"
+      },
+      {
         "source": "**",
         "destination": "/index.html"
       }
     ]
   },
   "functions": {
-    "source": "functions"
+    "source": "functions",
+    "predeploy": "npm --prefix \"$RESOURCE_DIR\" run predeploy"
+  },
+  "firestore": {
+    "rules": "firestore.rules",
+    "indexes": "firestore.indexes.json"
+  },
+  "emulators": {
+    "functions": {
+      "port": 5101
+    },
+    "firestore": {
+      "port": 8180
+    },
+    "pubsub": {
+      "port": 8285
+    },
+    "ui": {
+      "enabled": false
+    },
+    "singleProjectMode": true
   }
 }

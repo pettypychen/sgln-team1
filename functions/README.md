@@ -101,3 +101,59 @@ with environment variables on the function: `ANTHROPIC_MODEL`, `OPENAI_MODEL`,
 If `VITE_AGENT_ENDPOINT` is unset, the workspace runs with a built-in scripted
 agent — no backend or keys required. This keeps local dev and demos fully
 playable; deploy the function and set the env var to switch to a live model.
+# Evaluation, credentials, and email
+
+`evaluationApi` provides the shared attempt, evaluator, review, and credential
+operations used by `VITE_EVALUATION_API_ENDPOINT=/api/evaluation`.
+
+Evaluator queue reads support optional `caseId`, `status`, `recommendation`,
+`submittedAfter`, and `submittedBefore` query parameters. Dates are ISO-8601
+timestamps and invalid filters return `400`.
+
+Configure these Firebase secrets:
+
+```bash
+firebase functions:secrets:set EVALUATOR_ACCESS_CODE
+firebase functions:secrets:set PRIVATE_TOKEN_SECRET
+firebase functions:secrets:set EVALUATION_API_KEY
+firebase functions:secrets:set EMAIL_DELIVERY_API_KEY
+```
+
+Configure these runtime environment values:
+
+- `EVALUATION_ENDPOINT`: provider-neutral structured evaluation endpoint.
+- `EVALUATION_PROVIDER`, `EVALUATION_MODEL`, and
+  `EVALUATION_PROMPT_VERSION`: evaluation-run lineage.
+- `EVALUATION_TIMEOUT_MS`: optional provider timeout; defaults to 90 seconds.
+- `EMAIL_DELIVERY_ENDPOINT`: provider-neutral email endpoint accepting
+  `{ to, subject, text, html, idempotencyKey }`.
+- `EMAIL_DELIVERY_TIMEOUT_MS`: optional email-provider timeout; defaults to
+  30 seconds.
+- `PUBLIC_APP_URL`: origin used for private credential links.
+
+Attempt submission atomically creates an evaluation job. The
+`processEvaluationJob` Firestore trigger runs AI evaluation outside the submit
+request, validates the complete structured response, and moves provider errors
+or invalid output into the manual-reviewable failure state.
+
+The email worker passes the notification ID both as an idempotency header and
+payload field. Provider failures leave a retryable delivery record without
+rolling back the final learner outcome. `retryEvaluationNotifications` scans
+queued and failed deliveries every five minutes using leases and exponential
+backoff. An authenticated evaluator can also requeue a delivery with
+`POST /api/evaluation/notifications/:notificationId/retry`.
+
+## Integration test
+
+Run the Firestore and Functions integration suite with Node 22 and Java 21:
+
+```bash
+npm run test:emulator
+```
+
+The suite uses the demo-only project `demo-sgln-evaluation`, dedicated local
+ports, and in-process fake evaluation and email providers. It cannot access
+production Firebase services or send real email. It also exercises Firestore
+rules through the untrusted REST surface: released simulations are readable,
+while unreleased simulations, operational reads, and all direct client writes
+remain denied.

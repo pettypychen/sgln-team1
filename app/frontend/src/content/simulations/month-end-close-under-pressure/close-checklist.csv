@@ -1,0 +1,9 @@
+Task,Owner,Due date,Completion status,Dependency,Evidence reference
+Post approved supplier invoices,AP associate,2026-07-31,In progress,Invoice approvals,AP-QUEUE-07
+Book utilities accrual,GL associate,2026-07-31,Complete,Manager estimate,EST-MU-07
+Book cleaning accrual,GL associate,2026-07-31,Not started,Manager confirmation,NOTE-01
+Review duplicate invoices,AP lead,2026-07-31,Not started,Duplicate report,DUP-07
+Post monthly depreciation,GL associate,2026-07-31,In progress,Fixed asset rollforward,FA-2026-07
+Review prepaid expenses,Controller,2026-08-01,Not started,Insurance schedule,PREPAID-07
+Investigate unusual spend,Finance manager,2026-07-31,Not started,Receipt and approval,INV-TP-992
+Lock July posting period,Controller,2026-08-01,Blocked,All close tasks complete,CLOSE-07

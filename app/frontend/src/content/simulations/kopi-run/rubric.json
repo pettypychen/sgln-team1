@@ -1,0 +1,16 @@
+{
+  "caseId": "kopi-run",
+  "caseVersion": "1.0.0",
+  "rubricVersion": "1.0.0",
+  "caseThreshold": 48,
+  "interactionThreshold": 18,
+  "criteria": [
+    {"id":"kopi-orders","dimension":"case_outcome","label":"Order translation","description":"Maps all six preferences to valid menu item codes using the supplied glossary.","maxPoints":24},
+    {"id":"kopi-clarify","dimension":"case_outcome","label":"Ambiguity resolution","description":"Asks for clarification instead of guessing the ambiguous preference.","maxPoints":12,"criticalFailure":true},
+    {"id":"kopi-substitute","dimension":"case_outcome","label":"Unavailable-item substitution","description":"Proposes and confirms an acceptable available alternative.","maxPoints":12},
+    {"id":"kopi-total","dimension":"case_outcome","label":"Price and total verification","description":"Verifies each price and calculates the final total.","maxPoints":12},
+    {"id":"kopi-constraints","dimension":"ai_interaction","label":"Constraint prompting","description":"Provides the menu, dietary, budget, and availability constraints to the AI.","maxPoints":10},
+    {"id":"kopi-correction","dimension":"ai_interaction","label":"AI error correction","description":"Catches and corrects at least one planted or prompted AI error.","maxPoints":12,"criticalFailure":true},
+    {"id":"kopi-final","dimension":"ai_interaction","label":"Clear final instruction","description":"Produces a complete final table without unresolved assumptions.","maxPoints":8}
+  ]
+}

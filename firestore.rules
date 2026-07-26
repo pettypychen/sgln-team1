@@ -1,0 +1,17 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Released simulation content is public learner material. Evaluation,
+    // participant, notification, credential, grant, session, and rate-limit
+    // data is reachable only through trusted Firebase Functions.
+    match /simulations/{simulationId} {
+      allow read: if resource.data.released == true;
+      allow write: if false;
+    }
+
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

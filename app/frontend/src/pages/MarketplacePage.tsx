@@ -48,6 +48,7 @@ export function MarketplacePage({
       <Hero
         continueSim={showContinue ? CONTINUE_SIMULATION : undefined}
         scenarioCount={SIMULATIONS.length}
+        pathwayCount={CATEGORY_FILTERS.filter((category) => category !== "ALL").length}
         accent={accent}
         onOpenContinue={() =>
           navigate("/simulations/first-year-associate-ma-due-diligence")

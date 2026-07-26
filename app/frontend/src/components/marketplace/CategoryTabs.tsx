@@ -13,13 +13,13 @@ const CATEGORY_DETAIL: Record<
   ALL: {
     label: "All",
     note: "Full marketplace",
-    count: "09",
+    count: "11",
     color: "#000000",
   },
   LEGAL: {
     label: "Legal",
     note: "Redlines & intake",
-    count: "03",
+    count: "04",
     color: "#256f67",
   },
   ACCOUNTING: {
@@ -34,6 +34,12 @@ const CATEGORY_DETAIL: Record<
     count: "03",
     color: "#4f6f9d",
   },
+  ONBOARDING: {
+    label: "Onboarding",
+    note: "Learn the SimWorks loop",
+    count: "01",
+    color: "#8d4127",
+  },
 };
 
 /** Role/path selector for the simulation marketplace. */
@@ -47,7 +53,7 @@ export function CategoryTabs({ categories, active, onChange }: CategoryTabsProps
             Choose a practice track.
           </h2>
         </div>
-        <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+        <div className="grid grid-cols-2 gap-2 sm:grid-cols-5">
           {categories.map((cat) => {
             const isActive = cat === active;
             const detail = CATEGORY_DETAIL[cat];

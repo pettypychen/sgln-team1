@@ -1,3 +1,5 @@
 export {
   FIRST_YEAR_ASSOCIATE_MA_DUE_DILIGENCE_CONTENT,
 } from "./first-year-associate-ma-due-diligence";
+export { MONTH_END_CLOSE_CONTENT } from "./month-end-close-under-pressure";
+export { KOPI_RUN_CONTENT } from "./kopi-run";

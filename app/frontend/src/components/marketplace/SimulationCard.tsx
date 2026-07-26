@@ -1,6 +1,7 @@
 import { CoverArt } from "@/components/ui/CoverArt";
 import { coverLabel } from "@/data/simulations";
 import type { Category, Simulation } from "@/types";
+import { Link } from "react-router-dom";
 
 interface SimulationCardProps {
   sim: Simulation;
@@ -10,12 +11,14 @@ const CATEGORY_ACCENT: Record<Category, string> = {
   LEGAL: "#8b3a34",
   ACCOUNTING: "#256f67",
   "BUSINESS ANALYST": "#4f6f9d",
+  ONBOARDING: "#8d4127",
 };
 
 const CATEGORY_EVIDENCE: Record<Category, string> = {
   LEGAL: "Issue log / redline judgment",
   ACCOUNTING: "Reconciliation workbook",
   "BUSINESS ANALYST": "Stakeholder decision brief",
+  ONBOARDING: "Constraint and verification check",
 };
 
 function splitMeta(meta: string) {
@@ -28,8 +31,8 @@ export function SimulationCard({ sim }: SimulationCardProps) {
   const accent = CATEGORY_ACCENT[sim.cat];
   const { duration, difficulty, completed } = splitMeta(sim.meta);
 
-  return (
-    <article className="case-enter group grid min-h-[470px] cursor-pointer grid-rows-[auto_1fr] overflow-hidden rounded-card bg-white soft-edge transition-[box-shadow,transform] duration-300 hover:-translate-y-1 hover:shadow-[rgba(0,0,0,0.075)_0_0_0_0.5px_inset,rgba(0,0,0,0.08)_0_0_0_1px,rgba(0,0,0,0.06)_0_12px_30px]">
+  const card = (
+    <article className={`case-enter group grid min-h-[470px] grid-rows-[auto_1fr] overflow-hidden rounded-card bg-white soft-edge transition-[box-shadow,transform] duration-300 ${sim.slug ? "cursor-pointer hover:-translate-y-1 hover:shadow-[rgba(0,0,0,0.075)_0_0_0_0.5px_inset,rgba(0,0,0,0.08)_0_0_0_1px,rgba(0,0,0,0.06)_0_12px_30px]" : ""}`}>
       <CoverArt
         label={coverLabel(sim.cat)}
         src={sim.cover}
@@ -94,12 +97,17 @@ export function SimulationCard({ sim }: SimulationCardProps) {
                 />
               ))}
             </div>
-            <span className="rounded-button bg-black px-4 py-2 text-label font-medium text-white transition-colors group-hover:bg-graphite">
-              Start case
+            <span className={`rounded-button px-4 py-2 text-label font-medium ${sim.slug ? "bg-black text-white transition-colors group-hover:bg-graphite" : "bg-cloud text-muted"}`}>
+              {sim.slug ? "Start case" : "Preview only"}
             </span>
           </div>
         </div>
       </div>
     </article>
   );
+  return sim.slug ? (
+    <Link className="text-inherit no-underline" to={`/simulations/${sim.slug}`}>
+      {card}
+    </Link>
+  ) : card;
 }
