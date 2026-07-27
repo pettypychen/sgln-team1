@@ -79,12 +79,13 @@ export const TRUST_PARTNERS: TrustPartner[] = [
   { name: "Orchard Partners", logo: "orchard" }, // Vanda orchid / Orchard Rd
 ];
 
-/** Filters the catalog by category (`ALL` returns everything). */
+/** Filters the catalog by category (`ALL` returns everything). Active cases (slug present) sort before previews. */
 export function filterSimulations(
   sims: Simulation[],
   filter: CategoryFilter,
 ): Simulation[] {
-  return filter === "ALL" ? sims : sims.filter((s) => s.cat === filter);
+  const filtered = filter === "ALL" ? sims : sims.filter((s) => s.cat === filter);
+  return [...filtered].sort((a, b) => (b.slug ? 1 : 0) - (a.slug ? 1 : 0));
 }
 
 /** Cover-art label shown on placeholder art, e.g. "LEGAL · Cover". */
