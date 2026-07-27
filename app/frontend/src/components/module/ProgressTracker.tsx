@@ -1,12 +1,12 @@
 import { useState } from "react";
 import type { ModuleStep } from "@/types";
-import type { ConversationCoverage } from "./conversationCoverage";
+import type { WorkProductReadiness } from "./workProductReadiness";
 
 interface ProgressTrackerProps {
   steps: ModuleStep[];
   completedStepIds: string[];
   currentStepId: string;
-  readiness: ConversationCoverage;
+  readiness: WorkProductReadiness;
   validationMessage: string;
   onCompleteCurrent: () => void;
   onOpenEvaluation: () => void;
@@ -24,24 +24,24 @@ function stepState(
   return stepId === currentStepId ? "Current" : "Incomplete";
 }
 
-function outputForStep(stepId: string, readiness: ConversationCoverage) {
+function outputForStep(stepId: string, readiness: WorkProductReadiness) {
   if (stepId === "identify-issues") {
     return {
-      label: "Cover the gating issues with the agent",
+      label: "Draft the issue log",
       ready: readiness.issueLog.ready,
     };
   }
 
   if (stepId === "draft-requests") {
     return {
-      label: "Build the request list in conversation",
+      label: "Draft the request list",
       ready: readiness.requestList.ready,
     };
   }
 
   if (stepId === "final-check") {
     return {
-      label: "Give your readiness call",
+      label: "Write the readiness summary",
       ready: readiness.associateSummary.ready,
     };
   }
@@ -65,6 +65,22 @@ export function ProgressTracker({
   const [isExpanded, setIsExpanded] = useState(true);
   const completeCount = completedStepIds.length;
   const allComplete = completeCount === steps.length;
+  const primaryActionLabel = allComplete
+    ? readiness.allReady
+      ? "Review and submit"
+      : "Complete submission"
+    : "Complete current step";
+
+  function handlePrimaryAction() {
+    if (allComplete && !readiness.allReady) {
+      return;
+    }
+    if (allComplete) {
+      onOpenEvaluation();
+      return;
+    }
+    onCompleteCurrent();
+  }
 
   return (
     <section className="rounded-panel bg-white p-4 soft-edge">
@@ -176,9 +192,10 @@ export function ProgressTracker({
           <button
             type="button"
             className="mt-4 inline-flex min-h-11 w-full items-center justify-center rounded-button bg-black px-4 py-3 text-label font-medium text-white shadow-[rgba(0,0,0,0.4)_0_0_1px,rgba(0,0,0,0.04)_0_4px_4px] transition-[background,transform] hover:-translate-y-0.5 hover:bg-graphite disabled:cursor-not-allowed disabled:bg-slate-mid disabled:hover:translate-y-0"
-            onClick={allComplete ? onOpenEvaluation : onCompleteCurrent}
+            onClick={handlePrimaryAction}
+            disabled={allComplete && !readiness.allReady}
           >
-            {allComplete ? "Go to evaluation" : "Complete current step"}
+            {primaryActionLabel}
           </button>
           {validationMessage ? (
             <p className="m-0 mt-3 rounded-panel border border-oxblood/30 bg-manila px-3 py-2 text-small text-oxblood">

@@ -2,14 +2,8 @@ import { useMemo, useState, type FormEvent } from "react";
 import { Link, useParams } from "react-router-dom";
 import { evaluationRepository } from "@/evaluation/repository";
 import { getCaseDefinition } from "@/evaluation/rubrics";
-import type { ChatMessage } from "@/types";
-import type { TranscriptMessage } from "@/evaluation/types";
-
-interface StoredProgress {
-  chatMessages?: ChatMessage[];
-  messages?: TranscriptMessage[];
-  workProduct?: string | Record<string, string>;
-}
+import { snapshotFromProgress } from "@/evaluation/submissionSnapshot";
+import { CaseSubmissionPanel } from "@/components/simulation/CaseSubmissionPanel";
 
 function getParticipantId() {
   const key = "simworks:participant-id";
@@ -20,31 +14,14 @@ function getParticipantId() {
   return value;
 }
 
-function snapshotFromProgress(caseId: string) {
-  const raw = window.localStorage.getItem(`simworks:${caseId}`);
-  const progress = raw ? (JSON.parse(raw) as StoredProgress) : {};
-  const transcript = progress.messages ?? (progress.chatMessages ?? []).map((message, index) => ({
-    id: message.id,
-    role: message.role === "user" ? "learner" : "agent",
-    content: message.content,
-    status: message.status === "failed" ? "failed" : "sent",
-    createdAt: new Date(Date.now() - ((progress.chatMessages?.length ?? 0) - index) * 1000).toISOString(),
-  }));
-  const workProduct =
-    typeof progress.workProduct === "string"
-      ? progress.workProduct
-      : Object.entries(progress.workProduct ?? {})
-          .map(([label, content]) => `## ${label}\n\n${content}`)
-          .join("\n\n");
-  return { transcript, workProduct };
-}
-
 export function ReadyForEvaluationPage() {
   const { caseId: routeCaseId } = useParams();
   const caseId = routeCaseId ?? "first-year-associate-ma-due-diligence";
   const definition = getCaseDefinition(caseId);
+  const initialSnapshot = useMemo(() => snapshotFromProgress(caseId), [caseId]);
   const [displayName, setDisplayName] = useState("");
   const [email, setEmail] = useState("");
+  const [workProduct, setWorkProduct] = useState(initialSnapshot.workProduct);
   const [confirmed, setConfirmed] = useState(false);
   const [error, setError] = useState("");
   const [submitting, setSubmitting] = useState(false);
@@ -71,6 +48,10 @@ export function ReadyForEvaluationPage() {
       setError("Confirm the immutable submission terms before submitting.");
       return;
     }
+    if (!workProduct.trim()) {
+      setError("Add your answer before submitting the immutable attempt.");
+      return;
+    }
     setSubmitting(true);
     try {
       const snapshot = snapshotFromProgress(caseId);
@@ -80,7 +61,7 @@ export function ReadyForEvaluationPage() {
         participantId: getParticipantId(),
         caseId,
         transcript: snapshot.transcript,
-        workProduct: snapshot.workProduct,
+        workProduct,
         idempotencyKey,
         predecessorAttemptId:
           window.sessionStorage.getItem(`simworks:predecessor:${caseId}`) ||
@@ -151,6 +132,16 @@ export function ReadyForEvaluationPage() {
             <p className="m-0 font-semibold text-ink">Versioned evaluation</p>
             <p className="mb-0">Case {definition.version} · Rubric {definition.rubric.rubricVersion} · Human final authority</p>
           </div>
+          <CaseSubmissionPanel
+            title={caseId === "kopi-run" ? "Your answers" : "Your submission"}
+            eyebrow="Review before submitting"
+            description="This is the work product evaluators will see."
+            value={workProduct}
+            onChange={setWorkProduct}
+            textareaId="submission-work-product"
+            placeholder={caseId === "kopi-run" ? "Aiman | K03 | Kopi O Kosong | SGD 1.40\nBeatrice | ...\nCheryl | ...\nTotal | SGD ..." : "Paste or review the final work product you want evaluated."}
+            editorClassName="min-h-64"
+          />
           <label className="flex items-start gap-3 text-small text-muted-deep">
             <input className="mt-1 h-4 w-4" type="checkbox" checked={confirmed} onChange={(event) => setConfirmed(event.target.checked)} />
             <span>I understand this conversation becomes immutable and a human must finalize the result.</span>

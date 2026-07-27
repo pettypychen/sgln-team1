@@ -141,7 +141,7 @@ Status: New case to author
 
 ### Learning objective
 
-Teach the SimWorks interaction loop without testing prior professional knowledge. The learner translates six colleagues' preferences into valid kopi orders, resolves ambiguity, handles an unavailable combination, verifies the total, and submits a clear final order.
+Teach the SimWorks interaction loop without testing prior professional knowledge. The learner translates three colleagues' preferences into valid kopi orders, asks the AI to check one source-grounded match, verifies the total, and submits a clear final order.
 
 The simulation's supplied glossary is the source of truth. Learners do not need prior kopi terminology.
 
@@ -164,17 +164,12 @@ Use a fictional stall and prices.
 
 #### `colleague-orders.csv`
 
-Include six colleagues with:
+Include three colleagues with:
 
 - Display name.
 - Plain-language preference.
 - Dietary or ingredient constraint where relevant.
 - Budget note where relevant.
-
-Include:
-
-- One intentionally ambiguous preference that requires clarification.
-- One requested combination unavailable on the menu.
 
 #### `kopi-glossary.md`
 
@@ -184,12 +179,10 @@ Define every term and modifier used by the case. The evaluator must score agains
 
 The learner must:
 
-1. Give the AI the supplied constraints.
-2. Ask for clarification rather than guess the ambiguous preference.
-3. Find an acceptable alternative for the unavailable combination.
-4. Verify every item price and the total.
-5. Correct at least one planted or prompted AI error.
-6. Submit a final table with colleague, item code, translated order, price, and total.
+1. Match each colleague to a menu item using the supplied glossary.
+2. Ask the AI to check at least one match against a supplied source.
+3. Verify every item price and the total.
+4. Submit a final table with colleague, item code, translated order, price, and total.
 
 ### Badge direction
 
@@ -253,4 +246,3 @@ Before a case is released:
 - Multi-case credentials or learning pathways.
 - Localized case variants.
 - Reusing submissions for model development.
-

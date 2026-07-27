@@ -87,16 +87,23 @@ const orders = readFileSync(
   resolve(root, "kopi-run/colleague-orders.csv"),
   "utf8",
 );
-assert.equal(orders.trim().split("\n").length - 1, 6);
+assert.equal(orders.trim().split("\n").length - 1, 3);
 const menu = readFileSync(resolve(root, "kopi-run/kopi-menu.csv"), "utf8");
-assert.match(menu, /K07,Kopi O Peng Kosong.*Unavailable/);
+for (const expectedItem of ["K03,Kopi O Kosong", "K05,Kopi C Siew Dai", "K06,Kopi Peng"]) {
+  assert.ok(menu.includes(expectedItem), `menu missing ${expectedItem}`);
+}
 const glossary = readFileSync(
   resolve(root, "kopi-run/kopi-glossary.md"),
   "utf8",
 );
-for (const term of ["Kosong", "Siew dai", "Peng", "Dev", "Elena"]) {
+for (const term of ["Kosong", "Siew dai", "Peng"]) {
   assert.ok(glossary.includes(term), `glossary missing ${term}`);
 }
+const kopiEvaluation = readFileSync(
+  resolve(root, "kopi-run/evaluation.md"),
+  "utf8",
+);
+assert.match(kopiEvaluation, /SGD 5\.10/);
 
 const businessAnalyst = CASE_DEFINITIONS.find(
   (item) => item.id === "requirements-gathering-workshop",
