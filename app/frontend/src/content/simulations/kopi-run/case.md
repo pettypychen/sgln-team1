@@ -7,13 +7,18 @@ category: Onboarding
 
 # Kopi Run
 
-You have five minutes to prepare a group order for six colleagues at fictional Crimson Cup Kopitiam. The supplied glossary is the only source of truth.
+Prepare a kopi order for three colleagues at fictional Crimson Cup Kopitiam. You do not need to know kopi terms beforehand.
 
-Ask for clarification when a preference is ambiguous. For an unavailable menu combination, propose an available alternative and obtain confirmation. Verify each menu price and the total. The AI will make at least one mistake; correct it before submitting.
+## What to do
+
+1. Read the three colleague orders.
+2. Use the glossary and menu to match each order to an item code.
+3. Ask the AI to check at least one match.
+4. Add the three prices and submit the total.
 
 ## Final format
 
 | Colleague | Item code | Translated order | Price |
 | --- | --- | --- | --- |
 
-End with a verified total in SGD and list any confirmed clarification or substitution.
+End with the total in SGD.

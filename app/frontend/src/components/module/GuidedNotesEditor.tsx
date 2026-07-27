@@ -12,7 +12,7 @@ const PLACEHOLDER = `Analyze the PDF on the left. Document your findings here.
 
 Keep the three headers below. Under the issue log, add one table row per material issue (Section, Issue, Why It Matters, Risk, Next Step). Under the request list, add "- " bullets grouped by heading. Then write a summary under 350 words.
 
-When done, click "Submit for AI grading" below.`;
+When done, click "Review and submit" below.`;
 
 /**
  * Distraction-free Markdown editor covering all three deliverables as one

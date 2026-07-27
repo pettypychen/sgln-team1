@@ -5,8 +5,3 @@ K03,Kopi O Kosong,Coffee,No milk,No sugar,Hot,Available,1.40
 K04,Kopi C,Coffee,Evaporated milk,Standard sugar,Hot,Available,1.70
 K05,Kopi C Siew Dai,Coffee,Evaporated milk,Less sugar,Hot,Available,1.70
 K06,Kopi Peng,Coffee,Condensed milk,Standard sugar,Iced,Available,2.00
-K07,Kopi O Peng Kosong,Coffee,No milk,No sugar,Iced,Unavailable,1.80
-K08,Teh,Tea,Condensed milk,Standard sugar,Hot,Available,1.60
-K09,Teh O Siew Dai,Tea,No milk,Less sugar,Hot,Available,1.50
-K10,Teh C Peng,Tea,Evaporated milk,Standard sugar,Iced,Available,2.10
-K11,Barley,Barley water,No milk,Standard sugar,Iced,Available,1.50

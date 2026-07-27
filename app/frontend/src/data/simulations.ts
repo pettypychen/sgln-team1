@@ -15,6 +15,7 @@ import clientIntake from "@/assets/covers/cover-legal-client-intake.svg";
 import commercialLease from "@/assets/covers/cover-legal-commercial-lease.svg";
 import maDueDiligence from "@/assets/covers/cover-legal-ma-due-diligence.svg";
 import ndaRedline from "@/assets/covers/cover-legal-nda-redline.svg";
+import kopiRun from "@/assets/covers/cover-onboarding-kopi-run.svg";
 import { FIRST_YEAR_ASSOCIATE_MA_DUE_DILIGENCE_CONTENT } from "@/content/simulations";
 
 /** Filter tabs, in reference order. */
@@ -51,6 +52,7 @@ export const SIMULATIONS: Simulation[] = [
     cat: "ONBOARDING",
     title: "Kopi Run",
     meta: "5 min · Beginner · New",
+    cover: kopiRun,
   },
 ];
 

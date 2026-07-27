@@ -2,15 +2,11 @@ import { useMemo, useState, type CSSProperties, type PointerEvent } from "react"
 import { Link, useNavigate } from "react-router-dom";
 import { AgentCasePanel } from "@/components/module/AgentCasePanel";
 import { CasePdfViewer } from "@/components/module/CasePdfViewer";
-import { GradingPanel } from "@/components/module/GradingPanel";
 import { ProgressTracker } from "@/components/module/ProgressTracker";
 import {
-  buildConversationCoverage,
-  coverageForStep,
-} from "@/components/module/conversationCoverage";
-import { deliverableForStep } from "@/components/module/workProductReadiness";
-import { gradeConversation } from "@/components/module/conversationGrader";
-import type { GradeReport } from "@/components/module/workProductGrader";
+  buildWorkProductReadiness,
+  deliverableForStep,
+} from "@/components/module/workProductReadiness";
 import { MA_DUE_DILIGENCE_MODULE } from "@/data/moduleWorkspace";
 import { usePersistentState } from "@/hooks/usePersistentState";
 import type { ChatMessage, ModuleWorkspace, WorkProductDraft } from "@/types";
@@ -87,15 +83,11 @@ function ModuleWorkspaceContent({ module }: { module: ModuleWorkspace }) {
     getInitialSplitPercent(module),
   );
   const [isProgressOpen, setIsProgressOpen] = useState(false);
-  const [isGradingOpen, setIsGradingOpen] = useState(false);
-  const [gradingStatus, setGradingStatus] = useState<"loading" | "ready">(
-    "loading",
-  );
-  const [gradeReport, setGradeReport] = useState<GradeReport | null>(null);
   const [progress, setProgress] = usePersistentState<ModuleProgressState>(
     module.storageKey,
     INITIAL_PROGRESS,
   );
+  const workProduct = progress.workProduct ?? INITIAL_WORK_PRODUCT;
 
   const currentStepId = useMemo(
     () =>
@@ -103,16 +95,23 @@ function ModuleWorkspaceContent({ module }: { module: ModuleWorkspace }) {
         ?.id ?? module.steps[module.steps.length - 1].id,
     [module.steps, progress.completedStepIds],
   );
-  const coverage = useMemo(
-    () => buildConversationCoverage(progress.chatMessages),
-    [progress.chatMessages],
+  const readiness = useMemo(
+    () => buildWorkProductReadiness(workProduct),
+    [workProduct],
   );
   const currentStepDeliverable = deliverableForStep(currentStepId);
-  const currentStepCoverage = coverageForStep(coverage, currentStepDeliverable);
+  const currentStepReadiness = currentStepDeliverable
+    ? readiness[currentStepDeliverable]
+    : undefined;
   const currentStepValidationMessage =
-    currentStepCoverage && !currentStepCoverage.ready ? advanceMessage : "";
+    currentStepReadiness && !currentStepReadiness.ready ? advanceMessage : "";
   const completeCount = progress.completedStepIds.length;
   const allStepsComplete = completeCount === module.steps.length;
+  const primaryActionLabel = allStepsComplete
+    ? readiness.allReady
+      ? "Review and submit"
+      : "Complete submission"
+    : "Complete step";
   const workspaceMode = modeForSplit(splitPercent);
 
   function updateSplitPercent(nextPercent: number) {
@@ -158,9 +157,11 @@ function ModuleWorkspaceContent({ module }: { module: ModuleWorkspace }) {
     }
 
     const requiredDeliverable = deliverableForStep(nextStep.id);
-    const requiredCoverage = coverageForStep(coverage, requiredDeliverable);
-    if (requiredCoverage && !requiredCoverage.ready) {
-      setAdvanceMessage(requiredCoverage.message);
+    const requiredReadiness = requiredDeliverable
+      ? readiness[requiredDeliverable]
+      : undefined;
+    if (requiredReadiness && !requiredReadiness.ready) {
+      setAdvanceMessage(requiredReadiness.message);
       return;
     }
 
@@ -176,18 +177,18 @@ function ModuleWorkspaceContent({ module }: { module: ModuleWorkspace }) {
     }
   }
 
-  function runGrading() {
-    setGradingStatus("loading");
-    setGradeReport(null);
-    window.setTimeout(() => {
-      setGradeReport(gradeConversation(progress.chatMessages));
-      setGradingStatus("ready");
-    }, 1100);
-  }
+  function handlePrimaryAction() {
+    if (!allStepsComplete) {
+      completeCurrentStep();
+      return;
+    }
 
-  function openGrading() {
-    setIsGradingOpen(true);
-    runGrading();
+    if (!readiness.allReady) {
+      setAdvanceMessage("Complete all submission sections before review.");
+      return;
+    }
+
+    navigate(module.readyPath);
   }
 
   return (
@@ -216,13 +217,12 @@ function ModuleWorkspaceContent({ module }: { module: ModuleWorkspace }) {
             aria-live="polite"
           >
             <span className="rounded-button bg-white px-3 py-1.5 soft-edge">
-              {coverage.readyCount}/3 ready
+              {readiness.readyCount}/3 ready
             </span>
             <span className="hidden rounded-button bg-white px-3 py-1.5 font-mono text-micro soft-edge md:inline-flex">
-              Issues {coverage.issueLog.count}/{coverage.issueLog.target} ·
-              Requests {coverage.requestList.count}/{coverage.requestList.target}{" "}
-              · Summary {coverage.associateSummary.count}/
-              {coverage.associateSummary.target}
+              Issues {readiness.issueLog.count}/12 · Requests{" "}
+              {readiness.requestList.count}/10 · Summary{" "}
+              {readiness.associateSummary.count}w
             </span>
             <button
               type="button"
@@ -234,13 +234,9 @@ function ModuleWorkspaceContent({ module }: { module: ModuleWorkspace }) {
             <button
               type="button"
               className="rounded-button bg-black px-4 py-2 text-small font-medium text-white transition-colors hover:bg-graphite"
-              onClick={
-                allStepsComplete
-                  ? () => navigate(module.readyPath)
-                  : completeCurrentStep
-              }
+              onClick={handlePrimaryAction}
             >
-              {allStepsComplete ? "Evaluate" : "Complete step"}
+              {primaryActionLabel}
             </button>
           </div>
         </div>
@@ -314,11 +310,15 @@ function ModuleWorkspaceContent({ module }: { module: ModuleWorkspace }) {
           <AgentCasePanel
             module={module}
             messages={progress.chatMessages}
-            coverage={coverage}
+            workProduct={workProduct}
+            readiness={readiness}
             onMessagesChange={(chatMessages) =>
               setProgress((current) => ({ ...current, chatMessages }))
             }
-            onSubmitForEvaluation={openGrading}
+            onWorkProductChange={(workProduct) =>
+              setProgress((current) => ({ ...current, workProduct }))
+            }
+            onSubmitForEvaluation={() => navigate(module.readyPath)}
           />
         </section>
       </main>
@@ -353,7 +353,7 @@ function ModuleWorkspaceContent({ module }: { module: ModuleWorkspace }) {
                 steps={module.steps}
                 completedStepIds={progress.completedStepIds}
                 currentStepId={currentStepId}
-                readiness={coverage}
+                readiness={readiness}
                 validationMessage={currentStepValidationMessage}
                 onCompleteCurrent={completeCurrentStep}
                 onOpenEvaluation={() => navigate(module.readyPath)}
@@ -361,16 +361,6 @@ function ModuleWorkspaceContent({ module }: { module: ModuleWorkspace }) {
             </div>
           </aside>
         </div>
-      ) : null}
-
-      {isGradingOpen ? (
-        <GradingPanel
-          status={gradingStatus}
-          report={gradeReport}
-          onClose={() => setIsGradingOpen(false)}
-          onRerun={runGrading}
-          onOpenEvaluation={() => navigate(module.readyPath)}
-        />
       ) : null}
     </div>
   );

@@ -289,7 +289,7 @@ export function WorkProductPanel({
             className="rounded-button bg-black px-4 py-2 text-small font-medium text-white transition-colors hover:bg-graphite"
             onClick={onSubmitForGrading}
           >
-            Submit for AI grading
+            Review and submit
           </button>
         </div>
       </div>
