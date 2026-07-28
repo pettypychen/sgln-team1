@@ -5,6 +5,7 @@ import { getCaseDefinition } from "@/evaluation/rubrics";
 import { snapshotFromProgress } from "@/evaluation/submissionSnapshot";
 import { CaseSubmissionPanel } from "@/components/simulation/CaseSubmissionPanel";
 import { saveSubmission } from "@/lib/submissionStore";
+import { getParticipantEmail, getParticipantName } from "@/participant/session";
 
 function getParticipantId() {
   const key = "simworks:participant-id";
@@ -20,8 +21,6 @@ export function ReadyForEvaluationPage() {
   const caseId = routeCaseId ?? "first-year-associate-ma-due-diligence";
   const definition = getCaseDefinition(caseId);
   const initialSnapshot = useMemo(() => snapshotFromProgress(caseId), [caseId]);
-  const [displayName, setDisplayName] = useState("");
-  const [email, setEmail] = useState("");
   const [workProduct, setWorkProduct] = useState(initialSnapshot.workProduct);
   const [confirmed, setConfirmed] = useState(false);
   const [error, setError] = useState("");
@@ -41,6 +40,9 @@ export function ReadyForEvaluationPage() {
     window.sessionStorage.setItem(key, value);
     return value;
   }, [caseId]);
+
+  const displayName = getParticipantName() ?? "";
+  const email = getParticipantEmail() ?? "";
 
   async function submit(event: FormEvent) {
     event.preventDefault();
@@ -133,12 +135,6 @@ export function ReadyForEvaluationPage() {
           Do not submit confidential, client, or sensitive personal information.
         </div>
         <form className="mt-7 grid gap-5" onSubmit={submit}>
-          <label className="grid gap-2 text-small font-medium">Display name
-            <input required value={displayName} onChange={(event) => setDisplayName(event.target.value)} className="rounded-button border border-hairline px-4 py-3 font-normal" />
-          </label>
-          <label className="grid gap-2 text-small font-medium">Email
-            <input required type="email" value={email} onChange={(event) => setEmail(event.target.value)} className="rounded-button border border-hairline px-4 py-3 font-normal" />
-          </label>
           <div className="rounded-panel bg-cloud p-5 text-small text-muted-deep">
             <p className="m-0 font-semibold text-ink">Versioned evaluation</p>
             <p className="mb-0">Case {definition.version} · Rubric {definition.rubric.rubricVersion} · Human final authority</p>

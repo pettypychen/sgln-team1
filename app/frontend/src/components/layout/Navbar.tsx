@@ -1,7 +1,7 @@
 import { Link, useNavigate } from "react-router-dom";
 import { Logo } from "./Logo";
 import { APP_VERSION } from "@/lib/version";
-import { clearParticipantName, getParticipantName } from "@/participant/session";
+import { clearParticipantSession, getParticipantName } from "@/participant/session";
 
 interface NavLink {
   label: string;
@@ -24,7 +24,7 @@ export function Navbar() {
   const participantName = getParticipantName();
 
   function handleLogout() {
-    clearParticipantName();
+    clearParticipantSession();
     navigate("/login", { replace: true });
   }
 
