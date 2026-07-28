@@ -21,7 +21,6 @@
     "version:major": "npm version major --no-git-tag-version && npm run sync-version"
   },
   "dependencies": {
-    "@rolldown/binding-win32-x64-msvc": "^1.2.0",
     "firebase": "^12.16.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
@@ -41,6 +40,9 @@
     "tsx": "^4.23.0",
     "typescript": "^5.6.3",
     "vite": "^8.1.4"
+  },
+  "optionalDependencies": {
+    "@rolldown/binding-win32-x64-msvc": "^1.2.0"
   },
   "engines": {
     "node": ">=20.19"
