@@ -35,3 +35,5 @@ jobs:
           projectId: sgln-team1-f8d61
       - name: Deploy Functions
         run: cd functions && npm ci && npx firebase-tools deploy --only functions:agentChat --force --project sgln-team1-f8d61
+      - name: Deploy Firestore Rules
+        run: cd functions && npx firebase-tools deploy --only firestore:rules --project sgln-team1-f8d61
