@@ -265,7 +265,7 @@ class LocalEvaluationRepository implements EvaluationRepository {
       ),
       submittedAt,
       idempotencyKey: input.idempotencyKey,
-      status: "ai_failed",
+      status: "pending_ai_processing",
       evaluationRuns: [
         {
           id: randomToken("run").slice(0, 36),
@@ -328,7 +328,7 @@ class LocalEvaluationRepository implements EvaluationRepository {
     const store = readStore();
     const attempt = getMutableAttempt(store, attemptId);
     if (isFinalStatus(attempt.status)) throw new Error("Finalized attempts are read-only.");
-    if (attempt.status === "ai_processing") throw new Error("AI evaluation is still processing.");
+    if (attempt.status === "pending_ai_processing" || attempt.status === "ai_processing") throw new Error("AI evaluation has not completed yet.");
     const active = attempt.claim && new Date(attempt.claim.expiresAt).getTime() > Date.now();
     if (active && attempt.claim?.evaluatorName !== evaluatorName && !takeover) {
       throw new Error(`This review is currently claimed by ${attempt.claim?.evaluatorName}.`);

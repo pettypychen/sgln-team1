@@ -157,6 +157,7 @@ Remediation creates a fresh attempt:
 ```text
 Draft
   -> Submitted
+  -> Pending AI processing
   -> AI evaluation processing
       -> Ready for human review
       -> AI evaluation failed

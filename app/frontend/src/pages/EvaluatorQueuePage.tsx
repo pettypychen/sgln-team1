@@ -21,6 +21,7 @@ import {
 } from "@/evaluation/queueFilters";
 
 const STATUS_LABELS: Record<AttemptStatus, string> = {
+  pending_ai_processing: "Pending AI processing",
   ai_processing: "AI processing",
   ready_for_review: "Awaiting review",
   ai_failed: "AI evaluation failed",
@@ -168,8 +169,9 @@ export function EvaluatorQueuePage() {
           <div className="flex items-center gap-3 text-small"><span className="text-muted-deep">{session.evaluatorName} · unverified</span><button className="rounded-button bg-white px-4 py-2 soft-edge" onClick={() => { clearEvaluatorSession(); setSession(null); }}>Sign out</button></div>
         </header>
 
-        <section aria-label="Queue summary" className="mt-7 grid gap-3 sm:grid-cols-3 xl:grid-cols-6">
+        <section aria-label="Queue summary" className="mt-7 grid gap-3 sm:grid-cols-3 xl:grid-cols-7">
           {([
+            ["Pending AI", counts("pending_ai_processing")],
             ["Awaiting review", counts("ready_for_review")],
             ["In review", counts("in_review")],
             ["AI failed", counts("ai_failed")],

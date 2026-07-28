@@ -17,7 +17,7 @@ service cloud.firestore {
       allow create: if request.resource.data.keys().hasAll([
             'caseId', 'caseTitle', 'workProduct', 'evaluationStatus', 'submittedAt'
           ])
-          && request.resource.data.evaluationStatus == 'PENDING AI EVALUATION'
+          && request.resource.data.evaluationStatus == 'pending_ai_processing'
           && request.resource.data.workProduct is string
           && request.resource.data.workProduct.size() > 0
           && request.resource.data.caseId is string;

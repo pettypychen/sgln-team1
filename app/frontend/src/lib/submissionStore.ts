@@ -7,7 +7,7 @@ export interface SubmissionRecord {
   caseId: string;
   caseTitle: string;
   workProduct: string;
-  evaluationStatus: "PENDING AI EVALUATION";
+  evaluationStatus: "pending_ai_processing";
   attemptId: string;
   attemptNumber: number;
 }
