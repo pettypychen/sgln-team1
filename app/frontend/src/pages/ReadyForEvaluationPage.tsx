@@ -4,6 +4,7 @@ import { evaluationRepository } from "@/evaluation/repository";
 import { getCaseDefinition } from "@/evaluation/rubrics";
 import { snapshotFromProgress } from "@/evaluation/submissionSnapshot";
 import { CaseSubmissionPanel } from "@/components/simulation/CaseSubmissionPanel";
+import { saveSubmission } from "@/lib/submissionStore";
 
 function getParticipantId() {
   const key = "simworks:participant-id";
@@ -67,6 +68,16 @@ export function ReadyForEvaluationPage() {
           window.sessionStorage.getItem(`simworks:predecessor:${caseId}`) ||
           undefined,
       });
+      void saveSubmission({
+        displayName,
+        email,
+        caseId,
+        caseTitle: definition.title,
+        workProduct,
+        evaluationStatus: "PENDING AI EVALUATION",
+        attemptId: result.attempt.id,
+        attemptNumber: result.attempt.attemptNumber,
+      }).catch(console.error);
       window.localStorage.setItem(
         "simworks:private-access-token",
         result.access.privateToken,

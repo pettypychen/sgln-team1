@@ -1,7 +1,7 @@
 {
   "name": "simworks-app",
   "private": true,
-  "version": "0.4.5",
+  "version": "0.5.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -40,6 +40,9 @@
     "tsx": "^4.23.0",
     "typescript": "^5.6.3",
     "vite": "^8.1.4"
+  },
+  "optionalDependencies": {
+    "@rolldown/binding-win32-x64-msvc": "^1.2.0"
   },
   "engines": {
     "node": ">=20.19"

@@ -10,6 +10,20 @@ service cloud.firestore {
       allow write: if false;
     }
 
+    // Participants write a record when they submit a case. Write-once — no
+    // client-side reads, updates, or deletes. The evaluation pipeline reads
+    // this collection through service-account credentials only.
+    match /submissions/{submissionId} {
+      allow create: if request.resource.data.keys().hasAll([
+            'caseId', 'caseTitle', 'workProduct', 'evaluationStatus', 'submittedAt'
+          ])
+          && request.resource.data.evaluationStatus == 'PENDING AI EVALUATION'
+          && request.resource.data.workProduct is string
+          && request.resource.data.workProduct.size() > 0
+          && request.resource.data.caseId is string;
+      allow read, update, delete: if false;
+    }
+
     match /{document=**} {
       allow read, write: if false;
     }
