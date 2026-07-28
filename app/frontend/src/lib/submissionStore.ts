@@ -39,16 +39,18 @@ export async function listSubmissions(): Promise<Attempt[]> {
       attemptNumber: number;
       submittedAt: Timestamp | null;
     };
-    // addDoc is not idempotent — skip duplicate attemptId docs from retried submissions
-    if (seen.has(d.attemptId)) return [];
-    seen.add(d.attemptId);
+    // Use Firestore doc ID as fallback when attemptId is absent (legacy docs).
+    // Deduplicate by attemptId to handle retried addDoc writes for the same attempt.
+    const rowId = d.attemptId || doc.id;
+    if (seen.has(rowId)) return [];
+    seen.add(rowId);
     let category = "";
     try { category = getCaseDefinition(d.caseId).category; } catch { /* unknown case */ }
     const submittedAt = d.submittedAt instanceof Timestamp
       ? d.submittedAt.toDate().toISOString()
       : new Date().toISOString();
     return [{
-      id: d.attemptId,
+      id: rowId,
       participantId: "",
       learnerDisplayName: d.displayName,
       caseId: d.caseId,
