@@ -532,4 +532,5 @@ test("background evaluation and notification retry functions are deployed", () =
     typeof deployedFunctions.retryEvaluationNotifications,
     "function",
   );
+  assert.equal(typeof deployedFunctions.onSubmissionCreated, "function");
 });
