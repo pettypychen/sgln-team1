@@ -204,9 +204,11 @@ async function sendViaZaiDevProxy(request: AgentTurnRequest): Promise<string> {
   }
 
   const data = (await response.json()) as {
-    choices?: { message?: { content?: string } }[];
+    choices?: { message?: { content?: string | null; reasoning_content?: string } }[];
   };
-  const text = data.choices?.[0]?.message?.content?.trim() ?? "";
+  const msg = data.choices?.[0]?.message;
+  // GLM thinking models may return an empty content with the answer in reasoning_content.
+  const text = (msg?.content?.trim() || msg?.reasoning_content?.trim()) ?? "";
   if (!text) throw new AgentRequestError("Z.ai returned an empty response");
   return text;
 }
