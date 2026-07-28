@@ -30,7 +30,7 @@ export function ReadyForEvaluationPage() {
     attemptNumber: number;
     submittedAt: string;
     privateToken: string;
-    status: "ai_failed" | "ai_processing" | "ready_for_review";
+    status: "pending_ai_processing" | "ai_failed" | "ai_processing" | "ready_for_review";
   } | null>(null);
   const idempotencyKey = useMemo(() => {
     const key = `simworks:submission-key:${caseId}`;
@@ -76,7 +76,7 @@ export function ReadyForEvaluationPage() {
         caseId,
         caseTitle: definition.title,
         workProduct,
-        evaluationStatus: "PENDING AI EVALUATION",
+        evaluationStatus: "pending_ai_processing",
         attemptId: result.attempt.id,
         attemptNumber: result.attempt.attemptNumber,
       }).catch(console.error);
@@ -90,11 +90,13 @@ export function ReadyForEvaluationPage() {
         submittedAt: result.attempt.submittedAt,
         privateToken: result.access.privateToken,
         status:
-          result.attempt.status === "ai_failed"
-            ? "ai_failed"
-            : result.attempt.status === "ai_processing"
-              ? "ai_processing"
-              : "ready_for_review",
+          result.attempt.status === "pending_ai_processing"
+            ? "pending_ai_processing"
+            : result.attempt.status === "ai_failed"
+              ? "ai_failed"
+              : result.attempt.status === "ai_processing"
+                ? "ai_processing"
+                : "ready_for_review",
       });
       window.sessionStorage.removeItem(`simworks:predecessor:${caseId}`);
     } catch (reason) {
@@ -114,7 +116,7 @@ export function ReadyForEvaluationPage() {
             <div><dt className="text-muted">Case</dt><dd className="m-0 mt-1 font-medium">{definition.title}</dd></div>
             <div><dt className="text-muted">Attempt</dt><dd className="m-0 mt-1 font-medium">#{receipt.attemptNumber}</dd></div>
             <div><dt className="text-muted">Submitted</dt><dd className="m-0 mt-1 font-medium">{new Date(receipt.submittedAt).toLocaleString()}</dd></div>
-            <div><dt className="text-muted">Status</dt><dd className="m-0 mt-1 font-medium">{receipt.status === "ai_failed" ? "AI evaluation failed · manual review available" : receipt.status === "ai_processing" ? "AI evaluation started" : "Awaiting human review"}</dd></div>
+            <div><dt className="text-muted">Status</dt><dd className="m-0 mt-1 font-medium">{receipt.status === "pending_ai_processing" ? "Pending AI processing" : receipt.status === "ai_failed" ? "AI evaluation failed · manual review available" : receipt.status === "ai_processing" ? "AI evaluation started" : "Awaiting human review"}</dd></div>
           </dl>
           <p className="mt-5 text-small text-muted-deep">The provisional AI score stays private until a human finalizes the evaluation. A receipt notification has been queued.</p>
           <Link className="mt-5 inline-flex rounded-button bg-black px-5 py-3 text-small font-semibold text-white" to={`/credentials#${encodeURIComponent(receipt.privateToken)}`}>

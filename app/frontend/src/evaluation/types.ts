@@ -9,6 +9,7 @@ export type SharedOutcome =
   | "not_yet_ready";
 
 export type AttemptStatus =
+  | "pending_ai_processing"
   | "ai_processing"
   | "ready_for_review"
   | "ai_failed"
