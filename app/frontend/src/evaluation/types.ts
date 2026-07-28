@@ -49,6 +49,10 @@ export interface CaseDefinition {
     name: string;
     palette: string;
   };
+  /** Label for the work-product panel on the submission page. Defaults to "Your submission". */
+  submissionTitle?: string;
+  /** Placeholder text for the work-product textarea. Defaults to a generic prompt. */
+  workProductPlaceholder?: string;
 }
 
 export interface TranscriptMessage {

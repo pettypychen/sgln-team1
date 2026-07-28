@@ -109,6 +109,8 @@ export const CASE_DEFINITIONS: CaseDefinition[] = [
     version: "1.0.0",
     evaluationMode: "human_final",
     released: true,
+    submissionTitle: "Your answers",
+    workProductPlaceholder: "Aiman | K03 | Kopi O Kosong | SGD 1.40\nBeatrice | ...\nCheryl | ...\nTotal | SGD ...",
     badge: {
       symbol: "☕",
       name: "Kopi Coordinator",
