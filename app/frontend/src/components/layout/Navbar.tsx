@@ -18,12 +18,6 @@ const NAV_LINKS: NavLink[] = [
   { label: "Journey", to: "/journey" },
 ];
 
-function getInitials(name: string): string {
-  const parts = name.trim().split(/\s+/);
-  if (parts.length === 1) return parts[0].charAt(0).toUpperCase();
-  return (parts[0].charAt(0) + parts[parts.length - 1].charAt(0)).toUpperCase();
-}
-
 /** Compact product header for the simulation marketplace. */
 export function Navbar() {
   const navigate = useNavigate();
@@ -75,23 +69,18 @@ export function Navbar() {
             })}
           </div>
 
-          <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-button bg-white text-[12px] font-semibold text-ink soft-edge">
-              {participantName ? getInitials(participantName) : "?"}
+          {participantName ? (
+            <div className="flex items-center gap-3">
+              <span className="text-small font-medium text-ink">{participantName}</span>
+              <button
+                type="button"
+                onClick={handleLogout}
+                className="rounded-button bg-white px-4 py-2 text-small soft-edge hover:bg-cloud"
+              >
+                Log out
+              </button>
             </div>
-            {participantName ? (
-              <>
-                <span className="hidden text-small font-medium text-ink md:block">{participantName}</span>
-                <button
-                  type="button"
-                  onClick={handleLogout}
-                  className="rounded-button bg-white px-4 py-2 text-small soft-edge hover:bg-cloud"
-                >
-                  Log out
-                </button>
-              </>
-            ) : null}
-          </div>
+          ) : null}
         </div>
       </div>
     </nav>
