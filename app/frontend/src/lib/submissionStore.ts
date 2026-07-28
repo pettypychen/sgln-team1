@@ -27,7 +27,8 @@ export async function saveSubmission(record: SubmissionRecord): Promise<void> {
 export async function listSubmissions(): Promise<Attempt[]> {
   if (!db) return [];
   const snapshot = await getDocs(collection(db, "submissions"));
-  return snapshot.docs.map((doc) => {
+  const seen = new Set<string>();
+  return snapshot.docs.flatMap((doc) => {
     const d = doc.data() as {
       displayName: string;
       caseId: string;
@@ -38,12 +39,15 @@ export async function listSubmissions(): Promise<Attempt[]> {
       attemptNumber: number;
       submittedAt: Timestamp | null;
     };
+    // addDoc is not idempotent — skip duplicate attemptId docs from retried submissions
+    if (seen.has(d.attemptId)) return [];
+    seen.add(d.attemptId);
     let category = "";
     try { category = getCaseDefinition(d.caseId).category; } catch { /* unknown case */ }
     const submittedAt = d.submittedAt instanceof Timestamp
       ? d.submittedAt.toDate().toISOString()
       : new Date().toISOString();
-    return {
+    return [{
       id: d.attemptId,
       participantId: "",
       learnerDisplayName: d.displayName,
@@ -69,6 +73,6 @@ export async function listSubmissions(): Promise<Attempt[]> {
       idempotencyKey: "",
       status: (d.evaluationStatus as AttemptStatus) ?? "pending_ai_processing",
       evaluationRuns: [],
-    } satisfies Attempt;
+    } satisfies Attempt];
   });
 }
