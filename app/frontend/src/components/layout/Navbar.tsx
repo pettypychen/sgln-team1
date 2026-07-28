@@ -1,6 +1,7 @@
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Logo } from "./Logo";
 import { APP_VERSION } from "@/lib/version";
+import { clearParticipantName, getParticipantName } from "@/participant/session";
 
 interface NavLink {
   label: string;
@@ -17,11 +18,16 @@ const NAV_LINKS: NavLink[] = [
   { label: "Journey", to: "/journey" },
 ];
 
-/** User initials shown in the avatar (static in the reference). */
-const AVATAR_INITIALS = "MC";
-
 /** Compact product header for the simulation marketplace. */
 export function Navbar() {
+  const navigate = useNavigate();
+  const participantName = getParticipantName();
+
+  function handleLogout() {
+    clearParticipantName();
+    navigate("/login", { replace: true });
+  }
+
   return (
     <nav className="sticky top-0 z-50 border-b border-hairline bg-white/90 px-5 py-3 backdrop-blur-xl md:px-12">
       <div className="mx-auto flex max-w-container items-center justify-between gap-5">
@@ -63,9 +69,18 @@ export function Navbar() {
             })}
           </div>
 
-          <div className="flex h-10 w-10 items-center justify-center rounded-button bg-white text-[12px] font-semibold text-ink soft-edge">
-            {AVATAR_INITIALS}
-          </div>
+          {participantName ? (
+            <div className="flex items-center gap-3">
+              <span className="text-small font-medium text-ink">{participantName}</span>
+              <button
+                type="button"
+                onClick={handleLogout}
+                className="rounded-button bg-white px-4 py-2 text-small soft-edge hover:bg-cloud"
+              >
+                Log out
+              </button>
+            </div>
+          ) : null}
         </div>
       </div>
     </nav>
