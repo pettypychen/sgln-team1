@@ -265,7 +265,7 @@ class LocalEvaluationRepository implements EvaluationRepository {
       ),
       submittedAt,
       idempotencyKey: input.idempotencyKey,
-      status: "pending_ai_processing",
+      status: "ai_failed",
       evaluationRuns: [
         {
           id: randomToken("run").slice(0, 36),

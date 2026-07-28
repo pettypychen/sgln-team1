@@ -97,7 +97,7 @@ transcript[0].content = "Mutated after submission";
 const second = await evaluationRepository.submitAttempt(submission);
 assert.equal(first.attempt.id, second.attempt.id, "submission must be idempotent");
 assert.equal(first.notification.id, second.notification.id, "receipt must be idempotent");
-assert.equal(first.attempt.status, "pending_ai_processing");
+assert.equal(first.attempt.status, "ai_failed");
 assert.equal(first.attempt.evaluationRuns[0].status, "failed");
 assert.equal(first.attempt.caseVersion, legal.version);
 assert.equal(first.attempt.rubricVersion, legal.rubric.rubricVersion);
