@@ -21,7 +21,8 @@ service cloud.firestore {
           && request.resource.data.workProduct is string
           && request.resource.data.workProduct.size() > 0
           && request.resource.data.caseId is string;
-      allow read, update, delete: if false;
+      allow read: if true;
+      allow update, delete: if false;
     }
 
     match /{document=**} {

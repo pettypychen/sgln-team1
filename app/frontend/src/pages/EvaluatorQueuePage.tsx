@@ -19,6 +19,8 @@ import {
   readQueueFilters,
   writeQueueFilters,
 } from "@/evaluation/queueFilters";
+import { isFirebaseConfigured } from "@/lib/firebase";
+import { listSubmissions } from "@/lib/submissionStore";
 
 const STATUS_LABELS: Record<AttemptStatus, string> = {
   pending_ai_processing: "Pending AI processing",
@@ -96,7 +98,8 @@ export function EvaluatorQueuePage() {
   useEffect(() => {
     if (!session) return;
     setLoading(true);
-    evaluationRepository.listAttempts()
+    const load = isFirebaseConfigured ? listSubmissions() : evaluationRepository.listAttempts();
+    load
       .then(setAttempts)
       .catch((reason: unknown) => setError(reason instanceof Error ? reason.message : "Queue failed to load."))
       .finally(() => setLoading(false));
