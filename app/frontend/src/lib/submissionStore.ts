@@ -27,8 +27,8 @@ export async function saveSubmission(record: SubmissionRecord): Promise<void> {
 export async function listSubmissions(): Promise<Attempt[]> {
   if (!db) return [];
   const snapshot = await getDocs(collection(db, "submissions"));
-  const seen = new Set<string>();
-  return snapshot.docs.flatMap((doc) => {
+  console.log("[listSubmissions] Firestore returned", snapshot.docs.length, "docs");
+  return snapshot.docs.map((doc) => {
     const d = doc.data() as {
       displayName: string;
       caseId: string;
@@ -39,18 +39,15 @@ export async function listSubmissions(): Promise<Attempt[]> {
       attemptNumber: number;
       submittedAt: Timestamp | null;
     };
-    // Use Firestore doc ID as fallback when attemptId is absent (legacy docs).
-    // Deduplicate by attemptId to handle retried addDoc writes for the same attempt.
-    const rowId = d.attemptId || doc.id;
-    if (seen.has(rowId)) return [];
-    seen.add(rowId);
     let category = "";
     try { category = getCaseDefinition(d.caseId).category; } catch { /* unknown case */ }
     const submittedAt = d.submittedAt instanceof Timestamp
       ? d.submittedAt.toDate().toISOString()
       : new Date().toISOString();
-    return [{
-      id: rowId,
+    return {
+      // Use Firestore doc ID as the row identity — unique per submission document
+      // regardless of whether multiple docs share the same attemptId.
+      id: doc.id,
       participantId: "",
       learnerDisplayName: d.displayName,
       caseId: d.caseId,
@@ -75,6 +72,6 @@ export async function listSubmissions(): Promise<Attempt[]> {
       idempotencyKey: "",
       status: (d.evaluationStatus as AttemptStatus) ?? "pending_ai_processing",
       evaluationRuns: [],
-    } satisfies Attempt];
+    } satisfies Attempt;
   });
 }
