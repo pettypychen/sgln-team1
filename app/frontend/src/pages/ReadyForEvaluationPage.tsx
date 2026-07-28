@@ -2,7 +2,7 @@ import { useMemo, useState, type FormEvent } from "react";
 import { Link, useParams } from "react-router-dom";
 import { evaluationRepository } from "@/evaluation/repository";
 import { getCaseDefinition } from "@/evaluation/rubrics";
-import { snapshotFromProgress } from "@/evaluation/submissionSnapshot";
+import { clearSimulationProgress, incrementSubmissionAttemptCount, snapshotFromProgress } from "@/evaluation/submissionSnapshot";
 import { CaseSubmissionPanel } from "@/components/simulation/CaseSubmissionPanel";
 import { saveSubmission } from "@/lib/submissionStore";
 import { getParticipantEmail, getParticipantName } from "@/participant/session";
@@ -70,6 +70,7 @@ export function ReadyForEvaluationPage() {
           window.sessionStorage.getItem(`simworks:predecessor:${caseId}`) ||
           undefined,
       });
+      const attemptNumber = incrementSubmissionAttemptCount(caseId);
       void saveSubmission({
         displayName,
         email,
@@ -78,7 +79,7 @@ export function ReadyForEvaluationPage() {
         workProduct,
         evaluationStatus: "pending_ai_processing",
         attemptId: result.attempt.id,
-        attemptNumber: result.attempt.attemptNumber,
+        attemptNumber,
       }).catch(console.error);
       window.localStorage.setItem(
         "simworks:private-access-token",
@@ -86,7 +87,7 @@ export function ReadyForEvaluationPage() {
       );
       setReceipt({
         id: result.attempt.id,
-        attemptNumber: result.attempt.attemptNumber,
+        attemptNumber,
         submittedAt: result.attempt.submittedAt,
         privateToken: result.access.privateToken,
         status:
@@ -99,6 +100,7 @@ export function ReadyForEvaluationPage() {
                 : "ready_for_review",
       });
       window.sessionStorage.removeItem(`simworks:predecessor:${caseId}`);
+      clearSimulationProgress(caseId);
     } catch (reason) {
       setError(reason instanceof Error ? reason.message : "Submission failed.");
     } finally {
