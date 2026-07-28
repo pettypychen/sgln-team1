@@ -103,7 +103,8 @@ export function ReadyForEvaluationPage() {
     return (
       <main className="min-h-screen bg-[#eeede9] p-6 text-ink">
         <section className="mx-auto mt-12 max-w-2xl rounded-panel bg-white p-8 soft-edge">
-          <p className="m-0 text-micro font-semibold uppercase tracking-[0.18em] text-muted">Submission received</p>
+          <Link className="inline-flex items-center gap-1 text-small font-semibold text-muted-deep hover:text-ink" to="/">← Back to simulations</Link>
+          <p className="m-0 mt-6 text-micro font-semibold uppercase tracking-[0.18em] text-muted">Submission received</p>
           <h1 className="mt-3 font-display text-[38px] font-light">Your attempt is immutable.</h1>
           <dl className="mt-8 grid gap-4 rounded-panel bg-cloud p-5 text-small sm:grid-cols-2">
             <div><dt className="text-muted">Case</dt><dd className="m-0 mt-1 font-medium">{definition.title}</dd></div>
@@ -123,7 +124,8 @@ export function ReadyForEvaluationPage() {
   return (
     <main className="min-h-screen bg-[#eeede9] p-6 text-ink">
       <section className="mx-auto mt-8 max-w-2xl rounded-panel bg-white p-8 soft-edge">
-        <p className="m-0 text-micro font-semibold uppercase tracking-[0.18em] text-muted">Human-verified evaluation</p>
+        <Link className="inline-flex items-center gap-1 text-small font-semibold text-muted-deep hover:text-ink" to="/">← Back to simulations</Link>
+        <p className="m-0 mt-6 text-micro font-semibold uppercase tracking-[0.18em] text-muted">Human-verified evaluation</p>
         <h1 className="mt-3 font-display text-[38px] font-light">Submit for evaluation</h1>
         <p className="mt-3 text-body text-muted-deep">This creates a permanent snapshot of your conversation and case materials. Your result is released only after human review.</p>
         <div className="mt-6 rounded-panel border border-amber-300 bg-amber-50 p-4 text-small text-amber-950">
