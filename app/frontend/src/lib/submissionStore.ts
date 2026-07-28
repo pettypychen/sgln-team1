@@ -27,8 +27,7 @@ export async function saveSubmission(record: SubmissionRecord): Promise<void> {
 export async function listSubmissions(): Promise<Attempt[]> {
   if (!db) return [];
   const snapshot = await getDocs(collection(db, "submissions"));
-  console.log("[listSubmissions] Firestore returned", snapshot.docs.length, "docs");
-  return snapshot.docs.map((doc) => {
+return snapshot.docs.map((doc) => {
     const d = doc.data() as {
       displayName: string;
       caseId: string;
