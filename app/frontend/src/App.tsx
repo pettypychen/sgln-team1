@@ -9,10 +9,10 @@ import { EvaluatorReviewPage } from "@/pages/EvaluatorReviewPage";
 import { CredentialsPage } from "@/pages/CredentialsPage";
 import { PublicCredentialPage } from "@/pages/PublicCredentialPage";
 import { PrototypeCasePage } from "@/pages/PrototypeCasePage";
-import { getParticipantName } from "@/participant/session";
+import { getParticipantEmail, getParticipantName } from "@/participant/session";
 
 function RequireParticipant() {
-  return getParticipantName() ? <Outlet /> : <Navigate to="/login" replace />;
+  return getParticipantName() && getParticipantEmail() ? <Outlet /> : <Navigate to="/login" replace />;
 }
 
 /**
