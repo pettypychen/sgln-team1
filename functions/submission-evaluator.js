@@ -124,6 +124,163 @@ function parseEvaluationResponse(rawText) {
   return JSON.parse(cleaned);
 }
 
+/**
+ * Core evaluation pipeline. Shared by the automatic trigger (onSubmissionCreated)
+ * and the manual retrigger (onEvaluationRetrigger).
+ */
+async function runEvaluationForSubmission(submissionId, submission) {
+  const submissionRef = db.collection("submissions").doc(submissionId);
+  const { caseId, displayName, caseTitle, workProduct, attemptId, attemptNumber } = submission;
+  const casePackage = CASE_PACKAGES[caseId];
+
+  if (!casePackage) {
+    logger.warn("Unknown case — skipping AI evaluation", { submissionId, caseId });
+    await submissionRef.update({ evaluationStatus: "ai_failed" });
+    return;
+  }
+
+  if (!ACTIVE_CONFIG) {
+    logger.warn("No AI evaluator configured — skipping evaluation", { submissionId });
+    await submissionRef.update({ evaluationStatus: "ai_failed" });
+    return;
+  }
+
+  const evaluationId = genId("eval");
+  const evaluationRef = db.collection("evaluations").doc(evaluationId);
+  const startedAt = iso();
+  const submittedAt = submission.submittedAt?.toDate?.()?.toISOString() ?? iso();
+
+  const initialRun = {
+    id: genId("run"),
+    provider: ACTIVE_CONFIG.provider,
+    model: ACTIVE_CONFIG.model,
+    promptVersion: "1.0.0",
+    startedAt,
+    completedAt: null,
+    status: "processing",
+    assessments: [],
+    caseScore: 0,
+    interactionScore: 0,
+    recommendation: null,
+    validationErrors: [],
+  };
+
+  // Step 1: Mark as processing and create the evaluation record.
+  await Promise.all([
+    submissionRef.update({ evaluationStatus: "ai_processing" }),
+    evaluationRef.set({
+      id: evaluationId,
+      submissionId,
+      attemptId: attemptId || null,
+      displayName: displayName || "",
+      caseId,
+      caseTitle: caseTitle || casePackage.title,
+      category: casePackage.category || "",
+      workProduct: workProduct || "",
+      attemptNumber: attemptNumber ?? 1,
+      submittedAt,
+      status: "ai_processing",
+      evaluationRuns: [initialRun],
+      review: null,
+      createdAt: startedAt,
+      updatedAt: startedAt,
+    }),
+  ]);
+
+  logger.info("AI evaluation started", {
+    submissionId,
+    evaluationId,
+    caseId,
+    provider: ACTIVE_CONFIG.provider,
+    model: ACTIVE_CONFIG.model,
+  });
+
+  // Step 2: Run AI evaluation.
+  try {
+    const userMessage = buildUserMessage(casePackage, {
+      displayName: displayName || "",
+      caseTitle: caseTitle || casePackage.title,
+      workProduct: workProduct || "",
+      attemptNumber: attemptNumber ?? 1,
+    });
+
+    const rawText = await callZaiEvaluator(ZAI_API_KEY.value(), userMessage);
+
+    let parsed;
+    try {
+      parsed = parseEvaluationResponse(rawText);
+    } catch {
+      throw new Error(`AI response was not valid JSON: ${rawText.slice(0, 300)}`);
+    }
+
+    const rawAssessments = Array.isArray(parsed?.assessments) ? parsed.assessments : [];
+    const assessments = rawAssessments.map((a) => ({
+      criterionId: String(a.criterionId || ""),
+      points: Number(a.points ?? 0),
+      explanation: String(a.explanation || ""),
+      evidence: [],
+      supported: true,
+    }));
+
+    const { caseScore, interactionScore, recommendation } = scoreAssessments(
+      casePackage.rubric,
+      assessments,
+    );
+    const completedAt = iso();
+    const completedRun = {
+      ...initialRun,
+      completedAt,
+      status: "completed",
+      assessments,
+      caseScore,
+      interactionScore,
+      recommendation,
+      validationErrors: [],
+      rawResponse: rawText,
+      aiSummary: String(parsed?.summary || ""),
+    };
+
+    await Promise.all([
+      submissionRef.update({ evaluationStatus: "ready_for_review" }),
+      evaluationRef.update({
+        status: "ready_for_review",
+        evaluationRuns: [completedRun],
+        updatedAt: completedAt,
+      }),
+    ]);
+
+    logger.info("AI evaluation completed", {
+      submissionId,
+      evaluationId,
+      caseScore,
+      interactionScore,
+      recommendation,
+    });
+  } catch (error) {
+    const failedAt = iso();
+    const failedRun = {
+      ...initialRun,
+      completedAt: failedAt,
+      status: "failed",
+      validationErrors: [error.message],
+    };
+    await Promise.all([
+      submissionRef.update({ evaluationStatus: "ai_failed" }),
+      evaluationRef.update({
+        status: "ai_failed",
+        evaluationRuns: [failedRun],
+        updatedAt: failedAt,
+      }),
+    ]);
+    logger.error("AI evaluation failed", {
+      submissionId,
+      evaluationId,
+      error: error.message,
+    });
+  }
+}
+
+// Fires automatically when a new submission document is created.
 exports.onSubmissionCreated = onDocumentCreated(
   {
     document: "submissions/{submissionId}",
@@ -134,166 +291,38 @@ exports.onSubmissionCreated = onDocumentCreated(
   },
   async (event) => {
     const submissionId = event.params.submissionId;
-    const submissionRef = db.collection("submissions").doc(submissionId);
     const submission = event.data.data();
-
     if (!submission) {
       logger.error("Submission data missing", { submissionId });
       return;
     }
+    await runEvaluationForSubmission(submissionId, submission);
+  },
+);
 
-    const { caseId, displayName, caseTitle, workProduct, attemptId, attemptNumber } = submission;
-    const casePackage = CASE_PACKAGES[caseId];
-
-    if (!casePackage) {
-      logger.warn("Unknown case — skipping AI evaluation", { submissionId, caseId });
-      await submissionRef.update({ evaluationStatus: "ai_failed" });
-      return;
-    }
-
-    if (!ACTIVE_CONFIG) {
-      logger.warn("No AI evaluator configured — skipping evaluation", { submissionId });
-      await submissionRef.update({ evaluationStatus: "ai_failed" });
-      return;
-    }
-
-    const evaluationId = genId("eval");
-    const evaluationRef = db.collection("evaluations").doc(evaluationId);
-    const startedAt = iso();
-    const submittedAt =
-      submission.submittedAt?.toDate?.()?.toISOString() ?? iso();
-
-    const initialRun = {
-      id: genId("run"),
-      provider: ACTIVE_CONFIG.provider,
-      model: ACTIVE_CONFIG.model,
-      promptVersion: "1.0.0",
-      startedAt,
-      completedAt: null,
-      status: "processing",
-      assessments: [],
-      caseScore: 0,
-      interactionScore: 0,
-      recommendation: null,
-      validationErrors: [],
-    };
-
-    // Step 1: Mark as processing and create the evaluation record atomically.
-    await Promise.all([
-      submissionRef.update({ evaluationStatus: "ai_processing" }),
-      evaluationRef.set({
-        id: evaluationId,
-        submissionId,
-        attemptId: attemptId || null,
-        displayName: displayName || "",
-        caseId,
-        caseTitle: caseTitle || casePackage.title,
-        category: casePackage.category || "",
-        workProduct: workProduct || "",
-        attemptNumber: attemptNumber ?? 1,
-        submittedAt,
-        status: "ai_processing",
-        evaluationRuns: [initialRun],
-        review: null,
-        createdAt: startedAt,
-        updatedAt: startedAt,
-      }),
-    ]);
-
-    logger.info("AI evaluation started", {
-      submissionId,
-      evaluationId,
-      caseId,
-      provider: ACTIVE_CONFIG.provider,
-      model: ACTIVE_CONFIG.model,
-    });
-
-    // Step 2: Run AI evaluation.
+// Fires when the frontend creates a document in evaluationRetriggers/{submissionId},
+// allowing manual re-evaluation of submissions that were never processed.
+exports.onEvaluationRetrigger = onDocumentCreated(
+  {
+    document: "evaluationRetriggers/{submissionId}",
+    secrets: [ZAI_API_KEY],
+    region: "us-central1",
+    retry: false,
+    timeoutSeconds: 120,
+  },
+  async (event) => {
+    const submissionId = event.params.submissionId;
+    const retriggerRef = event.data.ref;
     try {
-      const userMessage = buildUserMessage(casePackage, {
-        displayName: displayName || "",
-        caseTitle: caseTitle || casePackage.title,
-        workProduct: workProduct || "",
-        attemptNumber: attemptNumber ?? 1,
-      });
-
-      const rawText = await callZaiEvaluator(ZAI_API_KEY.value(), userMessage);
-
-      let parsed;
-      try {
-        parsed = parseEvaluationResponse(rawText);
-      } catch {
-        throw new Error(
-          `AI response was not valid JSON: ${rawText.slice(0, 300)}`,
-        );
+      const submissionSnap = await db.collection("submissions").doc(submissionId).get();
+      if (!submissionSnap.exists) {
+        logger.warn("Submission not found for retrigger", { submissionId });
+        return;
       }
-
-      const rawAssessments = Array.isArray(parsed?.assessments)
-        ? parsed.assessments
-        : [];
-      const assessments = rawAssessments.map((a) => ({
-        criterionId: String(a.criterionId || ""),
-        points: Number(a.points ?? 0),
-        explanation: String(a.explanation || ""),
-        evidence: [],
-        supported: true,
-      }));
-
-      const { caseScore, interactionScore, recommendation } = scoreAssessments(
-        casePackage.rubric,
-        assessments,
-      );
-      const completedAt = iso();
-      const completedRun = {
-        ...initialRun,
-        completedAt,
-        status: "completed",
-        assessments,
-        caseScore,
-        interactionScore,
-        recommendation,
-        validationErrors: [],
-        rawResponse: rawText,
-        aiSummary: String(parsed?.summary || ""),
-      };
-
-      await Promise.all([
-        submissionRef.update({ evaluationStatus: "ready_for_review" }),
-        evaluationRef.update({
-          status: "ready_for_review",
-          evaluationRuns: [completedRun],
-          updatedAt: completedAt,
-        }),
-      ]);
-
-      logger.info("AI evaluation completed", {
-        submissionId,
-        evaluationId,
-        caseScore,
-        interactionScore,
-        recommendation,
-      });
-    } catch (error) {
-      const failedAt = iso();
-      const failedRun = {
-        ...initialRun,
-        completedAt: failedAt,
-        status: "failed",
-        validationErrors: [error.message],
-      };
-      await Promise.all([
-        submissionRef.update({ evaluationStatus: "ai_failed" }),
-        evaluationRef.update({
-          status: "ai_failed",
-          evaluationRuns: [failedRun],
-          updatedAt: failedAt,
-        }),
-      ]);
-      logger.error("AI evaluation failed", {
-        submissionId,
-        evaluationId,
-        error: error.message,
-      });
+      await runEvaluationForSubmission(submissionId, submissionSnap.data());
+    } finally {
+      // Always clean up the trigger document so it can be re-created on the next retry.
+      await retriggerRef.delete().catch(() => {});
     }
   },
 );

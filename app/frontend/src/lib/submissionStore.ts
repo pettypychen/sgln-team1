@@ -1,4 +1,4 @@
-import { addDoc, collection, getDocs, query, serverTimestamp, Timestamp, where } from "firebase/firestore";
+import { addDoc, collection, doc, getDocs, query, serverTimestamp, setDoc, Timestamp, where } from "firebase/firestore";
 import { db } from "./firebase";
 import { getCaseDefinition, sourceArtifactsForCase } from "@/evaluation/rubrics";
 import type { Attempt, AttemptStatus, EvaluationMode, EvaluationRun } from "@/evaluation/types";
@@ -187,4 +187,17 @@ export async function getEvaluationForSubmission(submissionId: string): Promise<
     evaluationRuns: d.evaluationRuns || [],
     review: d.review,
   } satisfies Attempt;
+}
+
+/**
+ * Creates a document in evaluationRetriggers/{submissionId} which causes the
+ * onEvaluationRetrigger Cloud Function to pick it up and run AI evaluation.
+ * Used by the "Trigger AI Evaluation" button for pending submissions.
+ */
+export async function triggerSubmissionEvaluation(submissionId: string): Promise<void> {
+  if (!db) return;
+  await setDoc(doc(db, "evaluationRetriggers", submissionId), {
+    submissionId,
+    triggeredAt: new Date().toISOString(),
+  });
 }

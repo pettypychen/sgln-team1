@@ -533,4 +533,5 @@ test("background evaluation and notification retry functions are deployed", () =
     "function",
   );
   assert.equal(typeof deployedFunctions.onSubmissionCreated, "function");
+  assert.equal(typeof deployedFunctions.onEvaluationRetrigger, "function");
 });

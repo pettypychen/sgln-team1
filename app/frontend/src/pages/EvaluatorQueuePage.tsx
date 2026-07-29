@@ -20,7 +20,7 @@ import {
   writeQueueFilters,
 } from "@/evaluation/queueFilters";
 import { isFirebaseConfigured } from "@/lib/firebase";
-import { listSubmissions } from "@/lib/submissionStore";
+import { listSubmissions, triggerSubmissionEvaluation } from "@/lib/submissionStore";
 
 const STATUS_LABELS: Record<AttemptStatus, string> = {
   pending_ai_processing: "Pending AI processing",
@@ -83,6 +83,7 @@ export function EvaluatorQueuePage() {
   const [attempts, setAttempts] = useState<Attempt[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [triggering, setTriggering] = useState<Set<string>>(new Set());
   const [caseFilter, setCaseFilter] = useState(initialFilters.caseId);
   const [statusFilter, setStatusFilter] = useState(initialFilters.status);
   const [recommendationFilter, setRecommendationFilter] = useState(
@@ -104,6 +105,26 @@ export function EvaluatorQueuePage() {
       .catch((reason: unknown) => setError(reason instanceof Error ? reason.message : "Queue failed to load."))
       .finally(() => setLoading(false));
   }, [session]);
+
+  // Poll for status updates while any submission is in the triggering set.
+  useEffect(() => {
+    if (triggering.size === 0) return;
+    const interval = setInterval(() => {
+      const load = isFirebaseConfigured ? listSubmissions() : evaluationRepository.listAttempts();
+      load.then((fresh) => {
+        setAttempts(fresh);
+        setTriggering((prev) => {
+          const next = new Set(prev);
+          for (const id of prev) {
+            const updated = fresh.find((a) => a.id === id);
+            if (!updated || updated.status !== "pending_ai_processing") next.delete(id);
+          }
+          return next;
+        });
+      }).catch(console.error);
+    }, 5000);
+    return () => clearInterval(interval);
+  }, [triggering]);
 
   useEffect(() => {
     writeQueueFilters({
@@ -210,7 +231,25 @@ export function EvaluatorQueuePage() {
                 <div><p className="m-0 text-small font-medium">{attempt.caseTitle}</p><p className="m-0 mt-1 text-micro text-muted">{attempt.category}</p></div>
                 <div><p className="m-0 text-micro text-muted">AI evaluation</p><p className="m-0 mt-1 text-small font-medium">{run?.status ?? "Missing"}</p></div>
                 <div><p className="m-0 text-micro text-muted">Case / AI interaction</p><p className="m-0 mt-1 text-small font-medium">{run?.status === "completed" ? `${run.caseScore} ${run.caseScore >= rubric.caseThreshold ? "meets" : "below"} / ${run.interactionScore} ${run.interactionScore >= rubric.interactionThreshold ? "meets" : "below"}` : "Manual review"}</p></div>
-                <div><span className="inline-flex rounded-full bg-cloud px-3 py-1 text-micro font-semibold">{STATUS_LABELS[attempt.status]}</span>{attempt.claim ? <p className="m-0 mt-2 text-micro text-muted">Claimed by {attempt.claim.evaluatorName}</p> : null}</div>
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <div>
+                    <span className="text-micro font-semibold text-muted-deep">{STATUS_LABELS[attempt.status]}</span>
+                    {attempt.claim ? <p className="m-0 mt-1 text-micro text-muted">Claimed by {attempt.claim.evaluatorName}</p> : null}
+                  </div>
+                  {isFirebaseConfigured && attempt.status === "pending_ai_processing" ? (
+                    <button
+                      className="shrink-0 rounded-button bg-black px-3 py-1.5 text-micro font-semibold text-white disabled:opacity-50"
+                      disabled={triggering.has(attempt.id)}
+                      onClick={(e) => {
+                        e.preventDefault();
+                        setTriggering((prev) => new Set(prev).add(attempt.id));
+                        triggerSubmissionEvaluation(attempt.id).catch(console.error);
+                      }}
+                    >
+                      {triggering.has(attempt.id) ? "Triggered…" : "Trigger AI Evaluation"}
+                    </button>
+                  ) : null}
+                </div>
               </Link>
             );
           })}

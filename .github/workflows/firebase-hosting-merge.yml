@@ -34,6 +34,6 @@ jobs:
           channelId: live
           projectId: sgln-team1-f8d61
       - name: Deploy Functions
-        run: cd functions && npm ci && npm run sync:cases && npx firebase-tools deploy --only functions:agentChat,functions:onSubmissionCreated --force --project sgln-team1-f8d61
+        run: cd functions && npm ci && npm run sync:cases && npx firebase-tools deploy --only functions:agentChat,functions:onSubmissionCreated,functions:onEvaluationRetrigger --force --project sgln-team1-f8d61
       - name: Deploy Firestore Rules
         run: cd functions && npx firebase-tools deploy --only firestore:rules --project sgln-team1-f8d61

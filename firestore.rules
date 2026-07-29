@@ -32,6 +32,14 @@ service cloud.firestore {
       allow write: if false;
     }
 
+    // Lightweight trigger documents created by the evaluator UI to manually
+    // kick off AI evaluation for submissions that were never processed.
+    // The Cloud Function deletes the document once evaluation completes.
+    match /evaluationRetriggers/{submissionId} {
+      allow create: if true;
+      allow read, update, delete: if false;
+    }
+
     match /{document=**} {
       allow read, write: if false;
     }
