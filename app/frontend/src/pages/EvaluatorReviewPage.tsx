@@ -5,6 +5,8 @@ import {
   evaluationRepository,
 } from "@/evaluation/repository";
 import { getEvaluatorSession } from "@/evaluation/session";
+import { isFirebaseConfigured } from "@/lib/firebase";
+import { getEvaluationForSubmission } from "@/lib/submissionStore";
 import {
   latestCompletedAssessments,
   latestEvaluation,
@@ -70,19 +72,23 @@ export function EvaluatorReviewPage() {
       navigate("/eval/all-cases", { replace: true });
       return;
     }
-    evaluationRepository.getAttempt(attemptId)
-      .then(async (loaded) => {
-        if (!loaded) throw new Error("Attempt not found.");
-        if (loaded.review?.status === "final") return loaded;
-        try {
-          return await evaluationRepository.claimReview(attemptId, session.evaluatorName);
-        } catch (reason) {
-          setClaimConflict(reason instanceof Error ? reason.message : "Review is read-only.");
+    const loadAttempt = isFirebaseConfigured
+      ? getEvaluationForSubmission(attemptId).then((loaded) => {
+          if (!loaded) throw new Error("Evaluation not found for this submission.");
           return loaded;
-        }
-      })
+        })
+      : evaluationRepository.getAttempt(attemptId).then(async (loaded) => {
+          if (!loaded) throw new Error("Attempt not found.");
+          if (loaded.review?.status === "final") return loaded;
+          try {
+            return await evaluationRepository.claimReview(attemptId, session.evaluatorName);
+          } catch (reason) {
+            setClaimConflict(reason instanceof Error ? reason.message : "Review is read-only.");
+            return loaded;
+          }
+        });
+    loadAttempt
       .then((loaded) => {
-        if (!loaded) return;
         const nextDraft = draftForAttempt(loaded);
         setAttempt(loaded);
         setDraft(nextDraft);
@@ -122,7 +128,7 @@ export function EvaluatorReviewPage() {
   }, [dirty]);
 
   useEffect(() => {
-    if (!evaluatorName || readOnly) return;
+    if (!evaluatorName || readOnly || isFirebaseConfigured) return;
     const interval = window.setInterval(() => {
       evaluationRepository
         .claimReview(attemptId, evaluatorName)
@@ -140,6 +146,7 @@ export function EvaluatorReviewPage() {
     () => () => {
       const current = attemptRef.current;
       if (
+        !isFirebaseConfigured &&
         evaluatorName &&
         current?.claim?.evaluatorName === evaluatorName &&
         current.review?.status !== "final" &&
