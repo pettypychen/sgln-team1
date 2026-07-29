@@ -26,8 +26,42 @@ export async function saveSubmission(record: SubmissionRecord): Promise<void> {
 /** Reads all submission records from Firestore and maps them to the Attempt shape. */
 export async function listSubmissions(): Promise<Attempt[]> {
   if (!db) return [];
-  const snapshot = await getDocs(collection(db, "submissions"));
-return snapshot.docs.map((doc) => {
+
+  // Load submissions and evaluations in parallel; join by submissionId so the
+  // queue table can show AI evaluation status and scores from the evaluations collection.
+  const [submissionsSnap, evaluationsSnap] = await Promise.all([
+    getDocs(collection(db, "submissions")),
+    getDocs(collection(db, "evaluations")),
+  ]);
+
+  // Index the latest evaluation per submissionId (sorted by createdAt desc).
+  type EvalEntry = {
+    evaluationRuns: EvaluationRun[];
+    status: string;
+    review: Attempt["review"];
+    createdAt: string;
+  };
+  const evalBySubmission = new Map<string, EvalEntry>();
+  for (const doc of evaluationsSnap.docs) {
+    const d = doc.data() as {
+      submissionId: string;
+      evaluationRuns: EvaluationRun[];
+      status: string;
+      review?: Attempt["review"];
+      createdAt: string;
+    };
+    const existing = evalBySubmission.get(d.submissionId);
+    if (!existing || String(d.createdAt ?? "") > String(existing.createdAt ?? "")) {
+      evalBySubmission.set(d.submissionId, {
+        evaluationRuns: d.evaluationRuns || [],
+        status: d.status,
+        review: d.review,
+        createdAt: d.createdAt,
+      });
+    }
+  }
+
+  return submissionsSnap.docs.map((doc) => {
     const d = doc.data() as {
       displayName: string;
       caseId: string;
@@ -38,11 +72,15 @@ return snapshot.docs.map((doc) => {
       attemptNumber: number;
       submittedAt: Timestamp | null;
     };
+    const evalData = evalBySubmission.get(doc.id);
     let category = "";
     try { category = getCaseDefinition(d.caseId).category; } catch { /* unknown case */ }
     const submittedAt = d.submittedAt instanceof Timestamp
       ? d.submittedAt.toDate().toISOString()
       : new Date().toISOString();
+    // Prefer the evaluation status (updated by the Cloud Function) over the
+    // submission's initial evaluationStatus field.
+    const status = ((evalData?.status || d.evaluationStatus) as AttemptStatus) ?? "pending_ai_processing";
     return {
       // Use Firestore doc ID as the row identity — unique per submission document
       // regardless of whether multiple docs share the same attemptId.
@@ -69,8 +107,9 @@ return snapshot.docs.map((doc) => {
       },
       submittedAt,
       idempotencyKey: "",
-      status: (d.evaluationStatus as AttemptStatus) ?? "pending_ai_processing",
-      evaluationRuns: [],
+      status,
+      evaluationRuns: evalData?.evaluationRuns ?? [],
+      review: evalData?.review,
     } satisfies Attempt;
   });
 }
