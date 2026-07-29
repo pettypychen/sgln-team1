@@ -25,6 +25,7 @@ const {
   retryEvaluationNotifications,
 } = require("./notifications");
 const { publicCredentialPage } = require("./publicCredential");
+const { onSubmissionCreated } = require("./submission-evaluator");
 
 const ANTHROPIC_API_KEY = defineSecret("ANTHROPIC_API_KEY");
 const OPENAI_API_KEY = defineSecret("OPENAI_API_KEY");
@@ -329,3 +330,4 @@ exports.processEvaluationJob = processEvaluationJob;
 exports.deliverEvaluationNotification = deliverEvaluationNotification;
 exports.retryEvaluationNotifications = retryEvaluationNotifications;
 exports.publicCredentialPage = publicCredentialPage;
+exports.onSubmissionCreated = onSubmissionCreated;

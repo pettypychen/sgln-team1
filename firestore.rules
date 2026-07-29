@@ -25,6 +25,13 @@ service cloud.firestore {
       allow update, delete: if false;
     }
 
+    // Evaluation results created by the AI pipeline. Readable by evaluators;
+    // all writes go through the Cloud Function service account.
+    match /evaluations/{evaluationId} {
+      allow read: if true;
+      allow write: if false;
+    }
+
     match /{document=**} {
       allow read, write: if false;
     }
