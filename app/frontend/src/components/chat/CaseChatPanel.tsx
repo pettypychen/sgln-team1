@@ -25,7 +25,7 @@ const PROVIDER_LABEL: Record<AgentProvider, string> = {
   gemini: "Google Gemini",
   zai: "Z.ai",
   alibaba: "Alibaba Qwen",
-  openrouter: "OpenRouter",
+  openrouter: "Deepseek (via OpenRouter)",
 };
 
 export interface CaseChatPanelProps {
