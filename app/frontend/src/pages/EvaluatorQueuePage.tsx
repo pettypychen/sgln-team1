@@ -231,12 +231,14 @@ export function EvaluatorQueuePage() {
                 <div><p className="m-0 text-small font-medium">{attempt.caseTitle}</p><p className="m-0 mt-1 text-micro text-muted">{attempt.category}</p></div>
                 <div><p className="m-0 text-micro text-muted">AI evaluation</p><p className="m-0 mt-1 text-small font-medium">{run?.status ?? "Missing"}</p></div>
                 <div><p className="m-0 text-micro text-muted">Case / AI interaction</p><p className="m-0 mt-1 text-small font-medium">{run?.status === "completed" ? `${run.caseScore} ${run.caseScore >= rubric.caseThreshold ? "meets" : "below"} / ${run.interactionScore} ${run.interactionScore >= rubric.interactionThreshold ? "meets" : "below"}` : "Manual review"}</p></div>
-                <div>
-                  <span className="text-micro font-semibold text-muted-deep">{STATUS_LABELS[attempt.status]}</span>
-                  {attempt.claim ? <p className="m-0 mt-2 text-micro text-muted">Claimed by {attempt.claim.evaluatorName}</p> : null}
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <div>
+                    <span className="text-micro font-semibold text-muted-deep">{STATUS_LABELS[attempt.status]}</span>
+                    {attempt.claim ? <p className="m-0 mt-1 text-micro text-muted">Claimed by {attempt.claim.evaluatorName}</p> : null}
+                  </div>
                   {isFirebaseConfigured && attempt.status === "pending_ai_processing" ? (
                     <button
-                      className="mt-2 rounded-button bg-black px-3 py-1.5 text-micro font-semibold text-white disabled:opacity-50"
+                      className="shrink-0 rounded-button bg-black px-3 py-1.5 text-micro font-semibold text-white disabled:opacity-50"
                       disabled={triggering.has(attempt.id)}
                       onClick={(e) => {
                         e.preventDefault();
