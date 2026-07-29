@@ -106,6 +106,26 @@ export function EvaluatorQueuePage() {
       .finally(() => setLoading(false));
   }, [session]);
 
+  // Poll for status updates while any submission is in the triggering set.
+  useEffect(() => {
+    if (triggering.size === 0) return;
+    const interval = setInterval(() => {
+      const load = isFirebaseConfigured ? listSubmissions() : evaluationRepository.listAttempts();
+      load.then((fresh) => {
+        setAttempts(fresh);
+        setTriggering((prev) => {
+          const next = new Set(prev);
+          for (const id of prev) {
+            const updated = fresh.find((a) => a.id === id);
+            if (!updated || updated.status !== "pending_ai_processing") next.delete(id);
+          }
+          return next;
+        });
+      }).catch(console.error);
+    }, 5000);
+    return () => clearInterval(interval);
+  }, [triggering]);
+
   useEffect(() => {
     writeQueueFilters({
       caseId: caseFilter,
@@ -212,7 +232,7 @@ export function EvaluatorQueuePage() {
                 <div><p className="m-0 text-micro text-muted">AI evaluation</p><p className="m-0 mt-1 text-small font-medium">{run?.status ?? "Missing"}</p></div>
                 <div><p className="m-0 text-micro text-muted">Case / AI interaction</p><p className="m-0 mt-1 text-small font-medium">{run?.status === "completed" ? `${run.caseScore} ${run.caseScore >= rubric.caseThreshold ? "meets" : "below"} / ${run.interactionScore} ${run.interactionScore >= rubric.interactionThreshold ? "meets" : "below"}` : "Manual review"}</p></div>
                 <div>
-                  <span className="inline-flex rounded-full bg-cloud px-3 py-1 text-micro font-semibold">{STATUS_LABELS[attempt.status]}</span>
+                  <span className="text-micro font-semibold text-muted-deep">{STATUS_LABELS[attempt.status]}</span>
                   {attempt.claim ? <p className="m-0 mt-2 text-micro text-muted">Claimed by {attempt.claim.evaluatorName}</p> : null}
                   {isFirebaseConfigured && attempt.status === "pending_ai_processing" ? (
                     <button
