@@ -6,7 +6,7 @@
  * conversation turn to whichever provider the request asks for.
  *
  * Contract:
- *   POST { provider: "anthropic" | "openai" | "gemini" | "zai" | "alibaba" | "openrouter",
+ *   POST { provider: "zai" | "alibaba" | "openrouter",
  *          system: string,
  *          messages: [{ role: "user" | "assistant", content: string }] }
  *   -> 200 { content: string }
@@ -27,26 +27,17 @@ const {
 const { publicCredentialPage } = require("./publicCredential");
 const { onSubmissionCreated, onEvaluationRetrigger } = require("./submission-evaluator");
 
-const ANTHROPIC_API_KEY = defineSecret("ANTHROPIC_API_KEY");
-const OPENAI_API_KEY = defineSecret("OPENAI_API_KEY");
-const GEMINI_API_KEY = defineSecret("GEMINI_API_KEY");
 const ZAI_API_KEY = defineSecret("ZAI_API_KEY");
 const ALIBABA_API_KEY = defineSecret("ALIBABA_API_KEY");
 const OPENROUTER_API_KEY = defineSecret("OPENROUTER_API_KEY");
 
 const ALL_SECRETS = [
-  ANTHROPIC_API_KEY,
-  OPENAI_API_KEY,
-  GEMINI_API_KEY,
   ZAI_API_KEY,
   ALIBABA_API_KEY,
   OPENROUTER_API_KEY,
 ];
 
 const DEFAULT_MODELS = {
-  anthropic: "claude-sonnet-5",
-  openai: "gpt-4o",
-  gemini: "gemini-2.0-flash",
   zai: "glm-4.5-flash",
   alibaba: "qwen3.7-flash",
   openrouter: "deepseek/deepseek-r1",
@@ -60,7 +51,7 @@ function validateBody(body) {
     return "Request body must be JSON.";
   }
   const { provider, system, messages } = body;
-  if (!["anthropic", "openai", "gemini", "zai", "alibaba", "openrouter"].includes(provider)) {
+  if (!["zai", "alibaba", "openrouter"].includes(provider)) {
     return "Unknown provider.";
   }
   if (typeof system !== "string" || system.length === 0) {
@@ -82,92 +73,6 @@ function validateBody(body) {
     }
   }
   return null;
-}
-
-async function callAnthropic(apiKey, system, messages) {
-  const response = await fetch("https://api.anthropic.com/v1/messages", {
-    method: "POST",
-    headers: {
-      "content-type": "application/json",
-      "x-api-key": apiKey,
-      "anthropic-version": "2023-06-01",
-    },
-    body: JSON.stringify({
-      model: process.env.ANTHROPIC_MODEL || DEFAULT_MODELS.anthropic,
-      max_tokens: MAX_TOKENS,
-      system,
-      messages: messages.map((message) => ({
-        role: message.role,
-        content: message.content,
-      })),
-    }),
-  });
-
-  if (!response.ok) {
-    throw new Error(`Anthropic API error (${response.status})`);
-  }
-  const data = await response.json();
-  const text = (data.content || [])
-    .filter((block) => block.type === "text")
-    .map((block) => block.text)
-    .join("\n")
-    .trim();
-  return text;
-}
-
-async function callOpenAI(apiKey, system, messages) {
-  const response = await fetch("https://api.openai.com/v1/chat/completions", {
-    method: "POST",
-    headers: {
-      "content-type": "application/json",
-      authorization: `Bearer ${apiKey}`,
-    },
-    body: JSON.stringify({
-      model: process.env.OPENAI_MODEL || DEFAULT_MODELS.openai,
-      max_tokens: MAX_TOKENS,
-      messages: [
-        { role: "system", content: system },
-        ...messages.map((message) => ({
-          role: message.role,
-          content: message.content,
-        })),
-      ],
-    }),
-  });
-
-  if (!response.ok) {
-    throw new Error(`OpenAI API error (${response.status})`);
-  }
-  const data = await response.json();
-  return (data.choices?.[0]?.message?.content || "").trim();
-}
-
-async function callGemini(apiKey, system, messages) {
-  const model = process.env.GEMINI_MODEL || DEFAULT_MODELS.gemini;
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
-  const response = await fetch(url, {
-    method: "POST",
-    headers: { "content-type": "application/json" },
-    body: JSON.stringify({
-      systemInstruction: { parts: [{ text: system }] },
-      contents: messages.map((message) => ({
-        // Gemini uses "model" for the assistant role.
-        role: message.role === "assistant" ? "model" : "user",
-        parts: [{ text: message.content }],
-      })),
-      generationConfig: { maxOutputTokens: MAX_TOKENS },
-    }),
-  });
-
-  if (!response.ok) {
-    throw new Error(`Gemini API error (${response.status})`);
-  }
-  const data = await response.json();
-  const parts = data.candidates?.[0]?.content?.parts || [];
-  return parts
-    .map((part) => part.text || "")
-    .join("\n")
-    .trim();
 }
 
 async function callZai(apiKey, system, messages) {
@@ -249,18 +154,12 @@ async function callOpenRouter(apiKey, system, messages) {
 }
 
 const KEY_FOR_PROVIDER = {
-  anthropic: ANTHROPIC_API_KEY,
-  openai: OPENAI_API_KEY,
-  gemini: GEMINI_API_KEY,
   zai: ZAI_API_KEY,
   alibaba: ALIBABA_API_KEY,
   openrouter: OPENROUTER_API_KEY,
 };
 
 const DISPATCH = {
-  anthropic: callAnthropic,
-  openai: callOpenAI,
-  gemini: callGemini,
   zai: callZai,
   alibaba: callAlibaba,
   openrouter: callOpenRouter,

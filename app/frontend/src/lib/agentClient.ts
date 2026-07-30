@@ -14,7 +14,7 @@
  *     through the Function which holds the real key as a Firebase secret).
  */
 
-export type AgentProvider = "anthropic" | "openai" | "gemini" | "zai" | "alibaba" | "openrouter";
+export type AgentProvider = "zai" | "alibaba" | "openrouter";
 
 export interface AgentTurnMessage {
   role: "user" | "assistant";
@@ -56,9 +56,6 @@ export class AgentNotImplementedError extends Error {
 
 /** Maps each provider to the env var that gates its availability in local dev. */
 const PROVIDER_ENV_KEY: Record<AgentProvider, string> = {
-  anthropic: "VITE_ANTHROPIC_API_KEY",
-  openai: "VITE_OPENAI_API_KEY",
-  gemini: "VITE_GOOGLE_API_KEY",
   zai: "VITE_ZAI_API_KEY",
   alibaba: "VITE_ALIBABA_API_KEY",
   openrouter: "VITE_OPENROUTER_API_KEY",
@@ -66,9 +63,6 @@ const PROVIDER_ENV_KEY: Record<AgentProvider, string> = {
 
 /** Canonical display order for the provider dropdown. */
 export const ALL_PROVIDERS: AgentProvider[] = [
-  "anthropic",
-  "openai",
-  "gemini",
   "zai",
   "alibaba",
   "openrouter",
@@ -116,56 +110,11 @@ export function getDefaultProvider(): AgentProvider {
     return configured as AgentProvider;
   }
   const providers = getConfiguredProviders();
-  return providers.length > 0 ? providers[0] : "anthropic";
+  return providers.length > 0 ? providers[0] : "zai";
 }
 
 export function isAgentConfigured(): boolean {
   return Boolean(getAgentEndpoint()) || getConfiguredProviders().length > 0;
-}
-
-/**
- * Call Anthropic via the Vite dev proxy (/api/anthropic → api.anthropic.com).
- * The proxy injects the API key server-side so it never appears in browser
- * network requests and there are no CORS issues.
- */
-async function sendViaAnthropicDevProxy(request: AgentTurnRequest): Promise<string> {
-  let response: Response;
-  try {
-    response = await fetch("/api/anthropic/v1/messages", {
-      method: "POST",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify({
-        model: readEnv("VITE_ANTHROPIC_MODEL") ?? "claude-sonnet-5",
-        max_tokens: 700,
-        system: request.system,
-        messages: request.messages,
-      }),
-      signal: request.signal,
-    });
-  } catch (error) {
-    throw new AgentRequestError(
-      error instanceof Error ? error.message : "Network error contacting Anthropic",
-    );
-  }
-
-  if (!response.ok) {
-    let detail = `Anthropic request failed (${response.status})`;
-    try {
-      const body = (await response.json()) as { error?: { message?: string } };
-      if (body?.error?.message) detail = body.error.message;
-    } catch { /* non-JSON body */ }
-    throw new AgentRequestError(detail, response.status);
-  }
-
-  const data = (await response.json()) as { content?: { type: string; text: string }[] };
-  const text = (data.content ?? [])
-    .filter((block) => block.type === "text")
-    .map((block) => block.text)
-    .join("\n")
-    .trim();
-
-  if (!text) throw new AgentRequestError("Anthropic returned an empty response");
-  return text;
 }
 
 /**
@@ -343,10 +292,6 @@ export async function sendAgentTurn(request: AgentTurnRequest): Promise<string> 
   // Local dev path: call the provider directly using its VITE_*_API_KEY.
   if (!readEnv(PROVIDER_ENV_KEY[provider])) {
     throw new AgentNotConfiguredError();
-  }
-
-  if (provider === "anthropic") {
-    return sendViaAnthropicDevProxy(request);
   }
 
   if (provider === "zai") {

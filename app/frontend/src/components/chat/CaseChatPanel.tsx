@@ -20,9 +20,6 @@ import {
 import { MarkdownDocument } from "@/components/ui/MarkdownDocument";
 
 const PROVIDER_LABEL: Record<AgentProvider, string> = {
-  anthropic: "Anthropic Claude",
-  openai: "OpenAI",
-  gemini: "Google Gemini",
   zai: "Z.ai",
   alibaba: "Alibaba Qwen",
   openrouter: "Deepseek (via OpenRouter)",
