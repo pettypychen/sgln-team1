@@ -50,6 +50,12 @@ export function MarketplacePage({
         scenarioCount={SIMULATIONS.length}
         pathwayCount={CATEGORY_FILTERS.filter((category) => category !== "ALL").length}
         accent={accent}
+        onBrowse={() =>
+          document
+            .getElementById("simulation-library")
+            ?.scrollIntoView({ behavior: "smooth", block: "start" })
+        }
+        onViewCredentials={() => navigate("/credentials")}
         onOpenContinue={() =>
           navigate("/simulations/first-year-associate-ma-due-diligence")
         }
