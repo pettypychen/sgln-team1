@@ -19,8 +19,8 @@ interface AiCallLog {
 }
 
 function AdminLogin({ onLogin }: { onLogin: () => void }) {
-  const [id, setId] = useState("");
-  const [password, setPassword] = useState("");
+  const [id, setId] = useState("admin");
+  const [password, setPassword] = useState("admin");
   const [error, setError] = useState("");
 
   function submit(e: FormEvent) {
