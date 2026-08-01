@@ -19,6 +19,11 @@
 const { onRequest } = require("firebase-functions/v2/https");
 const { defineSecret } = require("firebase-functions/params");
 const logger = require("firebase-functions/logger");
+const { initializeApp, getApps } = require("firebase-admin/app");
+const { getFirestore } = require("firebase-admin/firestore");
+
+if (!getApps().length) initializeApp();
+const db = getFirestore();
 const { evaluationApi, processEvaluationJob } = require("./evaluation");
 const {
   deliverEvaluationNotification,
@@ -44,6 +49,46 @@ const DEFAULT_MODELS = {
 };
 
 const MAX_TOKENS = 700;
+
+const MODEL_ENV = { zai: "ZAI_MODEL", alibaba: "ALIBABA_MODEL", openrouter: "OPENROUTER_MODEL" };
+function resolvedModel(provider) {
+  const key = MODEL_ENV[provider];
+  return (key && process.env[key]) || DEFAULT_MODELS[provider] || provider;
+}
+
+function nowIso() { return new Date().toISOString(); }
+
+async function createAiCallLog(data) {
+  try {
+    const ref = db.collection("aiCallLogs").doc();
+    await ref.set({
+      id: ref.id,
+      callType: data.callType,
+      submissionId: data.submissionId || "",
+      userName: data.userName || "",
+      provider: data.provider || "",
+      aiModel: data.aiModel || "",
+      promptPreview: (data.promptPreview || "").slice(0, 1500),
+      status: "processing",
+      response: "",
+      datetime: nowIso(),
+      completedAt: null,
+    });
+    return ref;
+  } catch (err) {
+    logger.warn("aiCallLog create failed", { error: err.message });
+    return null;
+  }
+}
+
+async function finalizeAiCallLog(ref, response) {
+  if (!ref) return;
+  try {
+    await ref.update({ status: "complete", response: (response || "").slice(0, 2000), completedAt: nowIso() });
+  } catch (err) {
+    logger.warn("aiCallLog finalize failed", { error: err.message });
+  }
+}
 
 /** Reject payloads that are malformed or unreasonably large. */
 function validateBody(body) {
@@ -210,14 +255,25 @@ exports.agentChat = onRequest(
       return;
     }
 
+    const lastUserMsg = [...messages].reverse().find((m) => m.role === "user")?.content ?? "";
+    const promptPreview = `[System]: ${system.slice(0, 300)}\n\n[User]: ${lastUserMsg.slice(0, 500)}`;
+    const logRef = await createAiCallLog({
+      callType: "chat",
+      provider,
+      aiModel: resolvedModel(provider),
+      promptPreview,
+    });
+
     try {
       const content = await DISPATCH[provider](apiKey, system, messages);
+      await finalizeAiCallLog(logRef, content);
       if (!content) {
         res.status(502).json({ error: "Provider returned an empty response." });
         return;
       }
       res.status(200).json({ content });
     } catch (error) {
+      await finalizeAiCallLog(logRef, `Error: ${error.message}`);
       logger.error("agentChat failed", { provider, message: error.message });
       res.status(502).json({ error: "The AI provider request failed." });
     }

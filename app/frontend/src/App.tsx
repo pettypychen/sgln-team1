@@ -9,6 +9,7 @@ import { EvaluatorReviewPage } from "@/pages/EvaluatorReviewPage";
 import { CredentialsPage } from "@/pages/CredentialsPage";
 import { PublicCredentialPage } from "@/pages/PublicCredentialPage";
 import { PrototypeCasePage } from "@/pages/PrototypeCasePage";
+import { AdminDashboard } from "@/pages/AdminDashboard";
 import { getParticipantEmail, getParticipantName } from "@/participant/session";
 
 function RequireParticipant() {
@@ -45,6 +46,7 @@ export function App() {
           element={<EvaluatorReviewPage />}
         />
         <Route path="/verify/:publicToken" element={<PublicCredentialPage />} />
+        <Route path="/admin" element={<AdminDashboard />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </BrowserRouter>
