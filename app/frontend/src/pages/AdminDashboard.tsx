@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState, type FormEvent } from "react";
-import { collection, getDocs } from "firebase/firestore";
+import { collection, onSnapshot } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 
 const SESSION_KEY = "simworks_admin";
@@ -75,14 +75,20 @@ function AdminContent({ onLogout }: { onLogout: () => void }) {
 
   useEffect(() => {
     if (!db) { setLoading(false); setError("Firebase is not configured."); return; }
-    getDocs(collection(db, "aiCallLogs"))
-      .then((snap) => {
+    const unsub = onSnapshot(
+      collection(db, "aiCallLogs"),
+      (snap) => {
         const loaded = snap.docs.map((d) => ({ id: d.id, ...d.data() } as AiCallLog));
         loaded.sort((a, b) => b.datetime.localeCompare(a.datetime));
         setLogs(loaded);
-      })
-      .catch((err: unknown) => setError(err instanceof Error ? err.message : "Failed to load logs."))
-      .finally(() => setLoading(false));
+        setLoading(false);
+      },
+      (err) => {
+        setError(err.message);
+        setLoading(false);
+      },
+    );
+    return unsub;
   }, []);
 
   const filtered = useMemo(() => {

@@ -29,7 +29,7 @@ export async function logChatAiCall({
       datetime: now,
       completedAt: now,
     });
-  } catch {
-    // Non-blocking — logging must never break the chat
+  } catch (err) {
+    console.warn("[aiCallLogger] Failed to write chat log:", err);
   }
 }
