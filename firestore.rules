@@ -44,7 +44,8 @@ service cloud.firestore {
     // Readable by the frontend admin dashboard (access is gated by the UI login).
     match /aiCallLogs/{logId} {
       allow read: if true;
-      allow write: if false;
+      allow create: if true;
+      allow update, delete: if false;
     }
 
     match /{document=**} {
