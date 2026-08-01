@@ -11,7 +11,7 @@ interface SimulationGridProps {
 /** Responsive marketplace shelf of professional scenarios. */
 export function SimulationGrid({ sims, columns = 3 }: SimulationGridProps) {
   return (
-    <section className="mx-auto max-w-container px-5 pb-16 pt-10 md:px-12 md:pb-20 md:pt-12">
+    <section id="simulation-library" className="mx-auto max-w-container px-5 pb-16 pt-10 md:px-12 md:pb-20 md:pt-12">
       <div className="mb-6 flex flex-col justify-between gap-3 md:flex-row md:items-end">
         <div>
           <div className="mb-2 text-small font-medium text-muted-deep">

@@ -11,9 +11,9 @@ interface NavLink {
 }
 
 const NAV_LINKS: NavLink[] = [
-  { label: "Marketplace", active: true },
+  { label: "Marketplace", active: true, to: "/" },
   { label: "Practice" },
-  { label: "Credentials" },
+  { label: "Credentials", to: "/credentials" },
   { label: "Enterprise" },
   { label: "Journey", to: "/journey" },
 ];

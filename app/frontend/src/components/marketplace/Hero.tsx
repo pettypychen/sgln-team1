@@ -12,6 +12,7 @@ interface HeroProps {
   pathwayCount: number;
   accent?: string;
   onBrowse?: () => void;
+  onViewCredentials?: () => void;
   onOpenContinue?: () => void;
 }
 
@@ -22,6 +23,7 @@ export function Hero({
   pathwayCount,
   accent,
   onBrowse,
+  onViewCredentials,
   onOpenContinue,
 }: HeroProps) {
   return (
@@ -40,6 +42,7 @@ export function Hero({
           <Button onClick={onBrowse}>Browse simulations</Button>
           <button
             type="button"
+            onClick={onViewCredentials}
             className="inline-flex min-h-11 cursor-pointer items-center justify-center rounded-button bg-white px-5 py-3 text-label font-medium text-ink soft-edge transition-[background,transform] hover:-translate-y-0.5 hover:bg-cloud"
           >
             View credentials
