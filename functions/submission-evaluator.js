@@ -204,7 +204,29 @@ async function runEvaluationForSubmission(submissionId, submission) {
       attemptNumber: attemptNumber ?? 1,
     });
 
-    const rawText = await callZaiEvaluator(ZAI_API_KEY.value(), userMessage);
+    const aiLogRef = db.collection("aiCallLogs").doc();
+    await aiLogRef.set({
+      id: aiLogRef.id,
+      callType: "evaluation",
+      submissionId,
+      userName: displayName || "",
+      provider: ACTIVE_CONFIG.provider,
+      aiModel: ACTIVE_CONFIG.model,
+      promptPreview: userMessage.slice(0, 1500),
+      status: "processing",
+      response: "",
+      datetime: iso(),
+      completedAt: null,
+    }).catch(() => {});
+
+    let rawText;
+    try {
+      rawText = await callZaiEvaluator(ZAI_API_KEY.value(), userMessage);
+      await aiLogRef.update({ status: "complete", response: rawText.slice(0, 2000), completedAt: iso() }).catch(() => {});
+    } catch (aiError) {
+      await aiLogRef.update({ status: "complete", response: `Error: ${aiError.message}`, completedAt: iso() }).catch(() => {});
+      throw aiError;
+    }
 
     let parsed;
     try {

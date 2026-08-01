@@ -18,6 +18,8 @@ import {
   type AgentTurnMessage,
 } from "@/lib/agentClient";
 import { MarkdownDocument } from "@/components/ui/MarkdownDocument";
+import { logChatAiCall } from "@/lib/aiCallLogger";
+import { getParticipantName } from "@/participant/session";
 
 const PROVIDER_LABEL: Record<AgentProvider, string> = {
   zai: "Z.ai",
@@ -145,7 +147,16 @@ export function CaseChatPanel({
       messages: toTurnMessages(history),
       provider: selectedProvider,
     })
-      .then((content) => finish(content, "sent"))
+      .then((content) => {
+        finish(content, "sent");
+        logChatAiCall({
+          userName: getParticipantName() || "",
+          provider: selectedProvider,
+          aiModel: PROVIDER_LABEL[selectedProvider] || selectedProvider,
+          promptPreview: `[System]: ${systemPrompt.slice(0, 300)}\n\n[User]: ${question.slice(0, 500)}`,
+          response: content,
+        });
+      })
       .catch((error) => {
         if (error instanceof AgentNotConfiguredError) {
           finish(scriptedFallback(question), "sent");

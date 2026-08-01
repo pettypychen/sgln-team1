@@ -40,6 +40,14 @@ service cloud.firestore {
       allow read, update, delete: if false;
     }
 
+    // AI call logs written exclusively by Cloud Functions.
+    // Readable by the frontend admin dashboard (access is gated by the UI login).
+    match /aiCallLogs/{logId} {
+      allow read: if true;
+      allow create: if true;
+      allow update, delete: if false;
+    }
+
     match /{document=**} {
       allow read, write: if false;
     }
