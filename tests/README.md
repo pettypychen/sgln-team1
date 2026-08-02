@@ -45,6 +45,27 @@ k6 run -e BASE_URL=https://your-staging-project.web.app tests/load/browse-market
 | File | Description | Peak VUs |
 |---|---|---|
 | `load/browse-marketplace.js` | Post-login marketplace + simulation browsing | 100 |
+| `load/kopi-run-submission.js` | Full Kopi Run session: AI chat (3–5 turns via Z.ai) + Firestore submission | 100 |
+
+### Kopi Run submission test
+
+```sh
+# AI chat only — no data written to Firestore
+k6 run tests/load/kopi-run-submission.js
+
+# Full flow — writes real submissions to Firestore (shows up in the evaluator queue)
+k6 run -e FIREBASE_API_KEY=AIza... tests/load/kopi-run-submission.js
+
+# Against local Cloud Function emulator (recommended before hitting live Z.ai at scale)
+k6 run -e AGENT_ENDPOINT=http://127.0.0.1:5101/sgln-team1-f8d61/us-central1/agentChat \
+       -e FIREBASE_API_KEY=AIza... \
+       tests/load/kopi-run-submission.js
+```
+
+> **Cost note** — 100 VUs × ~4 turns = ~400 Z.ai API calls per run. Test against the
+> Firebase emulator first (`firebase emulators:start --only functions,firestore`) to verify
+> behaviour without incurring API costs. Submissions written to production will appear in
+> the evaluator queue with email addresses like `loadtest-001@test.sim`.
 
 ## Reading k6 output
 
@@ -56,3 +77,6 @@ Key metrics to watch:
 | `http_req_failed rate` | < 1 % | HTTP error rate |
 | `page_errors rate` | < 1 % | Failed status/body checks |
 | `hosting_latency_ms` | — | Per-page Firebase Hosting latency breakdown |
+| `agent_turn_ms` | — | Per-turn Z.ai response time |
+| `chat_errors rate` | < 5 % | Failed agent turns (AI errors / timeouts) |
+| `submit_errors rate` | < 1 % | Failed Firestore submission writes |
