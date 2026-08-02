@@ -41,9 +41,16 @@ const AGENT_ENDPOINT =
   __ENV.AGENT_ENDPOINT ||
   "https://sgln-team1-f8d61.web.app/api/agent";
 
+// AI provider to use: "zai" | "alibaba" | "openrouter"
+const PROVIDER = __ENV.PROVIDER || "zai";
+
 const FIREBASE_API_KEY = __ENV.FIREBASE_API_KEY || "";
+// Override with emulator URL for local testing:
+//   -e FIRESTORE_SUBMISSIONS_URL=http://127.0.0.1:8180/v1/projects/sgln-team1-f8d61/databases/(default)/documents/submissions
 const FIRESTORE_URL =
+  __ENV.FIRESTORE_SUBMISSIONS_URL ||
   "https://firestore.googleapis.com/v1/projects/sgln-team1-f8d61/databases/(default)/documents/submissions";
+const IS_EMULATOR = FIRESTORE_URL.includes("127.0.0.1") || FIRESTORE_URL.includes("localhost");
 
 // ── Load profile ──────────────────────────────────────────────────────────────
 
@@ -179,7 +186,7 @@ function randBetween(min, max) {
 /** POST one turn to the agentChat function and return the AI reply text. */
 function sendTurn(messages) {
   const payload = JSON.stringify({
-    provider: "zai",
+    provider: PROVIDER,
     system: SYSTEM_PROMPT,
     messages: messages,
   });
@@ -213,7 +220,8 @@ function sendTurn(messages) {
 
 /** POST a submission document to Firestore via REST API. */
 function submitWork(vuId, workProduct) {
-  if (!FIREBASE_API_KEY) return; // skip if no key provided
+  // Require API key for production; emulator works without one.
+  if (!FIREBASE_API_KEY && !IS_EMULATOR) return;
 
   const now = new Date().toISOString();
   const payload = JSON.stringify({
@@ -228,14 +236,14 @@ function submitWork(vuId, workProduct) {
     },
   });
 
-  const res = http.post(
-    `${FIRESTORE_URL}?key=${FIREBASE_API_KEY}`,
-    payload,
-    {
-      headers: { "Content-Type": "application/json" },
-      tags: { endpoint: "firestore" },
-    },
-  );
+  const url = (FIREBASE_API_KEY && !IS_EMULATOR)
+    ? `${FIRESTORE_URL}?key=${FIREBASE_API_KEY}`
+    : FIRESTORE_URL;
+
+  const res = http.post(url, payload, {
+    headers: { "Content-Type": "application/json" },
+    tags: { endpoint: "firestore" },
+  });
 
   const ok = check(res, {
     "firestore submission 200": (r) => r.status === 200,
