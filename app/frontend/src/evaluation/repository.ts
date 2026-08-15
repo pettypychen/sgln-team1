@@ -176,7 +176,7 @@ function stampedScores(
   );
 }
 
-class LocalEvaluationRepository implements EvaluationRepository {
+export class LocalEvaluationRepository implements EvaluationRepository {
   async authenticateEvaluator(code: string, evaluatorName: string) {
     const demoCode = import.meta.env?.VITE_DEMO_EVALUATOR_CODE || "SIMWORKS-DEMO";
     if (code !== demoCode) throw new Error("Invalid evaluator access code.");
@@ -522,7 +522,7 @@ class LocalEvaluationRepository implements EvaluationRepository {
   }
 }
 
-class HttpEvaluationRepository implements EvaluationRepository {
+export class HttpEvaluationRepository implements EvaluationRepository {
   constructor(private readonly baseUrl: string) {}
 
   private async request<T>(path: string, init?: RequestInit): Promise<T> {
@@ -603,6 +603,28 @@ const endpoint = import.meta.env?.VITE_EVALUATION_API_ENDPOINT as string | undef
 export const evaluationRepository: EvaluationRepository = endpoint
   ? new HttpEvaluationRepository(endpoint.replace(/\/$/, ""))
   : new LocalEvaluationRepository();
+
+// On localhost (DEV), call the Cloud Run function directly — it has cors:true so the browser allows it.
+// On production, use a relative URL that Firebase Hosting rewrites to the same function.
+const evalApiBase = endpoint?.replace(/\/$/, "")
+  ?? (import.meta.env.DEV ? "https://evaluationapi-5iwaz2l7bq-uc.a.run.app" : "/api/evaluation");
+
+export const credentialsApi = new HttpEvaluationRepository(evalApiBase);
+
+export async function getLearnerCollectionByEmail(email: string): Promise<{
+  access: LearnerAccess;
+  attempts: Attempt[];
+  credentials: Credential[];
+} | null> {
+  const response = await fetch(`${evalApiBase}/credentials/by-email`, {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify({ email }),
+  });
+  const body = await response.json() as ({ access: LearnerAccess; attempts: Attempt[]; credentials: Credential[] } | null) & { error?: string };
+  if (!response.ok) throw new Error(body?.error || "Failed to load credentials.");
+  return body;
+}
 
 export function draftForAttempt(attempt: Attempt): ReviewDraftInput {
   return {
