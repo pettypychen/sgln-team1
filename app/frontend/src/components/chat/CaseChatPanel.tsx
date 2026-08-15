@@ -125,11 +125,16 @@ export function CaseChatPanel({
     sendAgentTurnWithFallback(
       { system: systemPrompt, messages: toTurnMessages(history) },
       (provider, attempt) => {
-        if (attempt > 0) {
-          const prev = PROVIDER_FALLBACK_CHAIN[attempt - 1];
-          updateLoading(
-            `${PROVIDER_LABEL[prev]} unavailable — trying ${PROVIDER_LABEL[provider]}…`,
-          );
+        const label =
+          attempt === 0
+            ? `Connecting via ${PROVIDER_LABEL[provider]}…`
+            : `${PROVIDER_LABEL[PROVIDER_FALLBACK_CHAIN[attempt - 1]]} unavailable — trying ${PROVIDER_LABEL[provider]}…`;
+        // Attempt 0 fires before React has committed the loading message,
+        // so defer one tick to let the ref update first.
+        if (attempt === 0) {
+          window.setTimeout(() => updateLoading(label), 0);
+        } else {
+          updateLoading(label);
         }
       },
     )
