@@ -6,6 +6,20 @@ import { evaluationRepository } from "@/evaluation/repository";
 import { CASE_DEFINITIONS, getCaseDefinition } from "@/evaluation/rubrics";
 import type { Attempt, Credential, LearnerAccess } from "@/evaluation/types";
 
+function attemptStatusLabel(attempt: Attempt): string {
+  if (attempt.review?.status === "final") return outcomeLabel(attempt.review.outcome);
+  const runs = attempt.evaluationRuns ?? [];
+  const latestRun = runs[runs.length - 1];
+  if (!latestRun) {
+    return attempt.status === "ai_processing"
+      ? "AI evaluation in progress"
+      : "AI evaluation failed · manual review available";
+  }
+  if (latestRun.status === "processing") return "AI evaluation in progress";
+  if (latestRun.status === "completed") return "Awaiting human review";
+  return "AI evaluation failed · manual review available";
+}
+
 interface Collection {
   access: LearnerAccess;
   attempts: Attempt[];
@@ -142,7 +156,7 @@ export function CredentialsPage() {
           {collection.attempts.length ? [...collection.attempts].sort((a, b) => b.submittedAt.localeCompare(a.submittedAt)).map((attempt) => (
             <article key={attempt.id} className="flex flex-wrap items-center justify-between gap-4 rounded-panel bg-white p-5 soft-edge">
               <div><h3 className="m-0 text-label">{attempt.caseTitle}</h3><p className="m-0 mt-1 text-micro text-muted">Attempt #{attempt.attemptNumber} · {new Date(attempt.submittedAt).toLocaleString()}</p></div>
-              <div className="text-right"><p className="m-0 text-small font-semibold">{attempt.review?.status === "final" ? outcomeLabel(attempt.review.outcome) : attempt.status === "ai_failed" ? "AI evaluation failed · manual review available" : attempt.status === "ai_processing" ? "AI evaluation in progress" : "Awaiting human review"}</p>{attempt.review?.summary ? <p className="m-0 mt-1 max-w-xl text-small text-muted-deep">{attempt.review.summary}</p> : null}{attempt.review?.outcome === "remediation_required" ? <Link onClick={() => startRetry(attempt)} className="mt-2 inline-flex text-small font-semibold text-oxblood" to={`/simulations/${attempt.caseId}`}>Start a fresh linked attempt</Link> : null}</div>
+              <div className="text-right"><p className="m-0 text-small font-semibold">{attemptStatusLabel(attempt)}</p>{attempt.review?.summary ? <p className="m-0 mt-1 max-w-xl text-small text-muted-deep">{attempt.review.summary}</p> : null}{attempt.review?.outcome === "remediation_required" ? <Link onClick={() => startRetry(attempt)} className="mt-2 inline-flex text-small font-semibold text-oxblood" to={`/simulations/${attempt.caseId}`}>Start a fresh linked attempt</Link> : null}</div>
             </article>
           )) : <div className="rounded-panel bg-white p-6 text-muted-deep soft-edge">No submitted attempts yet.</div>}
         </div></section>
