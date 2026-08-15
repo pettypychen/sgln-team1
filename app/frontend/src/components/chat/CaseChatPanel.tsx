@@ -11,7 +11,6 @@ import {
   AgentNotImplementedError,
   isAgentConfigured,
   PROVIDER_FALLBACK_CHAIN,
-  PROVIDER_MODELS,
   sendAgentTurnWithFallback,
   type AgentProvider,
   type AgentTurnMessage,
@@ -155,12 +154,11 @@ export function CaseChatPanel({
 
     sendAgentTurnWithFallback(
       { system: systemPrompt, messages: toTurnMessages(history) },
-      (provider, attempt) => {
-        const model = PROVIDER_MODELS[provider][0];
+      (provider, attempt, firstModel) => {
         const label =
           attempt === 0
-            ? `Connecting via ${PROVIDER_LABEL[provider]} · ${model}…`
-            : `${PROVIDER_LABEL[PROVIDER_FALLBACK_CHAIN[attempt - 1]]} unavailable — trying ${PROVIDER_LABEL[provider]} · ${model}…`;
+            ? `Connecting via ${PROVIDER_LABEL[provider]} · ${firstModel}…`
+            : `${PROVIDER_LABEL[PROVIDER_FALLBACK_CHAIN[attempt - 1]]} unavailable — trying ${PROVIDER_LABEL[provider]} · ${firstModel}…`;
         // Attempt 0 fires before React has committed the loading message,
         // so defer one tick to let the ref update first.
         if (attempt === 0) {

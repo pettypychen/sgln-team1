@@ -277,6 +277,18 @@ const DEV_HTTP_CALL: Record<AgentProvider, (req: AgentTurnRequest, model: string
   openrouter: devCallOpenRouter,
 };
 
+/** Returns the first model that will actually be tried for a provider (respects index + failed set). */
+function getFirstAvailableModel(provider: AgentProvider): string {
+  const models = PROVIDER_MODELS[provider];
+  const failed = providerFailedModels[provider];
+  const startIdx = providerModelIndex[provider];
+  for (let i = 0; i < models.length; i++) {
+    const model = models[(startIdx + i) % models.length];
+    if (!failed.has(model)) return model;
+  }
+  return models[startIdx % models.length]; // all failed — reset will happen inside sendAgentTurn
+}
+
 /** Automatic provider fallback order used by the chat panel. */
 export const PROVIDER_FALLBACK_CHAIN: AgentProvider[] = [
   "alibaba",
@@ -293,7 +305,7 @@ export const PROVIDER_FALLBACK_CHAIN: AgentProvider[] = [
  */
 export async function sendAgentTurnWithFallback(
   request: Omit<AgentTurnRequest, "provider" | "onModelSwitch">,
-  onProviderSwitch: (provider: AgentProvider, attempt: number) => void,
+  onProviderSwitch: (provider: AgentProvider, attempt: number, firstModel: string) => void,
   onModelSwitch?: (provider: AgentProvider, failedModel: string, nextModel: string) => void,
 ): Promise<{ content: string; provider: AgentProvider; model?: string }> {
   const endpoint = getAgentEndpoint();
@@ -306,7 +318,7 @@ export async function sendAgentTurnWithFallback(
   let lastError: unknown;
   for (let i = 0; i < chain.length; i++) {
     const provider = chain[i];
-    onProviderSwitch(provider, i);
+    onProviderSwitch(provider, i, getFirstAvailableModel(provider));
     try {
       const { content, model } = await sendAgentTurn({
         ...request,
