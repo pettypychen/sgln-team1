@@ -84,6 +84,17 @@ export function CredentialsPage() {
     void refresh();
   }, [email]);
 
+  // Auto-refresh every 8 s while any attempt is still being evaluated.
+  useEffect(() => {
+    if (!collection) return;
+    const inProgress = collection.attempts.some(
+      (a) => a.status === "ai_processing" || (a.evaluationRuns ?? []).some((r) => r.status === "processing"),
+    );
+    if (!inProgress) return;
+    const id = setTimeout(() => void refresh(), 8_000);
+    return () => clearTimeout(id);
+  }, [collection]);
+
   function handleEmailSubmit(e: React.FormEvent) {
     e.preventDefault();
     const trimmed = emailInput.trim();
@@ -204,7 +215,14 @@ export function CredentialsPage() {
           })}
         </div></section>
 
-        <section className="mt-10"><h2 className="font-display text-3xl font-light">Attempt history</h2><div className="mt-4 grid gap-3">
+        <section className="mt-10">
+          <div className="flex items-baseline gap-3">
+            <h2 className="font-display text-3xl font-light">Attempt history</h2>
+            {collection.attempts.some((a) => a.status === "ai_processing" || (a.evaluationRuns ?? []).some((r) => r.status === "processing")) && (
+              <span className="text-micro text-muted">Checking for updates…</span>
+            )}
+          </div>
+          <div className="mt-4 grid gap-3">
           {collection.attempts.length ? [...collection.attempts].sort((a, b) => b.submittedAt.localeCompare(a.submittedAt)).map((attempt) => (
             <article key={attempt.id} className="flex flex-wrap items-center justify-between gap-4 rounded-panel bg-white p-5 soft-edge">
               <div><h3 className="m-0 text-label">{attempt.caseTitle}</h3><p className="m-0 mt-1 text-micro text-muted">Attempt #{attempt.attemptNumber} · {new Date(attempt.submittedAt).toLocaleString()}</p></div>

@@ -1383,7 +1383,8 @@ async function handler(req, res) {
       const ev = evalsBySubmissionId.get(sub._docId);
       const submittedAt = sub.submittedAt?.toDate ? sub.submittedAt.toDate().toISOString() : (sub.submittedAt || new Date().toISOString());
       const status = sub.evaluationStatus === "ready_for_review" ? "ready_for_review"
-        : sub.evaluationStatus === "ai_processing" ? "ai_processing" : "ai_failed";
+        : (sub.evaluationStatus === "ai_processing" || sub.evaluationStatus === "pending_ai_processing") ? "ai_processing"
+        : "ai_failed";
       return {
         id: sub.attemptId || sub._docId,
         participantId: participantId || "",
