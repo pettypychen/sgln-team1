@@ -47,6 +47,7 @@ k6 run -e BASE_URL=https://your-staging-project.web.app tests/load/browse-market
 | `load/browse-marketplace.js` | Post-login marketplace + simulation browsing | 100 |
 | `load/kopi-run-submission.js` | Full Kopi Run session: AI chat (3–5 turns via Z.ai) + Firestore submission | 100 |
 | `load/claude-concurrent.js` | Same Kopi Run scenario against Claude (Anthropic) — rate-limit detection | 5 |
+| `load/ai-stress-test.js` | Stepping stress test for Z.ai / Qwen / Deepseek — finds max concurrent users before errors | 1–50 |
 
 ### Kopi Run submission test
 
@@ -67,6 +68,36 @@ k6 run -e AGENT_ENDPOINT=http://127.0.0.1:5101/sgln-team1-f8d61/us-central1/agen
 > Firebase emulator first (`firebase emulators:start --only functions,firestore`) to verify
 > behaviour without incurring API costs. Submissions written to production will appear in
 > the evaluator queue with email addresses like `loadtest-001@test.sim`.
+
+### AI stress test — find max concurrent users per provider
+
+Steps up by 5 VUs every 40 s (1 → 5 → 10 → … → 50). **Stops automatically**
+the moment error rate exceeds 2 % — the VU count shown in the k6 summary at
+that point is the breaking point for that provider.
+
+Run once per provider to compare limits:
+
+```sh
+# Z.ai
+k6 run -e PROVIDER=zai        tests/load/ai-stress-test.js
+
+# Alibaba Qwen
+k6 run -e PROVIDER=alibaba    tests/load/ai-stress-test.js
+
+# Deepseek via OpenRouter
+k6 run -e PROVIDER=openrouter tests/load/ai-stress-test.js
+```
+
+After each run, check the summary output:
+- **`vus` value when the test aborted** → that is the VU level that broke the provider
+- **`rate_limit_errors` counter** → number of HTTP 429s received
+- **`agent_turn_ms p95`** → response latency at the breaking point
+
+The max safe load is the step level **before** the abort fired.
+
+> **Cost note** — if no provider breaks before 50 VUs, one full run is
+> ~50 VUs × 2 turns × 11 hold levels ≈ up to 1 100 API calls. Run Z.ai first
+> (it rate-limits early) to calibrate before running Qwen or Deepseek.
 
 ### Claude concurrent test (rate-limit detection)
 
