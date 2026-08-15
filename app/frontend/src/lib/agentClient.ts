@@ -120,231 +120,144 @@ export function isAgentConfigured(): boolean {
 }
 
 /**
- * Call Anthropic Claude via the Vite dev proxy (/api/anthropic → api.anthropic.com).
- * Uses the Messages API format (not OpenAI-compatible).
+ * Models to try per provider in round-robin order — mirrors the server-side list.
+ * Exhausting all models for a provider causes the outer chain to move to the next provider.
  */
-async function sendViaAnthropicDevProxy(request: AgentTurnRequest): Promise<string> {
-  let response: Response;
-  try {
-    response = await fetch("/api/anthropic/v1/messages", {
-      method: "POST",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify({
-        model: readEnv("VITE_ANTHROPIC_MODEL") ?? "claude-sonnet-5",
-        max_tokens: 700,
-        system: request.system,
-        messages: request.messages,
-      }),
-      signal: request.signal,
-    });
-  } catch (error) {
-    throw new AgentRequestError(
-      error instanceof Error ? error.message : "Network error contacting Anthropic",
-    );
-  }
+export const PROVIDER_MODELS: Record<AgentProvider, string[]> = {
+  alibaba: [
+    "qwen3.7-flash",
+    "qwen3.7-plus",
+    "qwen3.7-plus-2026-05-26",
+    "qwen3.7-flash-2026-07-15",
+    "qwen3.7-max",
+    "qwen3.7-max-2026-06-08",
+    "qwen3.7-max-2026-05-20",
+    "qwen3.7-max-2026-05-17",
+    "qwen3.7-max-preview",
+    "qwen3.6-flash",
+    "qwen3.6-plus-2026-04-02",
+    "qwen3.5-flash",
+    "qwen3.5-flash-2026-02-23",
+    "qwen3.5-plus",
+    "qwen3.5-plus-2026-04-20",
+    "qwen3.5-plus-2026-02-15",
+    "qwen3.6-max-preview",
+    "qwen3.6-27b",
+    "qwen3.6-35b-a3b",
+    "qwen3.5-27b",
+    "qwen3.5-35b-a3b",
+    "qwen-plus",
+    "qwen-plus-latest",
+    "qwen-plus-2025-12-01",
+    "qwen-plus-2025-09-11",
+    "qwen-plus-2025-07-28",
+    "qwen-plus-2025-07-14",
+    "qwen-plus-2025-04-28",
+    "glm-5.2",
+    "glm-5.1",
+    "deepseek-v4-flash",
+    "deepseek-v4-pro",
+    "deepseek-v3.2",
+    "qwen3.8-max",
+    "qwen3-vl-flash",
+    "qwen3-vl-flash-2026-01-22",
+    "qwen3-vl-flash-2025-10-15",
+    "qwen3-vl-plus",
+    "qwen3-vl-plus-2025-12-19",
+    "qwen3-vl-plus-2025-09-23",
+  ],
+  zai: ["glm-4.5-flash"],
+  openrouter: ["deepseek/deepseek-r1"],
+  anthropic: ["claude-sonnet-5"],
+};
 
+// Per-provider round-robin counters for local dev (module-level, survive HMR).
+const providerModelIndex: Record<AgentProvider, number> = {
+  alibaba: 0, zai: 0, openrouter: 0, anthropic: 0,
+};
+
+// --- Pure HTTP call functions for local dev (accept model, return content string) ---
+
+async function devCallAnthropic(request: AgentTurnRequest, model: string): Promise<string> {
+  const response = await fetch("/api/anthropic/v1/messages", {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify({ model, max_tokens: 700, system: request.system, messages: request.messages }),
+    signal: request.signal,
+  });
   if (!response.ok) {
     let detail = `Anthropic request failed (${response.status})`;
-    try {
-      const body = (await response.json()) as { error?: { message?: string } };
-      if (body?.error?.message) detail = body.error.message;
-    } catch { /* non-JSON body */ }
+    try { const b = (await response.json()) as { error?: { message?: string } }; if (b?.error?.message) detail = b.error.message; } catch { /* ok */ }
     throw new AgentRequestError(detail, response.status);
   }
-
-  const data = (await response.json()) as {
-    content?: { type: string; text?: string }[];
-  };
+  const data = (await response.json()) as { content?: { type: string; text?: string }[] };
   const text = data.content?.find((b) => b.type === "text")?.text?.trim() ?? "";
   if (!text) throw new AgentRequestError("Anthropic returned an empty response");
   return text;
 }
 
-/**
- * Call Z.ai via the Vite dev proxy (/api/zai → api.z.ai/api/paas/v4).
- * Z.ai uses an OpenAI-compatible chat completions format.
- */
-async function sendViaZaiDevProxy(request: AgentTurnRequest): Promise<string> {
-  let response: Response;
-  try {
-    response = await fetch("/api/zai/chat/completions", {
-      method: "POST",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify({
-        model: readEnv("VITE_ZAI_MODEL") ?? "glm-4.5-flash",
-        max_tokens: 700,
-        messages: [
-          { role: "system", content: request.system },
-          ...request.messages,
-        ],
-      }),
-      signal: request.signal,
-    });
-  } catch (error) {
-    throw new AgentRequestError(
-      error instanceof Error ? error.message : "Network error contacting Z.ai",
-    );
-  }
-
+async function devCallZai(request: AgentTurnRequest, model: string): Promise<string> {
+  const response = await fetch("/api/zai/chat/completions", {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify({ model, max_tokens: 700, messages: [{ role: "system", content: request.system }, ...request.messages] }),
+    signal: request.signal,
+  });
   if (!response.ok) {
     let detail = `Z.ai request failed (${response.status})`;
-    try {
-      const body = (await response.json()) as { error?: { message?: string } };
-      if (body?.error?.message) detail = body.error.message;
-    } catch { /* non-JSON body */ }
+    try { const b = (await response.json()) as { error?: { message?: string } }; if (b?.error?.message) detail = b.error.message; } catch { /* ok */ }
     throw new AgentRequestError(detail, response.status);
   }
-
-  const data = (await response.json()) as {
-    choices?: { message?: { content?: string | null; reasoning_content?: string } }[];
-  };
+  const data = (await response.json()) as { choices?: { message?: { content?: string | null; reasoning_content?: string } }[] };
   const msg = data.choices?.[0]?.message;
-  // GLM thinking models may return an empty content with the answer in reasoning_content.
   const text = (msg?.content?.trim() || msg?.reasoning_content?.trim()) ?? "";
   if (!text) throw new AgentRequestError("Z.ai returned an empty response");
   return text;
 }
 
-/** Round-robin models for local dev Alibaba calls (mirrors the server-side list). */
-const ALIBABA_DEV_MODELS = [
-  "qwen3.7-flash",
-  "qwen3.7-plus",
-  "qwen3.7-plus-2026-05-26",
-  "qwen3.7-flash-2026-07-15",
-  "qwen3.7-max",
-  "qwen3.7-max-2026-06-08",
-  "qwen3.7-max-2026-05-20",
-  "qwen3.7-max-2026-05-17",
-  "qwen3.7-max-preview",
-  "qwen3.6-flash",
-  "qwen3.6-plus-2026-04-02",
-  "qwen3.5-flash",
-  "qwen3.5-flash-2026-02-23",
-  "qwen3.5-plus",
-  "qwen3.5-plus-2026-04-20",
-  "qwen3.5-plus-2026-02-15",
-  "qwen3.6-max-preview",
-  "qwen3.6-27b",
-  "qwen3.6-35b-a3b",
-  "qwen3.5-27b",
-  "qwen3.5-35b-a3b",
-  "qwen-plus",
-  "qwen-plus-latest",
-  "qwen-plus-2025-12-01",
-  "qwen-plus-2025-09-11",
-  "qwen-plus-2025-07-28",
-  "qwen-plus-2025-07-14",
-  "qwen-plus-2025-04-28",
-  "glm-5.2",
-  "glm-5.1",
-  "deepseek-v4-flash",
-  "deepseek-v4-pro",
-  "deepseek-v3.2",
-  "qwen3.8-max",
-  "qwen3-vl-flash",
-  "qwen3-vl-flash-2026-01-22",
-  "qwen3-vl-flash-2025-10-15",
-  "qwen3-vl-plus",
-  "qwen3-vl-plus-2025-12-19",
-  "qwen3-vl-plus-2025-09-23",
-];
-let alibabaDevModelIndex = 0;
-
-/**
- * Call Alibaba Qwen via the Vite dev proxy (/api/qwen → dashscope-intl.aliyuncs.com/compatible-mode/v1).
- * Qwen uses an OpenAI-compatible chat completions format.
- */
-async function sendViaQwenDevProxy(request: AgentTurnRequest): Promise<{ content: string; model: string }> {
-  // If a model is pinned via env, use it directly (no round-robin).
-  const pinnedModel = readEnv("VITE_ALIBABA_MODEL");
-  if (pinnedModel) {
-    const response = await fetch("/api/qwen/chat/completions", {
-      method: "POST",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify({ model: pinnedModel, max_tokens: 700, messages: [{ role: "system", content: request.system }, ...request.messages] }),
-      signal: request.signal,
-    });
-    if (!response.ok) throw new AgentRequestError(`Qwen request failed (${response.status})`, response.status);
-    const data = (await response.json()) as { choices?: { message?: { content?: string } }[] };
-    const text = data.choices?.[0]?.message?.content?.trim() ?? "";
-    if (!text) throw new AgentRequestError("Qwen returned an empty response");
-    return { content: text, model: pinnedModel };
-  }
-
-  // Loop through all models starting from the current index before giving up.
-  const startIndex = alibabaDevModelIndex;
-  let lastError: unknown;
-  for (let i = 0; i < ALIBABA_DEV_MODELS.length; i++) {
-    const idx = (startIndex + i) % ALIBABA_DEV_MODELS.length;
-    const model = ALIBABA_DEV_MODELS[idx];
-    alibabaDevModelIndex = (idx + 1) % ALIBABA_DEV_MODELS.length;
-    try {
-      const response = await fetch("/api/qwen/chat/completions", {
-        method: "POST",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify({
-          model,
-          max_tokens: 700,
-          messages: [{ role: "system", content: request.system }, ...request.messages],
-        }),
-        signal: request.signal,
-      });
-      if (!response.ok) throw new AgentRequestError(`Qwen request failed (${response.status})`, response.status);
-      const data = (await response.json()) as { choices?: { message?: { content?: string } }[] };
-      const text = data.choices?.[0]?.message?.content?.trim() ?? "";
-      if (!text) throw new AgentRequestError(`Qwen model ${model} returned empty response`);
-      return { content: text, model };
-    } catch (err) {
-      lastError = err;
-    }
-  }
-  throw lastError ?? new AgentRequestError("All Qwen models failed.");
-}
-
-/**
- * Call OpenRouter via the Vite dev proxy (/api/openrouter → openrouter.ai/api/v1).
- * OpenRouter is OpenAI-compatible and routes to any underlying model.
- */
-async function sendViaOpenRouterDevProxy(request: AgentTurnRequest): Promise<string> {
-  let response: Response;
-  try {
-    response = await fetch("/api/openrouter/chat/completions", {
-      method: "POST",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify({
-        model: readEnv("VITE_OPENROUTER_MODEL") ?? "deepseek/deepseek-r1",
-        max_tokens: 700,
-        messages: [
-          { role: "system", content: request.system },
-          ...request.messages,
-        ],
-      }),
-      signal: request.signal,
-    });
-  } catch (error) {
-    throw new AgentRequestError(
-      error instanceof Error ? error.message : "Network error contacting OpenRouter",
-    );
-  }
-
+async function devCallAlibaba(request: AgentTurnRequest, model: string): Promise<string> {
+  const response = await fetch("/api/qwen/chat/completions", {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify({ model, max_tokens: 700, messages: [{ role: "system", content: request.system }, ...request.messages] }),
+    signal: request.signal,
+  });
   if (!response.ok) {
-    let detail = `OpenRouter request failed (${response.status})`;
-    try {
-      const body = (await response.json()) as { error?: { message?: string } };
-      if (body?.error?.message) detail = body.error.message;
-    } catch { /* non-JSON body */ }
+    let detail = `Qwen request failed (${response.status})`;
+    try { const b = (await response.json()) as { error?: { message?: string } }; if (b?.error?.message) detail = b.error.message; } catch { /* ok */ }
     throw new AgentRequestError(detail, response.status);
   }
+  const data = (await response.json()) as { choices?: { message?: { content?: string } }[] };
+  const text = data.choices?.[0]?.message?.content?.trim() ?? "";
+  if (!text) throw new AgentRequestError("Qwen returned an empty response");
+  return text;
+}
 
-  const data = (await response.json()) as {
-    choices?: { message?: { content?: string | null; reasoning_content?: string } }[];
-  };
-  // Some reasoning models return content: null with reasoning_content populated first.
+async function devCallOpenRouter(request: AgentTurnRequest, model: string): Promise<string> {
+  const response = await fetch("/api/openrouter/chat/completions", {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify({ model, max_tokens: 700, messages: [{ role: "system", content: request.system }, ...request.messages] }),
+    signal: request.signal,
+  });
+  if (!response.ok) {
+    let detail = `OpenRouter request failed (${response.status})`;
+    try { const b = (await response.json()) as { error?: { message?: string } }; if (b?.error?.message) detail = b.error.message; } catch { /* ok */ }
+    throw new AgentRequestError(detail, response.status);
+  }
+  const data = (await response.json()) as { choices?: { message?: { content?: string | null; reasoning_content?: string } }[] };
   const msg = data.choices?.[0]?.message;
   const text = (msg?.content ?? msg?.reasoning_content ?? "").trim();
   if (!text) throw new AgentRequestError("OpenRouter returned an empty response");
   return text;
 }
+
+const DEV_HTTP_CALL: Record<AgentProvider, (req: AgentTurnRequest, model: string) => Promise<string>> = {
+  anthropic: devCallAnthropic,
+  zai: devCallZai,
+  alibaba: devCallAlibaba,
+  openrouter: devCallOpenRouter,
+};
 
 /** Automatic provider fallback order used by the chat panel. */
 export const PROVIDER_FALLBACK_CHAIN: AgentProvider[] = [
@@ -355,17 +268,16 @@ export const PROVIDER_FALLBACK_CHAIN: AgentProvider[] = [
 ];
 
 /**
- * Send a turn trying providers in PROVIDER_FALLBACK_CHAIN order.
- * Calls onProviderSwitch(provider, attemptIndex) before each try so the UI
- * can update mid-flight. Returns { content, provider } on first success.
- * Throws if all providers fail or none are configured.
+ * Send a turn trying providers in PROVIDER_FALLBACK_CHAIN order. For each provider
+ * all its models are exhausted before moving to the next provider.
+ * Calls onProviderSwitch(provider, attemptIndex) before each provider try so the UI
+ * can update mid-flight. Returns { content, provider, model } on first success.
  */
 export async function sendAgentTurnWithFallback(
   request: Omit<AgentTurnRequest, "provider">,
   onProviderSwitch: (provider: AgentProvider, attempt: number) => void,
 ): Promise<{ content: string; provider: AgentProvider; model?: string }> {
   const endpoint = getAgentEndpoint();
-  // In local dev, only try providers that have a VITE_*_API_KEY configured.
   const chain = endpoint
     ? PROVIDER_FALLBACK_CHAIN
     : PROVIDER_FALLBACK_CHAIN.filter((p) => Boolean(readEnv(PROVIDER_ENV_KEY[p])));
@@ -382,30 +294,29 @@ export async function sendAgentTurnWithFallback(
     } catch (err) {
       lastError = err;
       if (err instanceof AgentNotConfiguredError) continue;
-      // Rate limit, timeout, 5xx — try next provider
     }
   }
 
   throw lastError ?? new AgentRequestError("All AI providers failed.");
 }
 
-/** Send one conversation turn and return the reply content and model name. */
+/**
+ * Send one turn for the given provider, exhausting all its models before throwing.
+ * Production: one HTTP call to the Cloud Function (model loop runs server-side).
+ * Local dev: loops through PROVIDER_MODELS[provider] here in the browser.
+ */
 export async function sendAgentTurn(request: AgentTurnRequest): Promise<{ content: string; model?: string }> {
   const endpoint = getAgentEndpoint();
   const provider = request.provider ?? getDefaultProvider();
 
-  // Production path: route through the serverless Function proxy.
+  // Production: Cloud Function handles model loop and returns { content, model }.
   if (endpoint) {
     let response: Response;
     try {
       response = await fetch(endpoint, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          provider,
-          system: request.system,
-          messages: request.messages,
-        }),
+        body: JSON.stringify({ provider, system: request.system, messages: request.messages }),
         signal: request.signal,
       });
     } catch (error) {
@@ -413,44 +324,32 @@ export async function sendAgentTurn(request: AgentTurnRequest): Promise<{ conten
         error instanceof Error ? error.message : "Network error contacting the agent",
       );
     }
-
     if (!response.ok) {
       let detail = `Agent request failed (${response.status})`;
-      try {
-        const body = (await response.json()) as { error?: string };
-        if (body?.error) detail = body.error;
-      } catch { /* non-JSON error body */ }
+      try { const b = (await response.json()) as { error?: string }; if (b?.error) detail = b.error; } catch { /* ok */ }
       throw new AgentRequestError(detail, response.status);
     }
-
     const data = (await response.json()) as { content?: string; model?: string };
     if (!data.content) throw new AgentRequestError("Agent returned an empty response");
     return { content: data.content, model: data.model };
   }
 
-  // Local dev path: call the provider directly using its VITE_*_API_KEY.
-  if (!readEnv(PROVIDER_ENV_KEY[provider])) {
-    throw new AgentNotConfiguredError();
-  }
+  // Local dev: call provider API directly, loop through all its models.
+  if (!readEnv(PROVIDER_ENV_KEY[provider])) throw new AgentNotConfiguredError();
 
-  if (provider === "anthropic") {
-    const content = await sendViaAnthropicDevProxy(request);
-    return { content };
+  const models = PROVIDER_MODELS[provider];
+  const startIdx = providerModelIndex[provider];
+  let lastError: unknown;
+  for (let i = 0; i < models.length; i++) {
+    const idx = (startIdx + i) % models.length;
+    const model = models[idx];
+    providerModelIndex[provider] = (idx + 1) % models.length;
+    try {
+      const content = await DEV_HTTP_CALL[provider](request, model);
+      return { content, model };
+    } catch (err) {
+      lastError = err;
+    }
   }
-
-  if (provider === "zai") {
-    const content = await sendViaZaiDevProxy(request);
-    return { content };
-  }
-
-  if (provider === "alibaba") {
-    return sendViaQwenDevProxy(request);
-  }
-
-  if (provider === "openrouter") {
-    const content = await sendViaOpenRouterDevProxy(request);
-    return { content };
-  }
-
-  throw new AgentNotImplementedError(provider);
+  throw lastError ?? new AgentRequestError(`All ${provider} models failed.`);
 }
