@@ -1,4 +1,4 @@
-import { type FormEvent, useState } from "react";
+import { type FormEvent, useEffect, useRef, useState } from "react";
 import { Navigate, useNavigate } from "react-router-dom";
 import {
   getParticipantEmail,
@@ -11,6 +11,10 @@ export function LoginPage() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const navigate = useNavigate();
+  const nameRef = useRef<HTMLInputElement>(null);
+
+  // Focus without scrolling — autoFocus causes the browser to scroll on first paint.
+  useEffect(() => { nameRef.current?.focus({ preventScroll: true }); }, []);
 
   if (getParticipantName() && getParticipantEmail()) return <Navigate to="/" replace />;
 
@@ -33,7 +37,7 @@ export function LoginPage() {
         <label className="mt-6 grid gap-2 text-small font-medium">Your name
           <input
             required
-            autoFocus
+            ref={nameRef}
             value={name}
             onChange={(e) => setName(e.target.value)}
             placeholder="e.g. Alex Chen"
