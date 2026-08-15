@@ -6,7 +6,7 @@
  * conversation turn to whichever provider the request asks for.
  *
  * Contract:
- *   POST { provider: "zai" | "alibaba" | "openrouter",
+ *   POST { provider: "anthropic" | "zai" | "alibaba" | "openrouter",
  *          system: string,
  *          messages: [{ role: "user" | "assistant", content: string }] }
  *   -> 200 { content: string }
@@ -32,17 +32,20 @@ const {
 const { publicCredentialPage } = require("./publicCredential");
 const { onSubmissionCreated, onEvaluationRetrigger } = require("./submission-evaluator");
 
+const ANTHROPIC_API_KEY = defineSecret("ANTHROPIC_API_KEY");
 const ZAI_API_KEY = defineSecret("ZAI_API_KEY");
 const ALIBABA_API_KEY = defineSecret("ALIBABA_API_KEY");
 const OPENROUTER_API_KEY = defineSecret("OPENROUTER_API_KEY");
 
 const ALL_SECRETS = [
+  ANTHROPIC_API_KEY,
   ZAI_API_KEY,
   ALIBABA_API_KEY,
   OPENROUTER_API_KEY,
 ];
 
 const DEFAULT_MODELS = {
+  anthropic: "claude-sonnet-5",
   zai: "glm-4.5-flash",
   alibaba: "qwen3.7-flash",
   openrouter: "deepseek/deepseek-r1",
@@ -50,7 +53,7 @@ const DEFAULT_MODELS = {
 
 const MAX_TOKENS = 700;
 
-const MODEL_ENV = { zai: "ZAI_MODEL", alibaba: "ALIBABA_MODEL", openrouter: "OPENROUTER_MODEL" };
+const MODEL_ENV = { anthropic: "ANTHROPIC_MODEL", zai: "ZAI_MODEL", alibaba: "ALIBABA_MODEL", openrouter: "OPENROUTER_MODEL" };
 function resolvedModel(provider) {
   const key = MODEL_ENV[provider];
   return (key && process.env[key]) || DEFAULT_MODELS[provider] || provider;
@@ -96,7 +99,7 @@ function validateBody(body) {
     return "Request body must be JSON.";
   }
   const { provider, system, messages } = body;
-  if (!["zai", "alibaba", "openrouter"].includes(provider)) {
+  if (!["anthropic", "zai", "alibaba", "openrouter"].includes(provider)) {
     return "Unknown provider.";
   }
   if (typeof system !== "string" || system.length === 0) {
@@ -118,6 +121,29 @@ function validateBody(body) {
     }
   }
   return null;
+}
+
+async function callAnthropic(apiKey, system, messages) {
+  const response = await fetch("https://api.anthropic.com/v1/messages", {
+    method: "POST",
+    headers: {
+      "content-type": "application/json",
+      "x-api-key": apiKey,
+      "anthropic-version": "2023-06-01",
+    },
+    body: JSON.stringify({
+      model: process.env.ANTHROPIC_MODEL || DEFAULT_MODELS.anthropic,
+      max_tokens: MAX_TOKENS,
+      system,
+      messages: messages.map((m) => ({ role: m.role, content: m.content })),
+    }),
+  });
+
+  if (!response.ok) {
+    throw new Error(`Anthropic API error (${response.status})`);
+  }
+  const data = await response.json();
+  return (data.content?.[0]?.text || "").trim();
 }
 
 async function callZai(apiKey, system, messages) {
@@ -199,12 +225,14 @@ async function callOpenRouter(apiKey, system, messages) {
 }
 
 const KEY_FOR_PROVIDER = {
+  anthropic: ANTHROPIC_API_KEY,
   zai: ZAI_API_KEY,
   alibaba: ALIBABA_API_KEY,
   openrouter: OPENROUTER_API_KEY,
 };
 
 const DISPATCH = {
+  anthropic: callAnthropic,
   zai: callZai,
   alibaba: callAlibaba,
   openrouter: callOpenRouter,

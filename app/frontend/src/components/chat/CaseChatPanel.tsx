@@ -22,6 +22,7 @@ import { logChatAiCall } from "@/lib/aiCallLogger";
 import { getParticipantName } from "@/participant/session";
 
 const PROVIDER_LABEL: Record<AgentProvider, string> = {
+  anthropic: "Claude (Anthropic)",
   zai: "Z.ai",
   alibaba: "Alibaba Qwen",
   openrouter: "Deepseek (via OpenRouter)",

@@ -14,7 +14,7 @@
  *     through the Function which holds the real key as a Firebase secret).
  */
 
-export type AgentProvider = "zai" | "alibaba" | "openrouter";
+export type AgentProvider = "anthropic" | "zai" | "alibaba" | "openrouter";
 
 export interface AgentTurnMessage {
   role: "user" | "assistant";
@@ -56,6 +56,7 @@ export class AgentNotImplementedError extends Error {
 
 /** Maps each provider to the env var that gates its availability in local dev. */
 const PROVIDER_ENV_KEY: Record<AgentProvider, string> = {
+  anthropic: "VITE_ANTHROPIC_API_KEY",
   zai: "VITE_ZAI_API_KEY",
   alibaba: "VITE_ALIBABA_API_KEY",
   openrouter: "VITE_OPENROUTER_API_KEY",
@@ -63,6 +64,7 @@ const PROVIDER_ENV_KEY: Record<AgentProvider, string> = {
 
 /** Canonical display order for the provider dropdown. */
 export const ALL_PROVIDERS: AgentProvider[] = [
+  "anthropic",
   "zai",
   "alibaba",
   "openrouter",
@@ -115,6 +117,47 @@ export function getDefaultProvider(): AgentProvider {
 
 export function isAgentConfigured(): boolean {
   return Boolean(getAgentEndpoint()) || getConfiguredProviders().length > 0;
+}
+
+/**
+ * Call Anthropic Claude via the Vite dev proxy (/api/anthropic → api.anthropic.com).
+ * Uses the Messages API format (not OpenAI-compatible).
+ */
+async function sendViaAnthropicDevProxy(request: AgentTurnRequest): Promise<string> {
+  let response: Response;
+  try {
+    response = await fetch("/api/anthropic/v1/messages", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({
+        model: readEnv("VITE_ANTHROPIC_MODEL") ?? "claude-sonnet-5",
+        max_tokens: 700,
+        system: request.system,
+        messages: request.messages,
+      }),
+      signal: request.signal,
+    });
+  } catch (error) {
+    throw new AgentRequestError(
+      error instanceof Error ? error.message : "Network error contacting Anthropic",
+    );
+  }
+
+  if (!response.ok) {
+    let detail = `Anthropic request failed (${response.status})`;
+    try {
+      const body = (await response.json()) as { error?: { message?: string } };
+      if (body?.error?.message) detail = body.error.message;
+    } catch { /* non-JSON body */ }
+    throw new AgentRequestError(detail, response.status);
+  }
+
+  const data = (await response.json()) as {
+    content?: { type: string; text?: string }[];
+  };
+  const text = data.content?.find((b) => b.type === "text")?.text?.trim() ?? "";
+  if (!text) throw new AgentRequestError("Anthropic returned an empty response");
+  return text;
 }
 
 /**
@@ -294,6 +337,10 @@ export async function sendAgentTurn(request: AgentTurnRequest): Promise<string> 
     throw new AgentNotConfiguredError();
   }
 
+  if (provider === "anthropic") {
+    return sendViaAnthropicDevProxy(request);
+  }
+
   if (provider === "zai") {
     return sendViaZaiDevProxy(request);
   }
@@ -306,6 +353,5 @@ export async function sendAgentTurn(request: AgentTurnRequest): Promise<string> 
     return sendViaOpenRouterDevProxy(request);
   }
 
-  // Other providers are not yet implemented for local dev direct calls.
   throw new AgentNotImplementedError(provider);
 }
