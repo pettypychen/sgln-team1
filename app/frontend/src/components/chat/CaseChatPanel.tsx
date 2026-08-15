@@ -125,11 +125,15 @@ export function CaseChatPanel({
     history: ChatMessage[],
     responseId: string,
   ) {
-    const finish = (content: string, status: ChatMessage["status"]) => {
+    const finish = (
+      content: string,
+      status: ChatMessage["status"],
+      extras?: Pick<ChatMessage, "providerLabel" | "modelName">,
+    ) => {
       const latest = messagesRef.current;
       onMessagesChange(
         latest.map((message) =>
-          message.id === responseId ? { ...message, content, status } : message,
+          message.id === responseId ? { ...message, content, status, ...extras } : message,
         ),
       );
       setIsThinking(false);
@@ -150,11 +154,11 @@ export function CaseChatPanel({
 
     sendAgentTurnWithFallback(
       { system: systemPrompt, messages: toTurnMessages(history) },
-      (provider, attempt) => {
+      (provider, attempt, firstModel) => {
         const label =
           attempt === 0
-            ? `Connecting via ${PROVIDER_LABEL[provider]}…`
-            : `${PROVIDER_LABEL[PROVIDER_FALLBACK_CHAIN[attempt - 1]]} unavailable — trying ${PROVIDER_LABEL[provider]}…`;
+            ? `Connecting via ${PROVIDER_LABEL[provider]} · ${firstModel}…`
+            : `${PROVIDER_LABEL[PROVIDER_FALLBACK_CHAIN[attempt - 1]]} unavailable — trying ${PROVIDER_LABEL[provider]} · ${firstModel}…`;
         // Attempt 0 fires before React has committed the loading message,
         // so defer one tick to let the ref update first.
         if (attempt === 0) {
@@ -163,13 +167,19 @@ export function CaseChatPanel({
           updateLoading(label);
         }
       },
+      (provider, failedModel, nextModel) => {
+        updateLoading(`${PROVIDER_LABEL[provider]} · ${failedModel} unavailable — trying ${nextModel}…`);
+      },
     )
-      .then(({ content, provider }) => {
-        finish(content, "sent");
+      .then(({ content, provider, model }) => {
+        finish(content, "sent", {
+          providerLabel: PROVIDER_LABEL[provider],
+          modelName: model,
+        });
         logChatAiCall({
           userName: getParticipantName() || "",
           provider,
-          aiModel: PROVIDER_LABEL[provider] || provider,
+          aiModel: model || PROVIDER_LABEL[provider] || provider,
           promptPreview: `[System]: ${systemPrompt.slice(0, 300)}\n\n[User]: ${question.slice(0, 500)}`,
           response: content,
         });
@@ -286,6 +296,12 @@ export function CaseChatPanel({
                 <p className="m-0 whitespace-pre-wrap">{content}</p>
               ) : (
                 <MarkdownDocument content={content} compact />
+              )}
+              {!isUser && !isLoading && message.providerLabel && (
+                <p className="m-0 mt-2 font-mono text-micro text-muted">
+                  {message.providerLabel}
+                  {message.modelName ? ` · ${message.modelName}` : ""}
+                </p>
               )}
               {isLoading && (
                 <p className="m-0 mt-2 font-mono text-micro text-muted">

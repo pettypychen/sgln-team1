@@ -89,4 +89,7 @@ export interface ChatMessage {
   role: "agent" | "user";
   content: string;
   status: "sent" | "loading" | "failed";
+  /** Provider and model used to generate this message (agent messages only). */
+  providerLabel?: string;
+  modelName?: string;
 }
