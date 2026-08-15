@@ -91,10 +91,19 @@ export function CaseChatPanel({
   const messagesRef = useRef(messages);
   messagesRef.current = messages;
   const transcriptRef = useRef<HTMLDivElement>(null);
+  const prevMessageCountRef = useRef(messages.length);
 
+  // Scroll within the transcript container when messages are added.
+  // Tracks count so content-only updates (e.g. loading label changes) don't scroll.
   useEffect(() => {
-    const el = transcriptRef.current;
-    if (el) el.scrollTo({ top: el.scrollHeight, behavior: "smooth" });
+    const countChanged = messages.length !== prevMessageCountRef.current;
+    prevMessageCountRef.current = messages.length;
+    if (!countChanged) return;
+    // rAF lets the browser finish layout before reading scrollHeight.
+    requestAnimationFrame(() => {
+      const el = transcriptRef.current;
+      if (el) el.scrollTop = el.scrollHeight;
+    });
   }, [messages]);
 
   const live = isAgentConfigured();
