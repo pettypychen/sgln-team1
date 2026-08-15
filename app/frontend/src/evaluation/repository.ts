@@ -607,7 +607,7 @@ export const evaluationRepository: EvaluationRepository = endpoint
 // On localhost (DEV), call the Cloud Run function directly — it has cors:true so the browser allows it.
 // On production, use a relative URL that Firebase Hosting rewrites to the same function.
 const evalApiBase = endpoint?.replace(/\/$/, "")
-  ?? (import.meta.env.DEV ? "https://evaluationapi-5iwaz2l7bq-uc.a.run.app" : "/api/evaluation");
+  ?? (import.meta.env?.DEV ? "https://evaluationapi-5iwaz2l7bq-uc.a.run.app" : "/api/evaluation");
 
 export const credentialsApi = new HttpEvaluationRepository(evalApiBase);
 
