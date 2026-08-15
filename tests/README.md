@@ -46,7 +46,7 @@ k6 run -e BASE_URL=https://your-staging-project.web.app tests/load/browse-market
 |---|---|---|
 | `load/browse-marketplace.js` | Post-login marketplace + simulation browsing | 100 |
 | `load/kopi-run-submission.js` | Full Kopi Run session: AI chat (3–5 turns via Z.ai) + Firestore submission | 100 |
-| `load/claude-concurrent.js` | Same Kopi Run scenario against Claude (Anthropic) — rate-limit detection | 10 |
+| `load/claude-concurrent.js` | Same Kopi Run scenario against Claude (Anthropic) — rate-limit detection | 5 |
 
 ### Kopi Run submission test
 
@@ -88,7 +88,7 @@ from Anthropic. The threshold is set to `count<1` so the test fails immediately 
 rate limiting is detected. Also watch `agent_turn_ms p95` to compare Claude latency
 against Z.ai and Alibaba Qwen results.
 
-> **Cost note** — 10 VUs × ~4 turns = ~40 Claude Sonnet API calls per run.
+> **Cost note** — 5 VUs × ~4 turns = ~20 Claude Sonnet API calls per run.
 > Claude Sonnet is more expensive per call than Z.ai/Qwen — run against the emulator
 > first if you only need to verify infrastructure.
 

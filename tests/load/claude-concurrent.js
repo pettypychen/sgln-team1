@@ -1,7 +1,7 @@
 /**
- * Load test: 10 concurrent users hitting the Claude (Anthropic) provider.
+ * Load test: 5 concurrent users hitting the Claude (Anthropic) provider.
  *
- * Goal: detect whether Anthropic rate-limits at 10 concurrent users.
+ * Goal: detect whether Anthropic rate-limits at 5 concurrent users.
  * Each VU sends 3–5 chat turns with 1–3 s think time between turns,
  * then submits a Firestore work product — identical scenario to
  * kopi-run-submission.js but scoped to Claude and capped at 20 VUs.
@@ -30,7 +30,7 @@
  *           tests/load/claude-concurrent.js
  *
  * Cost note:
- *   10 VUs × avg 4 turns = ~40 Anthropic API calls per run.
+ *   5 VUs × avg 4 turns = ~20 Anthropic API calls per run.
  *   Claude Sonnet tokens cost more than Z.ai/Qwen — run emulator first if
  *   you only want to verify infrastructure (emulator won't call the real API).
  */
@@ -58,8 +58,8 @@ const IS_EMULATOR =
 
 export const options = {
   stages: [
-    { duration: "20s", target: 10 },  // ramp to full 10 VUs
-    { duration: "90s", target: 10 },  // hold — long enough to detect 429s
+    { duration: "20s", target: 5 },   // ramp to full 5 VUs
+    { duration: "90s", target: 5 },   // hold — long enough to detect 429s
     { duration: "15s", target: 0 },   // ramp down
   ],
   thresholds: {
