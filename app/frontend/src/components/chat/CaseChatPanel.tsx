@@ -1,6 +1,7 @@
 import {
   FormEvent,
   ReactNode,
+  useEffect,
   useRef,
   useState,
 } from "react";
@@ -89,6 +90,31 @@ export function CaseChatPanel({
   const [isThinking, setIsThinking] = useState(false);
   const messagesRef = useRef(messages);
   messagesRef.current = messages;
+  const transcriptRef = useRef<HTMLDivElement>(null);
+  const prevIsThinkingRef = useRef(false);
+
+  // On mount: scroll transcript to the last message and reset the window to the
+  // top. The window reset counters browser scroll-restoration which can jump the
+  // page to wherever the user was on a previous visit.
+  useEffect(() => {
+    requestAnimationFrame(() => {
+      const el = transcriptRef.current;
+      if (el) el.scrollTop = el.scrollHeight;
+      window.scrollTo(0, 0);
+    });
+  }, []);
+
+  // After send (thinking starts) and after reply (thinking ends): scroll the
+  // transcript to show the new message. Skips the initial false→false non-change.
+  useEffect(() => {
+    const changed = isThinking !== prevIsThinkingRef.current;
+    prevIsThinkingRef.current = isThinking;
+    if (!changed) return;
+    requestAnimationFrame(() => {
+      const el = transcriptRef.current;
+      if (el) el.scrollTop = el.scrollHeight;
+    });
+  }, [isThinking]);
 
   const live = isAgentConfigured();
   const agentLabel = live ? "AI" : "Agent";
@@ -239,7 +265,7 @@ export function CaseChatPanel({
       ) : null}
 
       {/* Transcript */}
-      <div className={transcriptClassName} aria-live="polite">
+      <div ref={transcriptRef} className={transcriptClassName} aria-live="polite">
         {messages.map((message) => {
           const content = formatMessageContent
             ? formatMessageContent(message, { live, agentLabel })
