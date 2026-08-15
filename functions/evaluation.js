@@ -1257,16 +1257,47 @@ async function handler(req, res) {
       res.json(null);
       return;
     }
-    const [participant, attempts, credentials] = await Promise.all([
+    const [participant, attemptsSnap, credentialsSnap] = await Promise.all([
       db.collection("participants").doc(grant.participantId).get(),
       db.collection("attempts").where("participantId", "==", grant.participantId).get(),
       db.collection("credentials").where("participantId", "==", grant.participantId).get(),
     ]);
+    const attemptsData = attemptsSnap.docs.map((doc) => doc.data());
+
+    // Also look up evaluations linked by attemptId (written by submission-evaluator).
+    // These may reflect a completed AI evaluation that the attempt record hasn't captured.
+    const attemptIds = attemptsData.map((a) => a.id).filter(Boolean);
+    const evalsByAttemptId = new Map();
+    if (attemptIds.length > 0) {
+      const evSnap = await db.collection("evaluations")
+        .where("attemptId", "in", attemptIds.slice(0, 30))
+        .get();
+      for (const doc of evSnap.docs) {
+        const ev = doc.data();
+        if (ev.attemptId) evalsByAttemptId.set(ev.attemptId, ev);
+      }
+    }
+
+    const mergedAttempts = attemptsData.map((attempt) => {
+      const ev = evalsByAttemptId.get(attempt.id);
+      if (!ev) return attempt;
+      // If the attempt is stuck at ai_failed but the linked evaluation succeeded,
+      // promote the status and surface its runs so the UI reflects reality.
+      if (attempt.status === "ai_failed" && ev.status === "ready_for_review") {
+        return {
+          ...attempt,
+          status: "ready_for_review",
+          evaluationRuns: [...(attempt.evaluationRuns || []), ...(ev.evaluationRuns || [])],
+        };
+      }
+      return attempt;
+    });
+
     const data = participant.data();
     res.json({
       access: { participantId: grant.participantId, displayName: data.displayName, email: data.email, privateToken: token },
-      attempts: attempts.docs.map((doc) => doc.data()),
-      credentials: credentials.docs.map((doc) => doc.data()),
+      attempts: mergedAttempts,
+      credentials: credentialsSnap.docs.map((doc) => doc.data()),
     });
     return;
   }
