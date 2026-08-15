@@ -268,14 +268,16 @@ async function callProviderWithModelFallback(provider, apiKey, system, messages)
   for (let i = 0; i < models.length; i++) {
     const idx = (startIdx + i) % models.length;
     const model = models[idx];
-    providerModelIndex[provider] = (idx + 1) % models.length;
     try {
       const content = await HTTP_CALL[provider](apiKey, system, messages, model);
       if (!content) throw new Error(`${provider} model ${model} returned empty response`);
+      // Success: keep index at this model for next request.
       return { content, model };
     } catch (err) {
       logger.warn(`${provider} model ${model} failed, trying next`, { error: err.message });
       lastError = err;
+      // Only advance on failure so the next request retries from the new position.
+      providerModelIndex[provider] = (idx + 1) % models.length;
     }
   }
   throw lastError ?? new Error(`All ${provider} models failed.`);

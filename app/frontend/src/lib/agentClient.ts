@@ -343,12 +343,14 @@ export async function sendAgentTurn(request: AgentTurnRequest): Promise<{ conten
   for (let i = 0; i < models.length; i++) {
     const idx = (startIdx + i) % models.length;
     const model = models[idx];
-    providerModelIndex[provider] = (idx + 1) % models.length;
     try {
       const content = await DEV_HTTP_CALL[provider](request, model);
+      // Success: keep index at this model for next request.
       return { content, model };
     } catch (err) {
       lastError = err;
+      // Only advance on failure.
+      providerModelIndex[provider] = (idx + 1) % models.length;
     }
   }
   throw lastError ?? new AgentRequestError(`All ${provider} models failed.`);
