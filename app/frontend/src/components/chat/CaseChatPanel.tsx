@@ -125,11 +125,15 @@ export function CaseChatPanel({
     history: ChatMessage[],
     responseId: string,
   ) {
-    const finish = (content: string, status: ChatMessage["status"]) => {
+    const finish = (
+      content: string,
+      status: ChatMessage["status"],
+      extras?: Pick<ChatMessage, "providerLabel" | "modelName">,
+    ) => {
       const latest = messagesRef.current;
       onMessagesChange(
         latest.map((message) =>
-          message.id === responseId ? { ...message, content, status } : message,
+          message.id === responseId ? { ...message, content, status, ...extras } : message,
         ),
       );
       setIsThinking(false);
@@ -164,12 +168,15 @@ export function CaseChatPanel({
         }
       },
     )
-      .then(({ content, provider }) => {
-        finish(content, "sent");
+      .then(({ content, provider, model }) => {
+        finish(content, "sent", {
+          providerLabel: PROVIDER_LABEL[provider],
+          modelName: model,
+        });
         logChatAiCall({
           userName: getParticipantName() || "",
           provider,
-          aiModel: PROVIDER_LABEL[provider] || provider,
+          aiModel: model || PROVIDER_LABEL[provider] || provider,
           promptPreview: `[System]: ${systemPrompt.slice(0, 300)}\n\n[User]: ${question.slice(0, 500)}`,
           response: content,
         });
@@ -286,6 +293,12 @@ export function CaseChatPanel({
                 <p className="m-0 whitespace-pre-wrap">{content}</p>
               ) : (
                 <MarkdownDocument content={content} compact />
+              )}
+              {!isUser && !isLoading && message.providerLabel && (
+                <p className="m-0 mt-2 font-mono text-micro text-muted">
+                  {message.providerLabel}
+                  {message.modelName ? ` · ${message.modelName}` : ""}
+                </p>
               )}
               {isLoading && (
                 <p className="m-0 mt-2 font-mono text-micro text-muted">

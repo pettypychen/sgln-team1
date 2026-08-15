@@ -47,13 +47,58 @@ const ALL_SECRETS = [
 const DEFAULT_MODELS = {
   anthropic: "claude-sonnet-5",
   zai: "glm-4.5-flash",
-  alibaba: "qwen3.7-flash",
   openrouter: "deepseek/deepseek-r1",
 };
 
+// Round-robin model list for Alibaba DashScope.
+const ALIBABA_MODELS = [
+  "qwen3.7-flash",
+  "qwen3.7-plus",
+  "qwen3.7-plus-2026-05-26",
+  "qwen3.7-flash-2026-07-15",
+  "qwen3.7-max",
+  "qwen3.7-max-2026-06-08",
+  "qwen3.7-max-2026-05-20",
+  "qwen3.7-max-2026-05-17",
+  "qwen3.7-max-preview",
+  "qwen3.6-flash",
+  "qwen3.6-plus-2026-04-02",
+  "qwen3.5-flash",
+  "qwen3.5-flash-2026-02-23",
+  "qwen3.5-plus",
+  "qwen3.5-plus-2026-04-20",
+  "qwen3.5-plus-2026-02-15",
+  "qwen3.6-max-preview",
+  "qwen3.6-27b",
+  "qwen3.6-35b-a3b",
+  "qwen3.5-27b",
+  "qwen3.5-35b-a3b",
+  "qwen-plus",
+  "qwen-plus-latest",
+  "qwen-plus-2025-12-01",
+  "qwen-plus-2025-09-11",
+  "qwen-plus-2025-07-28",
+  "qwen-plus-2025-07-14",
+  "qwen-plus-2025-04-28",
+  "glm-5.2",
+  "glm-5.1",
+  "deepseek-v4-flash",
+  "deepseek-v4-pro",
+  "deepseek-v3.2",
+  "qwen3.8-max",
+  "qwen3-vl-flash",
+  "qwen3-vl-flash-2026-01-22",
+  "qwen3-vl-flash-2025-10-15",
+  "qwen3-vl-plus",
+  "qwen3-vl-plus-2025-12-19",
+  "qwen3-vl-plus-2025-09-23",
+];
+// Module-level counter persists across warm invocations for round-robin.
+let alibabaModelIndex = 0;
+
 const MAX_TOKENS = 700;
 
-const MODEL_ENV = { anthropic: "ANTHROPIC_MODEL", zai: "ZAI_MODEL", alibaba: "ALIBABA_MODEL", openrouter: "OPENROUTER_MODEL" };
+const MODEL_ENV = { anthropic: "ANTHROPIC_MODEL", zai: "ZAI_MODEL", openrouter: "OPENROUTER_MODEL" };
 function resolvedModel(provider) {
   const key = MODEL_ENV[provider];
   return (key && process.env[key]) || DEFAULT_MODELS[provider] || provider;
@@ -124,6 +169,7 @@ function validateBody(body) {
 }
 
 async function callAnthropic(apiKey, system, messages) {
+  const model = process.env.ANTHROPIC_MODEL || DEFAULT_MODELS.anthropic;
   const response = await fetch("https://api.anthropic.com/v1/messages", {
     method: "POST",
     headers: {
@@ -132,7 +178,7 @@ async function callAnthropic(apiKey, system, messages) {
       "anthropic-version": "2023-06-01",
     },
     body: JSON.stringify({
-      model: process.env.ANTHROPIC_MODEL || DEFAULT_MODELS.anthropic,
+      model,
       max_tokens: MAX_TOKENS,
       system,
       messages: messages.map((m) => ({ role: m.role, content: m.content })),
@@ -143,10 +189,11 @@ async function callAnthropic(apiKey, system, messages) {
     throw new Error(`Anthropic API error (${response.status})`);
   }
   const data = await response.json();
-  return (data.content?.[0]?.text || "").trim();
+  return { content: (data.content?.[0]?.text || "").trim(), model };
 }
 
 async function callZai(apiKey, system, messages) {
+  const model = process.env.ZAI_MODEL || DEFAULT_MODELS.zai;
   const response = await fetch("https://api.z.ai/api/paas/v4/chat/completions", {
     method: "POST",
     headers: {
@@ -154,7 +201,7 @@ async function callZai(apiKey, system, messages) {
       authorization: `Bearer ${apiKey}`,
     },
     body: JSON.stringify({
-      model: process.env.ZAI_MODEL || DEFAULT_MODELS.zai,
+      model,
       max_tokens: MAX_TOKENS,
       messages: [
         { role: "system", content: system },
@@ -167,10 +214,12 @@ async function callZai(apiKey, system, messages) {
     throw new Error(`Z.ai API error (${response.status})`);
   }
   const data = await response.json();
-  return (data.choices?.[0]?.message?.content || "").trim();
+  return { content: (data.choices?.[0]?.message?.content || "").trim(), model };
 }
 
 async function callAlibaba(apiKey, system, messages) {
+  const model = ALIBABA_MODELS[alibabaModelIndex % ALIBABA_MODELS.length];
+  alibabaModelIndex = (alibabaModelIndex + 1) % ALIBABA_MODELS.length;
   const response = await fetch(
     "https://dashscope-intl.aliyuncs.com/compatible-mode/v1/chat/completions",
     {
@@ -180,7 +229,7 @@ async function callAlibaba(apiKey, system, messages) {
         authorization: `Bearer ${apiKey}`,
       },
       body: JSON.stringify({
-        model: process.env.ALIBABA_MODEL || DEFAULT_MODELS.alibaba,
+        model,
         max_tokens: MAX_TOKENS,
         messages: [
           { role: "system", content: system },
@@ -194,10 +243,11 @@ async function callAlibaba(apiKey, system, messages) {
     throw new Error(`Alibaba Qwen API error (${response.status})`);
   }
   const data = await response.json();
-  return (data.choices?.[0]?.message?.content || "").trim();
+  return { content: (data.choices?.[0]?.message?.content || "").trim(), model };
 }
 
 async function callOpenRouter(apiKey, system, messages) {
+  const model = process.env.OPENROUTER_MODEL || DEFAULT_MODELS.openrouter;
   const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
     method: "POST",
     headers: {
@@ -207,7 +257,7 @@ async function callOpenRouter(apiKey, system, messages) {
       "X-Title": "SimWorks",
     },
     body: JSON.stringify({
-      model: process.env.OPENROUTER_MODEL || DEFAULT_MODELS.openrouter,
+      model,
       max_tokens: MAX_TOKENS,
       messages: [
         { role: "system", content: system },
@@ -221,7 +271,7 @@ async function callOpenRouter(apiKey, system, messages) {
   }
   const data = await response.json();
   const msg = data.choices?.[0]?.message;
-  return (msg?.content ?? msg?.reasoning_content ?? "").trim();
+  return { content: (msg?.content ?? msg?.reasoning_content ?? "").trim(), model };
 }
 
 const KEY_FOR_PROVIDER = {
@@ -288,18 +338,18 @@ exports.agentChat = onRequest(
     const logRef = await createAiCallLog({
       callType: "chat",
       provider,
-      aiModel: resolvedModel(provider),
+      aiModel: provider === "alibaba" ? ALIBABA_MODELS[alibabaModelIndex % ALIBABA_MODELS.length] : resolvedModel(provider),
       promptPreview,
     });
 
     try {
-      const content = await DISPATCH[provider](apiKey, system, messages);
+      const { content, model } = await DISPATCH[provider](apiKey, system, messages);
       await finalizeAiCallLog(logRef, content);
       if (!content) {
         res.status(502).json({ error: "Provider returned an empty response." });
         return;
       }
-      res.status(200).json({ content });
+      res.status(200).json({ content, model });
     } catch (error) {
       await finalizeAiCallLog(logRef, `Error: ${error.message}`);
       logger.error("agentChat failed", { provider, message: error.message });
