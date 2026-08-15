@@ -80,7 +80,7 @@ export function PrototypeCasePage() {
   const { caseId = "" } = useParams();
   const navigate = useNavigate();
   const content = CONTENT[caseId];
-  const [activeArtifact, setActiveArtifact] = useState(0);
+  const [activeArtifact, setActiveArtifact] = useState(-1);
   const [state, setState] = usePersistentState<CaseState>(
     `simworks:${caseId}`,
     { chatMessages: [], workProduct: "" },
