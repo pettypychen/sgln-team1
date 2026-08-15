@@ -11,23 +11,204 @@ const CASE_PACKAGES = require("./generated/cases.json");
 if (!getApps().length) initializeApp();
 const db = getFirestore();
 
-// AI evaluator configuration — add entries here as new providers are enabled.
-// Only the first enabled config is used per evaluation run.
-const AI_EVALUATOR_CONFIGS = [
-  { provider: "zai", model: "glm-4.5-flash", enabled: true },
-];
-
+const ANTHROPIC_API_KEY = defineSecret("ANTHROPIC_API_KEY");
 const ZAI_API_KEY = defineSecret("ZAI_API_KEY");
+const ALIBABA_API_KEY = defineSecret("ALIBABA_API_KEY");
+const OPENROUTER_API_KEY = defineSecret("OPENROUTER_API_KEY");
 
-const ACTIVE_CONFIG = AI_EVALUATOR_CONFIGS.find((c) => c.enabled) || null;
+const ALL_SECRETS = [ANTHROPIC_API_KEY, ZAI_API_KEY, ALIBABA_API_KEY, OPENROUTER_API_KEY];
 
-function iso() {
-  return new Date().toISOString();
+/**
+ * Same provider model lists as the chat (index.js), so evaluation and chat
+ * round-robin across the same pool. Each provider's list is tried in order;
+ * the first model to succeed is reused for subsequent requests on this instance.
+ */
+const PROVIDER_MODELS = {
+  alibaba: [
+    "qwen3.7-flash",
+    "qwen3.7-plus",
+    "qwen3.7-flash-2026-07-15",
+    "qwen3.7-max",
+    "qwen3.6-flash",
+    "qwen3.5-flash",
+    "qwen3.5-plus",
+    "qwen-plus",
+    "qwen-plus-latest",
+  ],
+  zai: ["glm-4.5-flash"],
+  openrouter: ["deepseek/deepseek-r1"],
+  anthropic: ["claude-sonnet-5"],
+};
+
+// Same fallback order as the chat frontend.
+const EVAL_FALLBACK_CHAIN = ["alibaba", "zai", "openrouter", "anthropic"];
+
+// Per-provider round-robin state — persists across warm invocations.
+const evalProviderModelIndex = { alibaba: 0, zai: 0, openrouter: 0, anthropic: 0 };
+const evalProviderFailedModels = {
+  alibaba: new Set(),
+  zai: new Set(),
+  openrouter: new Set(),
+  anthropic: new Set(),
+};
+
+const EVAL_MAX_TOKENS = 4000;
+
+function iso() { return new Date().toISOString(); }
+function genId(prefix) { return `${prefix}_${crypto.randomUUID().replace(/-/g, "")}`; }
+
+// --- Provider call functions (single-turn, JSON output) ---
+
+async function callAnthropicEval(apiKey, userMessage, model) {
+  const response = await fetch("https://api.anthropic.com/v1/messages", {
+    method: "POST",
+    headers: { "content-type": "application/json", "x-api-key": apiKey, "anthropic-version": "2023-06-01" },
+    body: JSON.stringify({
+      model,
+      max_tokens: EVAL_MAX_TOKENS,
+      system: EVALUATION_SYSTEM_PROMPT,
+      messages: [{ role: "user", content: userMessage }],
+    }),
+    signal: AbortSignal.timeout(90_000),
+  });
+  if (!response.ok) throw new Error(`Anthropic API error (${response.status})`);
+  const data = await response.json();
+  return (data.content?.[0]?.text || "").trim();
 }
 
-function genId(prefix) {
-  return `${prefix}_${crypto.randomUUID().replace(/-/g, "")}`;
+async function callZaiEval(apiKey, userMessage, model) {
+  const response = await fetch("https://api.z.ai/api/paas/v4/chat/completions", {
+    method: "POST",
+    headers: { "content-type": "application/json", authorization: `Bearer ${apiKey}` },
+    body: JSON.stringify({
+      model,
+      max_tokens: EVAL_MAX_TOKENS,
+      messages: [
+        { role: "system", content: EVALUATION_SYSTEM_PROMPT },
+        { role: "user", content: userMessage },
+      ],
+    }),
+    signal: AbortSignal.timeout(90_000),
+  });
+  if (!response.ok) throw new Error(`Z.ai API error (${response.status})`);
+  const data = await response.json();
+  const msg = data.choices?.[0]?.message;
+  // GLM thinking models may return the answer in reasoning_content when content is empty.
+  return (msg?.content?.trim() || msg?.reasoning_content?.trim()) ?? "";
 }
+
+async function callAlibabaEval(apiKey, userMessage, model) {
+  const response = await fetch("https://dashscope-intl.aliyuncs.com/compatible-mode/v1/chat/completions", {
+    method: "POST",
+    headers: { "content-type": "application/json", authorization: `Bearer ${apiKey}` },
+    body: JSON.stringify({
+      model,
+      max_tokens: EVAL_MAX_TOKENS,
+      messages: [
+        { role: "system", content: EVALUATION_SYSTEM_PROMPT },
+        { role: "user", content: userMessage },
+      ],
+    }),
+    signal: AbortSignal.timeout(90_000),
+  });
+  if (!response.ok) throw new Error(`Alibaba API error (${response.status})`);
+  const data = await response.json();
+  return (data.choices?.[0]?.message?.content || "").trim();
+}
+
+async function callOpenRouterEval(apiKey, userMessage, model) {
+  const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+    method: "POST",
+    headers: {
+      "content-type": "application/json",
+      authorization: `Bearer ${apiKey}`,
+      "HTTP-Referer": "https://sgln-team1-f8d61.web.app",
+      "X-Title": "SimWorks",
+    },
+    body: JSON.stringify({
+      model,
+      max_tokens: EVAL_MAX_TOKENS,
+      messages: [
+        { role: "system", content: EVALUATION_SYSTEM_PROMPT },
+        { role: "user", content: userMessage },
+      ],
+    }),
+    signal: AbortSignal.timeout(90_000),
+  });
+  if (!response.ok) throw new Error(`OpenRouter API error (${response.status})`);
+  const data = await response.json();
+  const msg = data.choices?.[0]?.message;
+  return (msg?.content?.trim() || msg?.reasoning_content?.trim()) ?? "";
+}
+
+const EVAL_HTTP_CALL = {
+  anthropic: callAnthropicEval,
+  zai: callZaiEval,
+  alibaba: callAlibabaEval,
+  openrouter: callOpenRouterEval,
+};
+
+const EVAL_KEY_FOR = {
+  anthropic: ANTHROPIC_API_KEY,
+  zai: ZAI_API_KEY,
+  alibaba: ALIBABA_API_KEY,
+  openrouter: OPENROUTER_API_KEY,
+};
+
+/**
+ * Try every model for one provider in round-robin order.
+ * Returns { content, model } on first success; throws when all models fail.
+ */
+async function callEvalProviderWithModelFallback(provider, apiKey, userMessage) {
+  const models = PROVIDER_MODELS[provider];
+  const failed = evalProviderFailedModels[provider];
+
+  if (failed.size >= models.length) {
+    logger.warn(`eval ${provider}: all models failed — resetting`);
+    failed.clear();
+    evalProviderModelIndex[provider] = 0;
+  }
+
+  const startIdx = evalProviderModelIndex[provider];
+  let lastError;
+  for (let i = 0; i < models.length; i++) {
+    const idx = (startIdx + i) % models.length;
+    const model = models[idx];
+    if (failed.has(model)) continue;
+    try {
+      const content = await EVAL_HTTP_CALL[provider](apiKey, userMessage, model);
+      if (!content) throw new Error(`${provider}/${model} returned empty response`);
+      evalProviderModelIndex[provider] = idx;
+      return { content, model };
+    } catch (err) {
+      logger.warn(`eval ${provider}/${model} failed`, { error: err.message });
+      lastError = err;
+      failed.add(model);
+      evalProviderModelIndex[provider] = (idx + 1) % models.length;
+    }
+  }
+  throw lastError ?? new Error(`All ${provider} models failed.`);
+}
+
+/**
+ * Try providers in the fallback chain until one succeeds.
+ * Skips providers whose API key is not configured.
+ */
+async function callEvalWithFallback(userMessage) {
+  for (const provider of EVAL_FALLBACK_CHAIN) {
+    const apiKey = EVAL_KEY_FOR[provider].value();
+    if (!apiKey) continue;
+    try {
+      const { content, model } = await callEvalProviderWithModelFallback(provider, apiKey, userMessage);
+      return { content, provider, model };
+    } catch (err) {
+      logger.warn(`eval provider ${provider} exhausted`, { error: err.message });
+    }
+  }
+  throw new Error("All evaluation providers failed.");
+}
+
+// --- Evaluation logic ---
 
 function scoreAssessments(rubric, assessments) {
   const byId = new Map(assessments.map((a) => [a.criterionId, a]));
@@ -41,12 +222,9 @@ function scoreAssessments(rubric, assessments) {
   }
   const casePassed = caseScore >= rubric.caseThreshold;
   const interactionPassed = interactionScore >= rubric.interactionThreshold;
-  const recommendation =
-    casePassed && interactionPassed
-      ? "pass"
-      : casePassed || interactionPassed
-        ? "remediation_required"
-        : "not_yet_ready";
+  const recommendation = casePassed && interactionPassed ? "pass"
+    : casePassed || interactionPassed ? "remediation_required"
+    : "not_yet_ready";
   return { caseScore, interactionScore, recommendation };
 }
 
@@ -84,39 +262,7 @@ Return ONLY a valid JSON object — no markdown fences, no text outside the JSON
 
 Score every criterion listed in the rubric. Do not omit any criterion and do not add criteria that are not in the rubric.`;
 
-async function callZaiEvaluator(apiKey, userMessage) {
-  const model = ACTIVE_CONFIG.model;
-  const response = await fetch(
-    "https://api.z.ai/api/paas/v4/chat/completions",
-    {
-      method: "POST",
-      headers: {
-        "content-type": "application/json",
-        authorization: `Bearer ${apiKey}`,
-      },
-      body: JSON.stringify({
-        model,
-        max_tokens: 4000,
-        messages: [
-          { role: "system", content: EVALUATION_SYSTEM_PROMPT },
-          { role: "user", content: userMessage },
-        ],
-      }),
-      signal: AbortSignal.timeout(90_000),
-    },
-  );
-
-  if (!response.ok) {
-    throw new Error(`Z.ai API error (${response.status})`);
-  }
-  const data = await response.json();
-  const msg = data.choices?.[0]?.message;
-  // GLM thinking models may return the answer in reasoning_content when content is empty.
-  return (msg?.content?.trim() || msg?.reasoning_content?.trim()) ?? "";
-}
-
 function parseEvaluationResponse(rawText) {
-  // Strip markdown code fences if the model wraps the JSON.
   const cleaned = rawText
     .replace(/^```(?:json)?\s*/m, "")
     .replace(/\s*```$/m, "")
@@ -139,12 +285,6 @@ async function runEvaluationForSubmission(submissionId, submission) {
     return;
   }
 
-  if (!ACTIVE_CONFIG) {
-    logger.warn("No AI evaluator configured — skipping evaluation", { submissionId });
-    await submissionRef.update({ evaluationStatus: "ai_failed" });
-    return;
-  }
-
   const evaluationId = genId("eval");
   const evaluationRef = db.collection("evaluations").doc(evaluationId);
   const startedAt = iso();
@@ -152,8 +292,8 @@ async function runEvaluationForSubmission(submissionId, submission) {
 
   const initialRun = {
     id: genId("run"),
-    provider: ACTIVE_CONFIG.provider,
-    model: ACTIVE_CONFIG.model,
+    provider: "auto",
+    model: "auto",
     promptVersion: "1.0.0",
     startedAt,
     completedAt: null,
@@ -165,7 +305,6 @@ async function runEvaluationForSubmission(submissionId, submission) {
     validationErrors: [],
   };
 
-  // Step 1: Mark as processing and create the evaluation record.
   await Promise.all([
     submissionRef.update({ evaluationStatus: "ai_processing" }),
     evaluationRef.set({
@@ -187,15 +326,8 @@ async function runEvaluationForSubmission(submissionId, submission) {
     }),
   ]);
 
-  logger.info("AI evaluation started", {
-    submissionId,
-    evaluationId,
-    caseId,
-    provider: ACTIVE_CONFIG.provider,
-    model: ACTIVE_CONFIG.model,
-  });
+  logger.info("AI evaluation started", { submissionId, evaluationId, caseId });
 
-  // Step 2: Run AI evaluation.
   try {
     const userMessage = buildUserMessage(casePackage, {
       displayName: displayName || "",
@@ -210,8 +342,8 @@ async function runEvaluationForSubmission(submissionId, submission) {
       callType: "evaluation",
       submissionId,
       userName: displayName || "",
-      provider: ACTIVE_CONFIG.provider,
-      aiModel: ACTIVE_CONFIG.model,
+      provider: "auto",
+      aiModel: "auto",
       promptPreview: userMessage.slice(0, 1500),
       status: "processing",
       response: "",
@@ -219,10 +351,10 @@ async function runEvaluationForSubmission(submissionId, submission) {
       completedAt: null,
     }).catch(() => {});
 
-    let rawText;
+    let rawText, provider, model;
     try {
-      rawText = await callZaiEvaluator(ZAI_API_KEY.value(), userMessage);
-      await aiLogRef.update({ status: "complete", response: rawText.slice(0, 2000), completedAt: iso() }).catch(() => {});
+      ({ content: rawText, provider, model } = await callEvalWithFallback(userMessage));
+      await aiLogRef.update({ provider, aiModel: model, status: "complete", response: rawText.slice(0, 2000), completedAt: iso() }).catch(() => {});
     } catch (aiError) {
       await aiLogRef.update({ status: "complete", response: `Error: ${aiError.message}`, completedAt: iso() }).catch(() => {});
       throw aiError;
@@ -244,13 +376,12 @@ async function runEvaluationForSubmission(submissionId, submission) {
       supported: true,
     }));
 
-    const { caseScore, interactionScore, recommendation } = scoreAssessments(
-      casePackage.rubric,
-      assessments,
-    );
+    const { caseScore, interactionScore, recommendation } = scoreAssessments(casePackage.rubric, assessments);
     const completedAt = iso();
     const completedRun = {
       ...initialRun,
+      provider,
+      model,
       completedAt,
       status: "completed",
       assessments,
@@ -264,49 +395,25 @@ async function runEvaluationForSubmission(submissionId, submission) {
 
     await Promise.all([
       submissionRef.update({ evaluationStatus: "ready_for_review" }),
-      evaluationRef.update({
-        status: "ready_for_review",
-        evaluationRuns: [completedRun],
-        updatedAt: completedAt,
-      }),
+      evaluationRef.update({ status: "ready_for_review", evaluationRuns: [completedRun], updatedAt: completedAt }),
     ]);
 
-    logger.info("AI evaluation completed", {
-      submissionId,
-      evaluationId,
-      caseScore,
-      interactionScore,
-      recommendation,
-    });
+    logger.info("AI evaluation completed", { submissionId, evaluationId, provider, model, caseScore, interactionScore, recommendation });
   } catch (error) {
     const failedAt = iso();
-    const failedRun = {
-      ...initialRun,
-      completedAt: failedAt,
-      status: "failed",
-      validationErrors: [error.message],
-    };
+    const failedRun = { ...initialRun, completedAt: failedAt, status: "failed", validationErrors: [error.message] };
     await Promise.all([
       submissionRef.update({ evaluationStatus: "ai_failed" }),
-      evaluationRef.update({
-        status: "ai_failed",
-        evaluationRuns: [failedRun],
-        updatedAt: failedAt,
-      }),
+      evaluationRef.update({ status: "ai_failed", evaluationRuns: [failedRun], updatedAt: failedAt }),
     ]);
-    logger.error("AI evaluation failed", {
-      submissionId,
-      evaluationId,
-      error: error.message,
-    });
+    logger.error("AI evaluation failed", { submissionId, evaluationId, error: error.message });
   }
 }
 
-// Fires automatically when a new submission document is created.
 exports.onSubmissionCreated = onDocumentCreated(
   {
     document: "submissions/{submissionId}",
-    secrets: [ZAI_API_KEY],
+    secrets: ALL_SECRETS,
     region: "us-central1",
     retry: false,
     timeoutSeconds: 120,
@@ -314,20 +421,15 @@ exports.onSubmissionCreated = onDocumentCreated(
   async (event) => {
     const submissionId = event.params.submissionId;
     const submission = event.data.data();
-    if (!submission) {
-      logger.error("Submission data missing", { submissionId });
-      return;
-    }
+    if (!submission) { logger.error("Submission data missing", { submissionId }); return; }
     await runEvaluationForSubmission(submissionId, submission);
   },
 );
 
-// Fires when the frontend creates a document in evaluationRetriggers/{submissionId},
-// allowing manual re-evaluation of submissions that were never processed.
 exports.onEvaluationRetrigger = onDocumentCreated(
   {
     document: "evaluationRetriggers/{submissionId}",
-    secrets: [ZAI_API_KEY],
+    secrets: ALL_SECRETS,
     region: "us-central1",
     retry: false,
     timeoutSeconds: 120,
@@ -337,13 +439,9 @@ exports.onEvaluationRetrigger = onDocumentCreated(
     const retriggerRef = event.data.ref;
     try {
       const submissionSnap = await db.collection("submissions").doc(submissionId).get();
-      if (!submissionSnap.exists) {
-        logger.warn("Submission not found for retrigger", { submissionId });
-        return;
-      }
+      if (!submissionSnap.exists) { logger.warn("Submission not found for retrigger", { submissionId }); return; }
       await runEvaluationForSubmission(submissionId, submissionSnap.data());
     } finally {
-      // Always clean up the trigger document so it can be re-created on the next retry.
       await retriggerRef.delete().catch(() => {});
     }
   },
