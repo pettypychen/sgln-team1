@@ -218,32 +218,42 @@ async function callZai(apiKey, system, messages) {
 }
 
 async function callAlibaba(apiKey, system, messages) {
-  const model = ALIBABA_MODELS[alibabaModelIndex % ALIBABA_MODELS.length];
-  alibabaModelIndex = (alibabaModelIndex + 1) % ALIBABA_MODELS.length;
-  const response = await fetch(
-    "https://dashscope-intl.aliyuncs.com/compatible-mode/v1/chat/completions",
-    {
-      method: "POST",
-      headers: {
-        "content-type": "application/json",
-        authorization: `Bearer ${apiKey}`,
-      },
-      body: JSON.stringify({
-        model,
-        max_tokens: MAX_TOKENS,
-        messages: [
-          { role: "system", content: system },
-          ...messages.map((m) => ({ role: m.role, content: m.content })),
-        ],
-      }),
-    },
-  );
-
-  if (!response.ok) {
-    throw new Error(`Alibaba Qwen API error (${response.status})`);
+  const startIndex = alibabaModelIndex;
+  let lastError;
+  for (let i = 0; i < ALIBABA_MODELS.length; i++) {
+    const idx = (startIndex + i) % ALIBABA_MODELS.length;
+    const model = ALIBABA_MODELS[idx];
+    alibabaModelIndex = (idx + 1) % ALIBABA_MODELS.length;
+    try {
+      const response = await fetch(
+        "https://dashscope-intl.aliyuncs.com/compatible-mode/v1/chat/completions",
+        {
+          method: "POST",
+          headers: {
+            "content-type": "application/json",
+            authorization: `Bearer ${apiKey}`,
+          },
+          body: JSON.stringify({
+            model,
+            max_tokens: MAX_TOKENS,
+            messages: [
+              { role: "system", content: system },
+              ...messages.map((m) => ({ role: m.role, content: m.content })),
+            ],
+          }),
+        },
+      );
+      if (!response.ok) throw new Error(`Alibaba Qwen API error (${response.status})`);
+      const data = await response.json();
+      const content = (data.choices?.[0]?.message?.content || "").trim();
+      if (!content) throw new Error(`Alibaba model ${model} returned empty response`);
+      return { content, model };
+    } catch (err) {
+      logger.warn(`callAlibaba: model ${ALIBABA_MODELS[idx]} failed, trying next`, { error: err.message });
+      lastError = err;
+    }
   }
-  const data = await response.json();
-  return { content: (data.choices?.[0]?.message?.content || "").trim(), model };
+  throw lastError ?? new Error("All Alibaba models failed.");
 }
 
 async function callOpenRouter(apiKey, system, messages) {

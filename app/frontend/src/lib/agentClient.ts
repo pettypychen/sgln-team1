@@ -255,44 +255,50 @@ let alibabaDevModelIndex = 0;
  * Qwen uses an OpenAI-compatible chat completions format.
  */
 async function sendViaQwenDevProxy(request: AgentTurnRequest): Promise<{ content: string; model: string }> {
-  const model = readEnv("VITE_ALIBABA_MODEL") ?? ALIBABA_DEV_MODELS[alibabaDevModelIndex % ALIBABA_DEV_MODELS.length];
-  alibabaDevModelIndex = (alibabaDevModelIndex + 1) % ALIBABA_DEV_MODELS.length;
-  let response: Response;
-  try {
-    response = await fetch("/api/qwen/chat/completions", {
+  // If a model is pinned via env, use it directly (no round-robin).
+  const pinnedModel = readEnv("VITE_ALIBABA_MODEL");
+  if (pinnedModel) {
+    const response = await fetch("/api/qwen/chat/completions", {
       method: "POST",
       headers: { "content-type": "application/json" },
-      body: JSON.stringify({
-        model,
-        max_tokens: 700,
-        messages: [
-          { role: "system", content: request.system },
-          ...request.messages,
-        ],
-      }),
+      body: JSON.stringify({ model: pinnedModel, max_tokens: 700, messages: [{ role: "system", content: request.system }, ...request.messages] }),
       signal: request.signal,
     });
-  } catch (error) {
-    throw new AgentRequestError(
-      error instanceof Error ? error.message : "Network error contacting Qwen",
-    );
+    if (!response.ok) throw new AgentRequestError(`Qwen request failed (${response.status})`, response.status);
+    const data = (await response.json()) as { choices?: { message?: { content?: string } }[] };
+    const text = data.choices?.[0]?.message?.content?.trim() ?? "";
+    if (!text) throw new AgentRequestError("Qwen returned an empty response");
+    return { content: text, model: pinnedModel };
   }
 
-  if (!response.ok) {
-    let detail = `Qwen request failed (${response.status})`;
+  // Loop through all models starting from the current index before giving up.
+  const startIndex = alibabaDevModelIndex;
+  let lastError: unknown;
+  for (let i = 0; i < ALIBABA_DEV_MODELS.length; i++) {
+    const idx = (startIndex + i) % ALIBABA_DEV_MODELS.length;
+    const model = ALIBABA_DEV_MODELS[idx];
+    alibabaDevModelIndex = (idx + 1) % ALIBABA_DEV_MODELS.length;
     try {
-      const body = (await response.json()) as { error?: { message?: string } };
-      if (body?.error?.message) detail = body.error.message;
-    } catch { /* non-JSON body */ }
-    throw new AgentRequestError(detail, response.status);
+      const response = await fetch("/api/qwen/chat/completions", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({
+          model,
+          max_tokens: 700,
+          messages: [{ role: "system", content: request.system }, ...request.messages],
+        }),
+        signal: request.signal,
+      });
+      if (!response.ok) throw new AgentRequestError(`Qwen request failed (${response.status})`, response.status);
+      const data = (await response.json()) as { choices?: { message?: { content?: string } }[] };
+      const text = data.choices?.[0]?.message?.content?.trim() ?? "";
+      if (!text) throw new AgentRequestError(`Qwen model ${model} returned empty response`);
+      return { content: text, model };
+    } catch (err) {
+      lastError = err;
+    }
   }
-
-  const data = (await response.json()) as {
-    choices?: { message?: { content?: string } }[];
-  };
-  const text = data.choices?.[0]?.message?.content?.trim() ?? "";
-  if (!text) throw new AgentRequestError("Qwen returned an empty response");
-  return { content: text, model };
+  throw lastError ?? new AgentRequestError("All Qwen models failed.");
 }
 
 /**
