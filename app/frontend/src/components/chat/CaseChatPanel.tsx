@@ -1,6 +1,7 @@
 import {
   FormEvent,
   ReactNode,
+  useEffect,
   useRef,
   useState,
 } from "react";
@@ -89,6 +90,11 @@ export function CaseChatPanel({
   const [isThinking, setIsThinking] = useState(false);
   const messagesRef = useRef(messages);
   messagesRef.current = messages;
+  const bottomRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    bottomRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages]);
 
   const live = isAgentConfigured();
   const agentLabel = live ? "AI" : "Agent";
@@ -279,6 +285,7 @@ export function CaseChatPanel({
           );
         })}
         {messages.length === 0 && emptyState ? emptyState : null}
+        <div ref={bottomRef} />
       </div>
 
       {/* Composer */}
