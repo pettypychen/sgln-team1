@@ -90,10 +90,11 @@ export function CaseChatPanel({
   const [isThinking, setIsThinking] = useState(false);
   const messagesRef = useRef(messages);
   messagesRef.current = messages;
-  const bottomRef = useRef<HTMLDivElement>(null);
+  const transcriptRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: "smooth" });
+    const el = transcriptRef.current;
+    if (el) el.scrollTo({ top: el.scrollHeight, behavior: "smooth" });
   }, [messages]);
 
   const live = isAgentConfigured();
@@ -245,7 +246,7 @@ export function CaseChatPanel({
       ) : null}
 
       {/* Transcript */}
-      <div className={transcriptClassName} aria-live="polite">
+      <div ref={transcriptRef} className={transcriptClassName} aria-live="polite">
         {messages.map((message) => {
           const content = formatMessageContent
             ? formatMessageContent(message, { live, agentLabel })
@@ -285,7 +286,6 @@ export function CaseChatPanel({
           );
         })}
         {messages.length === 0 && emptyState ? emptyState : null}
-        <div ref={bottomRef} />
       </div>
 
       {/* Composer */}
