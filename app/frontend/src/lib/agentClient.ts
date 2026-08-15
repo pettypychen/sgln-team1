@@ -27,6 +27,8 @@ export interface AgentTurnRequest {
   /** Overrides the configured default provider for this turn. */
   provider?: AgentProvider;
   signal?: AbortSignal;
+  /** Called in local dev when a model fails and the next one is about to be tried. */
+  onModelSwitch?: (failedModel: string, nextModel: string) => void;
 }
 
 export class AgentNotConfiguredError extends Error {
@@ -274,8 +276,9 @@ export const PROVIDER_FALLBACK_CHAIN: AgentProvider[] = [
  * can update mid-flight. Returns { content, provider, model } on first success.
  */
 export async function sendAgentTurnWithFallback(
-  request: Omit<AgentTurnRequest, "provider">,
+  request: Omit<AgentTurnRequest, "provider" | "onModelSwitch">,
   onProviderSwitch: (provider: AgentProvider, attempt: number) => void,
+  onModelSwitch?: (provider: AgentProvider, failedModel: string, nextModel: string) => void,
 ): Promise<{ content: string; provider: AgentProvider; model?: string }> {
   const endpoint = getAgentEndpoint();
   const chain = endpoint
@@ -289,7 +292,13 @@ export async function sendAgentTurnWithFallback(
     const provider = chain[i];
     onProviderSwitch(provider, i);
     try {
-      const { content, model } = await sendAgentTurn({ ...request, provider });
+      const { content, model } = await sendAgentTurn({
+        ...request,
+        provider,
+        onModelSwitch: onModelSwitch
+          ? (failed, next) => onModelSwitch(provider, failed, next)
+          : undefined,
+      });
       return { content, provider, model };
     } catch (err) {
       lastError = err;
@@ -351,6 +360,11 @@ export async function sendAgentTurn(request: AgentTurnRequest): Promise<{ conten
       lastError = err;
       // Only advance on failure.
       providerModelIndex[provider] = (idx + 1) % models.length;
+      // Notify the UI if there's another model to try.
+      if (i < models.length - 1) {
+        const nextModel = models[(idx + 1) % models.length];
+        request.onModelSwitch?.(model, nextModel);
+      }
     }
   }
   throw lastError ?? new AgentRequestError(`All ${provider} models failed.`);

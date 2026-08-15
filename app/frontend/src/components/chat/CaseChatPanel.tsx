@@ -169,6 +169,9 @@ export function CaseChatPanel({
           updateLoading(label);
         }
       },
+      (provider, failedModel, nextModel) => {
+        updateLoading(`${PROVIDER_LABEL[provider]} · ${failedModel} unavailable — trying ${nextModel}…`);
+      },
     )
       .then(({ content, provider, model }) => {
         finish(content, "sent", {
