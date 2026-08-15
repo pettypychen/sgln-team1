@@ -14,6 +14,7 @@ export default defineConfig(({ mode }) => {
     },
     server: {
       proxy: {
+
         ...(env.VITE_ANTHROPIC_API_KEY
           ? {
               "/api/anthropic": {

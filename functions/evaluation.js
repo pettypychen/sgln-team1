@@ -1302,6 +1302,108 @@ async function handler(req, res) {
     return;
   }
 
+  if (req.method === "POST" && path === "credentials/by-email") {
+    await enforceRateLimit(`by-email:${req.ip}`, 20, 60 * 60 * 1000);
+    const email = typeof req.body?.email === "string" ? req.body.email.trim() : "";
+    if (!email) return sendError(res, 400, "email is required.");
+
+    // Wave 1: submissions is the primary source (always has email directly).
+    const submissionsSnap = await db.collection("submissions").where("email", "==", email).get();
+    if (submissionsSnap.empty) { res.json(null); return; }
+
+    // Deduplicate by attemptId.
+    const seen = new Set();
+    const submissionDocs = submissionsSnap.docs
+      .map((d) => ({ _docId: d.id, ...d.data() }))
+      .filter((s) => { const key = s.attemptId || s._docId; if (seen.has(key)) return false; seen.add(key); return true; });
+
+    const attemptIds = [...new Set(submissionDocs.map((s) => s.attemptId).filter(Boolean))];
+    const submissionDocIds = submissionDocs.map((s) => s._docId);
+
+    // Wave 2: fire all enrichment queries in parallel.
+    // attempts uses "id" field (stored on the doc) so we can batch instead of N getDoc calls.
+    const [attemptsSnap, evByAttemptSnap, evBySubmissionSnap, participantsSnap] = await Promise.all([
+      attemptIds.length > 0
+        ? db.collection("attempts").where("id", "in", attemptIds.slice(0, 30)).get()
+        : Promise.resolve({ docs: [] }),
+      attemptIds.length > 0
+        ? db.collection("evaluations").where("attemptId", "in", attemptIds.slice(0, 30)).get()
+        : Promise.resolve({ docs: [] }),
+      submissionDocIds.length > 0
+        ? db.collection("evaluations").where("submissionId", "in", submissionDocIds.slice(0, 30)).get()
+        : Promise.resolve({ docs: [] }),
+      db.collection("participants").where("email", "==", email).get(),
+    ]);
+
+    const attemptsById = new Map(attemptsSnap.docs.map((d) => [d.data().id, d.data()]));
+    const evalsByAttemptId = new Map();
+    evByAttemptSnap.docs.forEach((d) => { const ev = d.data(); if (ev.attemptId) evalsByAttemptId.set(ev.attemptId, ev); });
+    const evalsBySubmissionId = new Map();
+    evBySubmissionSnap.docs.forEach((d) => { const ev = d.data(); if (ev.submissionId) evalsBySubmissionId.set(ev.submissionId, ev); });
+
+    // Resolve participantId from participants query or from any full attempt.
+    let participantId = null;
+    let displayName = submissionDocs[0].displayName || email;
+    if (!participantsSnap.empty) {
+      const pd = participantsSnap.docs[0];
+      participantId = pd.id;
+      displayName = pd.data().displayName || displayName;
+    } else {
+      for (const attempt of attemptsById.values()) {
+        if (attempt.participantId) { participantId = attempt.participantId; displayName = attempt.learnerDisplayName || displayName; break; }
+      }
+    }
+
+    // Wave 3 (conditional): credentials require participantId.
+    let credentialsData = [];
+    let token = "";
+    if (participantId) {
+      const [credSnap, participantSnap] = await Promise.all([
+        db.collection("credentials").where("participantId", "==", participantId).get(),
+        db.collection("participants").doc(participantId).get(),
+      ]);
+      credentialsData = credSnap.docs.map((d) => d.data());
+      if (participantSnap.exists) {
+        const pd = participantSnap.data();
+        token = privateToken(participantId, pd.privateTokenVersion || 1);
+        displayName = pd.displayName || displayName;
+      }
+    }
+
+    // Build attempts, preferring full attempt data when available.
+    const attempts = submissionDocs.map((sub) => {
+      const full = sub.attemptId ? attemptsById.get(sub.attemptId) : null;
+      if (full) {
+        const ev = evalsByAttemptId.get(full.id);
+        if (ev && full.status === "ai_failed" && ev.status === "ready_for_review") {
+          return { ...full, status: "ready_for_review", evaluationRuns: [...(full.evaluationRuns || []), ...(ev.evaluationRuns || [])] };
+        }
+        return full;
+      }
+      const ev = evalsBySubmissionId.get(sub._docId);
+      const submittedAt = sub.submittedAt?.toDate ? sub.submittedAt.toDate().toISOString() : (sub.submittedAt || new Date().toISOString());
+      const status = sub.evaluationStatus === "ready_for_review" ? "ready_for_review"
+        : sub.evaluationStatus === "ai_processing" ? "ai_processing" : "ai_failed";
+      return {
+        id: sub.attemptId || sub._docId,
+        participantId: participantId || "",
+        learnerDisplayName: sub.displayName || "",
+        caseId: sub.caseId, caseTitle: sub.caseTitle, category: "", caseVersion: "", rubricVersion: "",
+        evaluationMode: "human_final", attemptNumber: sub.attemptNumber || 1,
+        transcript: [], workProduct: sub.workProduct || "", sourceArtifacts: [],
+        submissionMetadata: { messageCount: 0, learnerMessageCount: 0, agentMessageCount: 0, failedMessageCount: 0, workProductCharacterCount: (sub.workProduct || "").length, sourceArtifactCount: 0 },
+        submittedAt, idempotencyKey: "", status, evaluationRuns: ev?.evaluationRuns || [],
+      };
+    });
+
+    res.json({
+      access: { participantId: participantId || "", displayName, email, privateToken: token },
+      attempts,
+      credentials: credentialsData,
+    });
+    return;
+  }
+
   if (req.method === "POST" && path === "credentials/private/rotate") {
     await enforceRateLimit(`private-rotate:${req.ip}`, 5, 60 * 60 * 1000);
     const currentToken = req.body?.privateToken;

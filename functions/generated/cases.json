@@ -175,17 +175,17 @@
       {
         "id": "kopi-menu.csv",
         "version": "1.0.0",
-        "content": "Item code,Drink name,Base drink,Milk modifier,Sugar modifier,Temperature or ice modifier,Availability,Price in SGD\nK01,Kopi,Coffee,Condensed milk,Standard sugar,Hot,Available,1.60\nK02,Kopi O,Coffee,No milk,Standard sugar,Hot,Available,1.40\nK03,Kopi O Kosong,Coffee,No milk,No sugar,Hot,Available,1.40\nK04,Kopi C,Coffee,Evaporated milk,Standard sugar,Hot,Available,1.70\nK05,Kopi C Siew Dai,Coffee,Evaporated milk,Less sugar,Hot,Available,1.70\nK06,Kopi Peng,Coffee,Condensed milk,Standard sugar,Iced,Available,2.00\nK07,Kopi O Peng Kosong,Coffee,No milk,No sugar,Iced,Unavailable,1.80\nK08,Teh,Tea,Condensed milk,Standard sugar,Hot,Available,1.60\nK09,Teh O Siew Dai,Tea,No milk,Less sugar,Hot,Available,1.50\nK10,Teh C Peng,Tea,Evaporated milk,Standard sugar,Iced,Available,2.10\nK11,Barley,Barley water,No milk,Standard sugar,Iced,Available,1.50\n"
+        "content": "Item code,Drink name,Base drink,Milk modifier,Sugar modifier,Temperature or ice modifier,Availability,Price in SGD\nK01,Kopi,Coffee,Condensed milk,Standard sugar,Hot,Available,1.60\nK02,Kopi O,Coffee,No milk,Standard sugar,Hot,Available,1.40\nK03,Kopi O Kosong,Coffee,No milk,No sugar,Hot,Available,1.40\nK04,Kopi C,Coffee,Evaporated milk,Standard sugar,Hot,Available,1.70\nK05,Kopi C Siew Dai,Coffee,Evaporated milk,Less sugar,Hot,Available,1.70\nK06,Kopi Peng,Coffee,Condensed milk,Standard sugar,Iced,Available,2.00\n"
       },
       {
         "id": "colleague-orders.csv",
         "version": "1.0.0",
-        "content": "Display name,Plain-language preference,Dietary or ingredient constraint,Budget note\nAiman,Strong hot coffee with no milk and no sugar,No dairy,Under SGD 2\nBeatrice,Iced coffee with milk and normal sweetness,None,None\nCheryl,Hot coffee with evaporated milk and less sugar,Avoid condensed milk,None\nDev,I want something less sweet,No coffee,Under SGD 2\nElena,Iced black coffee with no sugar,No dairy,None\nFarid,Regular hot milk tea,None,Under SGD 2\n"
+        "content": "Display name,Plain-language preference,Dietary or ingredient constraint,Budget note\nAiman,Strong hot coffee with no milk and no sugar,No dairy,Under SGD 2\nBeatrice,Iced coffee with milk and normal sweetness,None,None\nCheryl,Hot coffee with evaporated milk and less sugar,Avoid condensed milk,None\n"
       },
       {
         "id": "kopi-glossary.md",
         "version": "1.0.0",
-        "content": "# Crimson Cup glossary\n\n- **Kopi**: coffee with condensed milk and standard sugar.\n- **O**: no milk.\n- **C**: evaporated milk instead of condensed milk.\n- **Kosong**: no sugar.\n- **Siew dai**: less sugar.\n- **Peng**: iced.\n- An item must be ordered by an available menu code. Do not construct an off-menu code.\n- “Something less sweet” is ambiguous because the order does not specify a base drink or milk preference. Ask Dev to clarify.\n- Elena's exact requested combination is unavailable. Offer an available no-dairy alternative and confirm it before finalizing.\n"
+        "content": "# Crimson Cup glossary\n\n- **Kopi**: coffee with condensed milk and standard sugar.\n- **O**: no milk.\n- **C**: evaporated milk instead of condensed milk.\n- **Kosong**: no sugar.\n- **Siew dai**: less sugar.\n- **Peng**: iced.\n\nMatch each colleague's description to one item already listed on the menu.\n"
       }
     ],
     "version": "1.0.0",
@@ -196,30 +196,15 @@
       "caseId": "kopi-run",
       "caseVersion": "1.0.0",
       "rubricVersion": "1.0.0",
-      "caseThreshold": 48,
-      "interactionThreshold": 18,
+      "caseThreshold": 36,
+      "interactionThreshold": 12,
       "criteria": [
         {
           "id": "kopi-orders",
           "dimension": "case_outcome",
           "label": "Order translation",
-          "description": "Maps all six preferences to valid menu item codes using the supplied glossary.",
-          "maxPoints": 24
-        },
-        {
-          "id": "kopi-clarify",
-          "dimension": "case_outcome",
-          "label": "Ambiguity resolution",
-          "description": "Asks for clarification instead of guessing the ambiguous preference.",
-          "maxPoints": 12,
-          "criticalFailure": true
-        },
-        {
-          "id": "kopi-substitute",
-          "dimension": "case_outcome",
-          "label": "Unavailable-item substitution",
-          "description": "Proposes and confirms an acceptable available alternative.",
-          "maxPoints": 12
+          "description": "Maps all three preferences to valid menu item codes using the supplied glossary.",
+          "maxPoints": 36
         },
         {
           "id": "kopi-total",
@@ -229,32 +214,24 @@
           "maxPoints": 12
         },
         {
-          "id": "kopi-constraints",
+          "id": "kopi-source-check",
           "dimension": "ai_interaction",
-          "label": "Constraint prompting",
-          "description": "Provides the menu, dietary, budget, and availability constraints to the AI.",
-          "maxPoints": 10
-        },
-        {
-          "id": "kopi-correction",
-          "dimension": "ai_interaction",
-          "label": "AI error correction",
-          "description": "Catches and corrects at least one planted or prompted AI error.",
-          "maxPoints": 12,
-          "criticalFailure": true
+          "label": "Source-grounded check",
+          "description": "Asks the AI to verify at least one order against the supplied menu or glossary.",
+          "maxPoints": 12
         },
         {
           "id": "kopi-final",
           "dimension": "ai_interaction",
-          "label": "Clear final instruction",
-          "description": "Produces a complete final table without unresolved assumptions.",
+          "label": "Clear final order",
+          "description": "Produces a readable three-person order with a total.",
           "maxPoints": 8
         }
       ]
     },
-    "caseInstructions": "---\nslug: kopi-run\ncaseVersion: 1.0.0\nrubricVersion: 1.0.0\ncategory: Onboarding\n---\n\n# Kopi Run\n\nYou have five minutes to prepare a group order for six colleagues at fictional Crimson Cup Kopitiam. The supplied glossary is the only source of truth.\n\nAsk for clarification when a preference is ambiguous. For an unavailable menu combination, propose an available alternative and obtain confirmation. Verify each menu price and the total. The AI will make at least one mistake; correct it before submitting.\n\n## Final format\n\n| Colleague | Item code | Translated order | Price |\n| --- | --- | --- | --- |\n\nEnd with a verified total in SGD and list any confirmed clarification or substitution.\n",
-    "evaluationGuidance": "---\ncaseVersion: 1.0.0\nrubricVersion: 1.0.0\n---\n\n# Deterministic evaluation\n\nExpected direct translations are Aiman K03, Beatrice K06, Cheryl K05, and Farid K08. Dev requires clarification. Elena's K07 is unavailable and requires a confirmed available substitute.\n\nThe final price total must equal the sum of the six confirmed available menu codes. Award no total-verification points for an unexplained number.\n\n## Critical rules\n\n- Zero for Ambiguity resolution if the learner guesses Dev's order.\n- Zero for AI error correction if no specific AI mistake is identified and corrected.\n- The learner must meet both case and AI-interaction thresholds.\n",
-    "coachingPrompt": "# AI coaching prompt\n\nHelp the learner translate constraints using only the supplied menu and glossary. Do not guess the ambiguous preference or silently replace the unavailable item. Make one correctable mistake in an item code, modifier, price, or total, then let the learner identify it. Do not output the final six-person table unless the learner has resolved ambiguity and confirmed the substitution.\n",
-    "evaluationPrompt": "# AI evaluation prompt · version 1.0.0\n\nEvaluate the immutable transcript and work product using only the supplied menu, colleague orders, and glossary. Resolve evidence to transcript messages and CSV rows or item codes. Require explicit clarification, confirmed substitution, price verification, and correction of an AI mistake. Return all criterion scores, explanations, support status, dual totals, critical failures, and shared recommendation. Exclude unsupported points.\n"
+    "caseInstructions": "---\nslug: kopi-run\ncaseVersion: 1.0.0\nrubricVersion: 1.0.0\ncategory: Onboarding\n---\n\n# Kopi Run\n\nPrepare a kopi order for three colleagues at fictional Crimson Cup Kopitiam. You do not need to know kopi terms beforehand.\n\n## What to do\n\n1. Read the three colleague orders.\n2. Use the glossary and menu to match each order to an item code.\n3. Ask the AI to check at least one match.\n4. Add the three prices and submit the total.\n\n## Final format\n\n| Colleague | Item code | Translated order | Price |\n| --- | --- | --- | --- |\n\nEnd with the total in SGD.\n",
+    "evaluationGuidance": "---\ncaseVersion: 1.0.0\nrubricVersion: 1.0.0\n---\n\n# Deterministic evaluation\n\nExpected translations are Aiman K03, Beatrice K06, and Cheryl K05.\n\nThe final total is SGD 5.10. Award no total-verification points for an unexplained number.\n\n## Critical rules\n\n- The learner must ask the AI to check at least one order using the supplied sources.\n- The learner must meet both case and AI-interaction thresholds.\n",
+    "coachingPrompt": "# AI coaching prompt\n\nHelp the learner match one colleague at a time using only the supplied menu and glossary. Explain which words support the match. Let the learner assemble the final three-person order and calculate the total.\n",
+    "evaluationPrompt": "# AI evaluation prompt · version 1.0.0\n\nEvaluate the immutable transcript and work product using only the supplied menu, colleague orders, and glossary. Resolve evidence to transcript messages and CSV rows or item codes. Check the three order matches, the SGD 5.10 total, and whether the learner asked the AI to verify at least one match against a supplied source. Return all criterion scores, explanations, support status, dual totals, critical failures, and shared recommendation. Exclude unsupported points.\n"
   }
 }
