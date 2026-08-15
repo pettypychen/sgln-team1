@@ -116,6 +116,15 @@ const PROVIDER_MODELS = {
 // Per-provider round-robin counters — persist across warm invocations.
 const providerModelIndex = { alibaba: 0, zai: 0, openrouter: 0, anthropic: 0 };
 
+// Models that have errored this instance lifetime — skipped on every subsequent request.
+// Reset automatically when all models in a provider pool are exhausted.
+const providerFailedModels = {
+  alibaba: new Set(),
+  zai: new Set(),
+  openrouter: new Set(),
+  anthropic: new Set(),
+};
+
 const MAX_TOKENS = 700;
 
 function nowIso() { return new Date().toISOString(); }
@@ -273,20 +282,31 @@ const HTTP_CALL = { anthropic: callAnthropic, zai: callZai, alibaba: callAlibaba
  */
 async function callProviderWithModelFallback(provider, apiKey, system, messages) {
   const models = PROVIDER_MODELS[provider];
+  const failed = providerFailedModels[provider];
+
+  // If every model has been marked failed, reset so they get a fresh chance.
+  if (failed.size >= models.length) {
+    logger.warn(`${provider}: all models previously failed — resetting failed set`);
+    failed.clear();
+    providerModelIndex[provider] = 0;
+  }
+
   const startIdx = providerModelIndex[provider];
   let lastError;
   for (let i = 0; i < models.length; i++) {
     const idx = (startIdx + i) % models.length;
     const model = models[idx];
+    if (failed.has(model)) continue;
     try {
       const content = await HTTP_CALL[provider](apiKey, system, messages, model);
       if (!content) throw new Error(`${provider} model ${model} returned empty response`);
-      // Success: keep index at this model for next request.
+      // Success: stay on this model for the next request.
+      providerModelIndex[provider] = idx;
       return { content, model };
     } catch (err) {
-      logger.warn(`${provider} model ${model} failed, trying next`, { error: err.message });
+      logger.warn(`${provider} model ${model} failed — marking as unavailable`, { error: err.message });
       lastError = err;
-      // Only advance on failure so the next request retries from the new position.
+      failed.add(model);
       providerModelIndex[provider] = (idx + 1) % models.length;
     }
   }

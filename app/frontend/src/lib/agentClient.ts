@@ -188,6 +188,12 @@ const providerModelIndex: Record<AgentProvider, number> = {
   alibaba: 0, zai: 0, openrouter: 0, anthropic: 0,
 };
 
+// Models that have errored this page session — skipped on every subsequent request.
+// Reset automatically when the entire pool is exhausted.
+const providerFailedModels: Record<AgentProvider, Set<string>> = {
+  alibaba: new Set(), zai: new Set(), openrouter: new Set(), anthropic: new Set(),
+};
+
 // --- Pure HTTP call functions for local dev (accept model, return content string) ---
 
 async function devCallAnthropic(request: AgentTurnRequest, model: string): Promise<string> {
@@ -357,24 +363,36 @@ export async function sendAgentTurn(request: AgentTurnRequest): Promise<{ conten
   if (!readEnv(PROVIDER_ENV_KEY[provider])) throw new AgentNotConfiguredError();
 
   const models = PROVIDER_MODELS[provider];
+  const failed = providerFailedModels[provider];
+
+  // If every model has been marked failed, reset so they get a fresh chance.
+  if (failed.size >= models.length) {
+    failed.clear();
+    providerModelIndex[provider] = 0;
+  }
+
   const startIdx = providerModelIndex[provider];
   let lastError: unknown;
   for (let i = 0; i < models.length; i++) {
     const idx = (startIdx + i) % models.length;
     const model = models[idx];
+    if (failed.has(model)) continue;
     try {
       const content = await DEV_HTTP_CALL[provider](request, model);
-      // Success: keep index at this model for next request.
+      // Success: stay on this model for the next request.
+      providerModelIndex[provider] = idx;
       return { content, model };
     } catch (err) {
       lastError = err;
-      // Only advance on failure.
+      failed.add(model);
       providerModelIndex[provider] = (idx + 1) % models.length;
-      // Notify the UI if there's another model to try.
-      if (i < models.length - 1) {
-        const nextModel = models[(idx + 1) % models.length];
-        request.onModelSwitch?.(model, nextModel);
+      // Find the next non-failed model (scanning forward from current position) and notify the UI.
+      let nextModel: string | undefined;
+      for (let j = i + 1; j < models.length; j++) {
+        const candidate = models[(startIdx + j) % models.length];
+        if (!failed.has(candidate)) { nextModel = candidate; break; }
       }
+      if (nextModel) request.onModelSwitch?.(model, nextModel);
     }
   }
   throw lastError ?? new AgentRequestError(`All ${provider} models failed.`);
