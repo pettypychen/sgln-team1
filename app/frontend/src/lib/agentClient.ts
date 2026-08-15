@@ -295,9 +295,9 @@ async function sendViaOpenRouterDevProxy(request: AgentTurnRequest): Promise<str
 
 /** Automatic provider fallback order used by the chat panel. */
 export const PROVIDER_FALLBACK_CHAIN: AgentProvider[] = [
+  "alibaba",
   "zai",
   "openrouter",
-  "alibaba",
   "anthropic",
 ];
 
