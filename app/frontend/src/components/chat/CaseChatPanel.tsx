@@ -1,7 +1,6 @@
 import {
   FormEvent,
   ReactNode,
-  useEffect,
   useRef,
   useState,
 } from "react";
@@ -9,11 +8,9 @@ import type { ChatMessage } from "@/types";
 import {
   AgentNotConfiguredError,
   AgentNotImplementedError,
-  fetchConfiguredProviders,
-  getAgentEndpoint,
-  getConfiguredProviders,
-  getDefaultProvider,
-  sendAgentTurn,
+  isAgentConfigured,
+  PROVIDER_FALLBACK_CHAIN,
+  sendAgentTurnWithFallback,
   type AgentProvider,
   type AgentTurnMessage,
 } from "@/lib/agentClient";
@@ -93,33 +90,8 @@ export function CaseChatPanel({
   const messagesRef = useRef(messages);
   messagesRef.current = messages;
 
-  // In production (VITE_AGENT_ENDPOINT set), providers are fetched from the
-  // Function on mount. In local dev they're resolved synchronously from VITE_*_API_KEY.
-  const initialProviders = getAgentEndpoint() ? [] : getConfiguredProviders();
-  const [providerOptions, setProviderOptions] =
-    useState<AgentProvider[]>(initialProviders);
-  const [providersLoading, setProvidersLoading] = useState(() =>
-    Boolean(getAgentEndpoint()),
-  );
-  const [selectedProvider, setSelectedProvider] = useState<AgentProvider>(
-    () => initialProviders[0] ?? getDefaultProvider(),
-  );
-
-  useEffect(() => {
-    if (!getAgentEndpoint()) return;
-    fetchConfiguredProviders().then((providers) => {
-      setProviderOptions(providers);
-      if (providers.length > 0) setSelectedProvider(providers[0]);
-      setProvidersLoading(false);
-    });
-  }, []);
-
-  const live = providerOptions.length > 0;
-  const agentLabel = providersLoading
-    ? "Loading…"
-    : live
-      ? PROVIDER_LABEL[selectedProvider]
-      : "Agent";
+  const live = isAgentConfigured();
+  const agentLabel = live ? "AI" : "Agent";
   const canSend = draft.trim().length > 0 && !isThinking;
 
   function resolveResponse(
@@ -137,23 +109,41 @@ export function CaseChatPanel({
       setIsThinking(false);
     };
 
+    const updateLoading = (content: string) => {
+      const latest = messagesRef.current;
+      onMessagesChange(
+        latest.map((m) => (m.id === responseId ? { ...m, content } : m)),
+      );
+    };
+
     if (!live) {
       // Scripted fallback keeps the case playable without a backend.
       window.setTimeout(() => finish(scriptedFallback(question), "sent"), 620);
       return;
     }
 
-    sendAgentTurn({
-      system: systemPrompt,
-      messages: toTurnMessages(history),
-      provider: selectedProvider,
-    })
-      .then((content) => {
+    sendAgentTurnWithFallback(
+      { system: systemPrompt, messages: toTurnMessages(history) },
+      (provider, attempt) => {
+        const label =
+          attempt === 0
+            ? `Connecting via ${PROVIDER_LABEL[provider]}…`
+            : `${PROVIDER_LABEL[PROVIDER_FALLBACK_CHAIN[attempt - 1]]} unavailable — trying ${PROVIDER_LABEL[provider]}…`;
+        // Attempt 0 fires before React has committed the loading message,
+        // so defer one tick to let the ref update first.
+        if (attempt === 0) {
+          window.setTimeout(() => updateLoading(label), 0);
+        } else {
+          updateLoading(label);
+        }
+      },
+    )
+      .then(({ content, provider }) => {
         finish(content, "sent");
         logChatAiCall({
           userName: getParticipantName() || "",
-          provider: selectedProvider,
-          aiModel: PROVIDER_LABEL[selectedProvider] || selectedProvider,
+          provider,
+          aiModel: PROVIDER_LABEL[provider] || provider,
           promptPreview: `[System]: ${systemPrompt.slice(0, 300)}\n\n[User]: ${question.slice(0, 500)}`,
           response: content,
         });
@@ -169,7 +159,7 @@ export function CaseChatPanel({
         }
         console.error("[CaseChatPanel] request failed:", error);
         finish(
-          "The agent response failed. Your progress is safe — retry when ready.",
+          "All AI providers failed. Your progress is safe — retry when ready.",
           "failed",
         );
       });
@@ -312,20 +302,7 @@ export function CaseChatPanel({
         <div className="mt-3 flex items-center justify-between gap-3">
           <div className="flex items-center gap-2">
             {live ? (
-              <select
-                value={selectedProvider}
-                onChange={(event) =>
-                  setSelectedProvider(event.target.value as AgentProvider)
-                }
-                disabled={isThinking}
-                className="rounded border border-hairline bg-transparent py-0.5 pl-1.5 pr-6 text-micro text-muted outline-none focus:border-black disabled:opacity-50"
-              >
-                {providerOptions.map((provider) => (
-                  <option key={provider} value={provider}>
-                    {PROVIDER_LABEL[provider]}
-                  </option>
-                ))}
-              </select>
+              <span className="text-micro text-muted">Auto-selecting best model</span>
             ) : (
               <span className="text-micro text-muted">No AI model configured</span>
             )}

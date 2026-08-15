@@ -293,6 +293,49 @@ async function sendViaOpenRouterDevProxy(request: AgentTurnRequest): Promise<str
   return text;
 }
 
+/** Automatic provider fallback order used by the chat panel. */
+export const PROVIDER_FALLBACK_CHAIN: AgentProvider[] = [
+  "zai",
+  "openrouter",
+  "alibaba",
+  "anthropic",
+];
+
+/**
+ * Send a turn trying providers in PROVIDER_FALLBACK_CHAIN order.
+ * Calls onProviderSwitch(provider, attemptIndex) before each try so the UI
+ * can update mid-flight. Returns { content, provider } on first success.
+ * Throws if all providers fail or none are configured.
+ */
+export async function sendAgentTurnWithFallback(
+  request: Omit<AgentTurnRequest, "provider">,
+  onProviderSwitch: (provider: AgentProvider, attempt: number) => void,
+): Promise<{ content: string; provider: AgentProvider }> {
+  const endpoint = getAgentEndpoint();
+  // In local dev, only try providers that have a VITE_*_API_KEY configured.
+  const chain = endpoint
+    ? PROVIDER_FALLBACK_CHAIN
+    : PROVIDER_FALLBACK_CHAIN.filter((p) => Boolean(readEnv(PROVIDER_ENV_KEY[p])));
+
+  if (chain.length === 0) throw new AgentNotConfiguredError();
+
+  let lastError: unknown;
+  for (let i = 0; i < chain.length; i++) {
+    const provider = chain[i];
+    onProviderSwitch(provider, i);
+    try {
+      const content = await sendAgentTurn({ ...request, provider });
+      return { content, provider };
+    } catch (err) {
+      lastError = err;
+      if (err instanceof AgentNotConfiguredError) continue;
+      // Rate limit, timeout, 5xx — try next provider
+    }
+  }
+
+  throw lastError ?? new AgentRequestError("All AI providers failed.");
+}
+
 /** Send one conversation turn and return the reply text. */
 export async function sendAgentTurn(request: AgentTurnRequest): Promise<string> {
   const endpoint = getAgentEndpoint();
