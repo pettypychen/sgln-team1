@@ -4,6 +4,7 @@ import { BadgeMedallion } from "@/components/credentials/BadgeMedallion";
 import { latestCompletedEvaluation, outcomeLabel } from "@/evaluation/domain";
 import { credentialsApi, getLearnerCollectionByEmail } from "@/evaluation/repository";
 import { CASE_DEFINITIONS, getCaseDefinition } from "@/evaluation/rubrics";
+import { loadAttemptsByEmail } from "@/lib/submissionStore";
 import { getParticipantEmail } from "@/participant/session";
 import type { Attempt, Credential, LearnerAccess } from "@/evaluation/types";
 
@@ -63,18 +64,43 @@ export function CredentialsPage() {
   const [notice, setNotice] = useState("");
   const [error, setError] = useState("");
   const accessRef = useRef<LearnerAccess | null>(null);
+  const refreshGenRef = useRef(0);
 
   async function refresh() {
     if (!email) return;
+    const gen = ++refreshGenRef.current;
     try {
-      const next = await getLearnerCollectionByEmail(email);
-      setCollection(next);
-      accessRef.current = next?.access ?? null;
-      if (selected && next) {
-        setSelected(next.credentials.find((item) => item.id === selected.id) ?? null);
-      }
+      const firestoreData = await loadAttemptsByEmail(email);
+      if (gen !== refreshGenRef.current) return;
+      if (!firestoreData) { setCollection(null); return; }
+      setCollection((prev) => ({
+        access: prev?.access ?? { participantId: "", displayName: firestoreData.displayName, email, privateToken: "" },
+        attempts: firestoreData.attempts,
+        credentials: prev?.credentials ?? [],
+      }));
     } catch (reason) {
-      setError(reason instanceof Error ? reason.message : "Credentials failed to load.");
+      if (gen === refreshGenRef.current)
+        setError(reason instanceof Error ? reason.message : "Credentials failed to load.");
+    }
+  }
+
+  async function loadCredentials(): Promise<Credential[]> {
+    const full = await getLearnerCollectionByEmail(email);
+    if (!full) return [];
+    accessRef.current = full.access;
+    setCollection((prev) => prev ? { ...prev, access: full.access, credentials: full.credentials } : null);
+    return full.credentials;
+  }
+
+  async function openBadge(caseId: string) {
+    const existing = collection?.credentials.find((c) => c.caseId === caseId);
+    if (existing) { setSelected(existing); return; }
+    try {
+      const credentials = await loadCredentials();
+      const cred = credentials.find((c) => c.caseId === caseId);
+      if (cred) setSelected(cred);
+    } catch {
+      setError("Could not load credential details. Please try again shortly.");
     }
   }
 
@@ -83,17 +109,6 @@ export function CredentialsPage() {
     window.localStorage.setItem(EMAIL_STORAGE_KEY, email);
     void refresh();
   }, [email]);
-
-  // Auto-refresh every 8 s while any attempt is still being evaluated.
-  useEffect(() => {
-    if (!collection) return;
-    const inProgress = collection.attempts.some(
-      (a) => a.status === "ai_processing" || (a.evaluationRuns ?? []).some((r) => r.status === "processing"),
-    );
-    if (!inProgress) return;
-    const id = setTimeout(() => void refresh(), 8_000);
-    return () => clearTimeout(id);
-  }, [collection]);
 
   function handleEmailSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -105,13 +120,19 @@ export function CredentialsPage() {
     setEmail(trimmed);
   }
 
+  async function getToken(): Promise<string | null> {
+    if (accessRef.current?.privateToken) return accessRef.current.privateToken;
+    try { await loadCredentials(); } catch { /* fall through */ }
+    return accessRef.current?.privateToken || null;
+  }
+
   async function createPublicLink(credential: Credential) {
-    const token = accessRef.current?.privateToken;
+    const token = await getToken();
     if (!token) { setError("Cannot create public link without a valid session."); return; }
     try {
       const next = await credentialsApi.createPublicLink(credential.id, token);
       setSelected(next);
-      await refresh();
+      await loadCredentials();
       setNotice("Public verification link created.");
     } catch (reason) {
       setError(reason instanceof Error ? reason.message : "Sharing failed.");
@@ -120,12 +141,12 @@ export function CredentialsPage() {
 
   async function revokePublicLink(credential: Credential) {
     if (!window.confirm("Revoke this public link? Your private badge stays in this collection.")) return;
-    const token = accessRef.current?.privateToken;
+    const token = await getToken();
     if (!token) { setError("Cannot revoke public link without a valid session."); return; }
     try {
       const next = await credentialsApi.revokePublicLink(credential.id, token);
       setSelected(next);
-      await refresh();
+      await loadCredentials();
       setNotice("Public link revoked. You can create a replacement later.");
     } catch (reason) {
       setError(reason instanceof Error ? reason.message : "Revocation failed.");
@@ -184,6 +205,13 @@ export function CredentialsPage() {
   }
 
   const earnedByCase = new Map(collection.credentials.map((item) => [item.caseId, item]));
+  // Infer which cases the learner has passed from attempt reviews, so badges show correctly
+  // before credentials are loaded from the Cloud Function.
+  const passedCases = new Map(
+    collection.attempts
+      .filter((a) => a.review?.status === "final" && a.review?.outcome === "pass")
+      .map((a) => [a.caseId, a.review?.finalizedAt ?? a.submittedAt]),
+  );
 
   return (
     <main className="min-h-screen bg-[#eeede9] p-4 text-ink md:p-8">
@@ -205,23 +233,20 @@ export function CredentialsPage() {
         <section className="mt-8"><h2 className="font-display text-3xl font-light">Badge collection</h2><div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {CASE_DEFINITIONS.map((definition) => {
             const credential = earnedByCase.get(definition.id);
+            const earnedAt = credential?.awardDate ?? passedCases.get(definition.id);
+            const isEarned = Boolean(credential ?? passedCases.has(definition.id));
             return (
-              <button key={definition.id} disabled={!credential} onClick={() => credential && setSelected(credential)} className="flex flex-col items-center rounded-panel bg-white p-6 text-center soft-edge disabled:cursor-default">
-                <BadgeMedallion caseId={definition.id} locked={!credential} premium={Boolean(credential?.supplementalLabel)} />
+              <button key={definition.id} disabled={!isEarned} onClick={() => void openBadge(definition.id)} className="flex flex-col items-center rounded-panel bg-white p-6 text-center soft-edge disabled:cursor-default">
+                <BadgeMedallion caseId={definition.id} locked={!isEarned} premium={Boolean(credential?.supplementalLabel)} />
                 <span className="mt-5 text-label font-semibold">{definition.badge.name}</span>
-                <span className="mt-1 text-micro text-muted">{credential ? `Earned ${new Date(credential.awardDate).toLocaleDateString()}` : definition.released ? "Locked · complete this case to earn" : "Coming after case approval"}</span>
+                <span className="mt-1 text-micro text-muted">{isEarned ? `Earned${earnedAt ? ` ${new Date(earnedAt).toLocaleDateString()}` : ""}` : definition.released ? "Locked · complete this case to earn" : "Coming after case approval"}</span>
               </button>
             );
           })}
         </div></section>
 
         <section className="mt-10">
-          <div className="flex items-baseline gap-3">
-            <h2 className="font-display text-3xl font-light">Attempt history</h2>
-            {collection.attempts.some((a) => a.status === "ai_processing" || (a.evaluationRuns ?? []).some((r) => r.status === "processing")) && (
-              <span className="text-micro text-muted">Checking for updates…</span>
-            )}
-          </div>
+          <h2 className="font-display text-3xl font-light">Attempt history</h2>
           <div className="mt-4 grid gap-3">
           {collection.attempts.length ? [...collection.attempts].sort((a, b) => b.submittedAt.localeCompare(a.submittedAt)).map((attempt) => (
             <article key={attempt.id} className="flex flex-wrap items-center justify-between gap-4 rounded-panel bg-white p-5 soft-edge">
