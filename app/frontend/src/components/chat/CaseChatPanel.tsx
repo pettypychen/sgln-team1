@@ -93,8 +93,19 @@ export function CaseChatPanel({
   const transcriptRef = useRef<HTMLDivElement>(null);
   const prevIsThinkingRef = useRef(false);
 
-  // Scroll within the transcript container on send (thinking starts) and on
-  // reply (thinking ends). Skips the initial render where isThinking is false.
+  // On mount: scroll transcript to the last message and reset the window to the
+  // top. The window reset counters browser scroll-restoration which can jump the
+  // page to wherever the user was on a previous visit.
+  useEffect(() => {
+    requestAnimationFrame(() => {
+      const el = transcriptRef.current;
+      if (el) el.scrollTop = el.scrollHeight;
+      window.scrollTo(0, 0);
+    });
+  }, []);
+
+  // After send (thinking starts) and after reply (thinking ends): scroll the
+  // transcript to show the new message. Skips the initial false→false non-change.
   useEffect(() => {
     const changed = isThinking !== prevIsThinkingRef.current;
     prevIsThinkingRef.current = isThinking;
