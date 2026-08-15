@@ -1,4 +1,4 @@
-import { addDoc, collection, doc, getDocs, query, serverTimestamp, setDoc, Timestamp, where } from "firebase/firestore";
+import { addDoc, collection, doc, getDocs, onSnapshot, query, serverTimestamp, setDoc, Timestamp, where } from "firebase/firestore";
 import { db } from "./firebase";
 import { getCaseDefinition, sourceArtifactsForCase } from "@/evaluation/rubrics";
 import type { Attempt, AttemptStatus, EvaluationMode, EvaluationRun } from "@/evaluation/types";
@@ -200,4 +200,114 @@ export async function triggerSubmissionEvaluation(submissionId: string): Promise
     submissionId,
     triggeredAt: new Date().toISOString(),
   });
+}
+
+/**
+ * Subscribes to real-time changes on the submissions collection for a given email.
+ * Calls onChange whenever any submission doc is created or updated (including the
+ * initial emit on subscribe). Returns an unsubscribe function.
+ * No-ops (returns a no-op unsubscribe) if Firebase is unconfigured.
+ */
+export function subscribeToSubmissionsByEmail(email: string, onChange: () => void): () => void {
+  if (!db) return () => {};
+  const q = query(collection(db, "submissions"), where("email", "==", email));
+  return onSnapshot(q, onChange);
+}
+
+/**
+ * Loads attempts for a learner directly from Firestore (submissions + evaluations),
+ * bypassing the Cloud Function. Both collections are client-readable.
+ * Returns null if no submissions exist for the email.
+ */
+export async function loadAttemptsByEmail(email: string): Promise<{
+  displayName: string;
+  attempts: Attempt[];
+} | null> {
+  if (!db) return null;
+
+  const submissionsSnap = await getDocs(
+    query(collection(db, "submissions"), where("email", "==", email)),
+  );
+  if (submissionsSnap.empty) return null;
+
+  const submissionDocs = submissionsSnap.docs;
+  const submissionIds = submissionDocs.map((d) => d.id);
+
+  type EvalEntry = { evaluationRuns: EvaluationRun[]; status: string; review: Attempt["review"]; createdAt: string };
+  const evalMap = new Map<string, EvalEntry>();
+
+  // Firestore 'in' operator supports up to 30 values — batch if needed.
+  for (let i = 0; i < submissionIds.length; i += 30) {
+    const batch = submissionIds.slice(i, i + 30);
+    const evalSnap = await getDocs(
+      query(collection(db, "evaluations"), where("submissionId", "in", batch)),
+    );
+    for (const snap of evalSnap.docs) {
+      const d = snap.data() as {
+        submissionId: string; evaluationRuns: EvaluationRun[]; status: string;
+        review?: Attempt["review"]; createdAt: string;
+      };
+      const existing = evalMap.get(d.submissionId);
+      if (!existing || String(d.createdAt ?? "") > String(existing.createdAt ?? "")) {
+        evalMap.set(d.submissionId, { evaluationRuns: d.evaluationRuns || [], status: d.status, review: d.review, createdAt: d.createdAt });
+      }
+    }
+  }
+
+  // Deduplicate submissions by attemptId, keeping the latest submittedAt.
+  const byAttemptId = new Map<string, typeof submissionDocs[0]>();
+  for (const snap of submissionDocs) {
+    const d = snap.data() as { attemptId?: string; submittedAt?: Timestamp };
+    const key = d.attemptId || snap.id;
+    const existing = byAttemptId.get(key);
+    if (!existing) {
+      byAttemptId.set(key, snap);
+    } else {
+      const existingTime = (existing.data().submittedAt as Timestamp | undefined)?.toDate?.()?.getTime() ?? 0;
+      const newTime = d.submittedAt?.toDate?.()?.getTime() ?? 0;
+      if (newTime > existingTime) byAttemptId.set(key, snap);
+    }
+  }
+
+  const displayName = (submissionDocs[0].data().displayName as string) || "";
+
+  const attempts: Attempt[] = [...byAttemptId.values()].map((snap) => {
+    const d = snap.data() as {
+      displayName: string; caseId: string; caseTitle: string; workProduct: string;
+      evaluationStatus: string; attemptId?: string; attemptNumber?: number; submittedAt?: Timestamp;
+    };
+    const evalData = evalMap.get(snap.id);
+    const submittedAt = d.submittedAt instanceof Timestamp
+      ? d.submittedAt.toDate().toISOString()
+      : new Date().toISOString();
+    const status = ((evalData?.status || d.evaluationStatus) as AttemptStatus) ?? "pending_ai_processing";
+    let category = "";
+    try { category = getCaseDefinition(d.caseId).category; } catch { /* unknown case */ }
+    return {
+      id: d.attemptId || snap.id,
+      participantId: "",
+      learnerDisplayName: d.displayName || "",
+      caseId: d.caseId || "",
+      caseTitle: d.caseTitle || "",
+      category,
+      caseVersion: "",
+      rubricVersion: "",
+      evaluationMode: "human_final" as EvaluationMode,
+      attemptNumber: d.attemptNumber ?? 1,
+      transcript: [],
+      workProduct: d.workProduct || "",
+      sourceArtifacts: [],
+      submissionMetadata: {
+        messageCount: 0, learnerMessageCount: 0, agentMessageCount: 0, failedMessageCount: 0,
+        workProductCharacterCount: (d.workProduct || "").length, sourceArtifactCount: 0,
+      },
+      submittedAt,
+      idempotencyKey: "",
+      status,
+      evaluationRuns: evalData?.evaluationRuns ?? [],
+      review: evalData?.review,
+    } satisfies Attempt;
+  });
+
+  return { displayName, attempts };
 }
