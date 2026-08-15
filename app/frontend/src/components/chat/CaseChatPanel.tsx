@@ -91,20 +91,19 @@ export function CaseChatPanel({
   const messagesRef = useRef(messages);
   messagesRef.current = messages;
   const transcriptRef = useRef<HTMLDivElement>(null);
-  const prevMessageCountRef = useRef(messages.length);
+  const prevIsThinkingRef = useRef(false);
 
-  // Scroll within the transcript container when messages are added.
-  // Tracks count so content-only updates (e.g. loading label changes) don't scroll.
+  // Scroll within the transcript container on send (thinking starts) and on
+  // reply (thinking ends). Skips the initial render where isThinking is false.
   useEffect(() => {
-    const countChanged = messages.length !== prevMessageCountRef.current;
-    prevMessageCountRef.current = messages.length;
-    if (!countChanged) return;
-    // rAF lets the browser finish layout before reading scrollHeight.
+    const changed = isThinking !== prevIsThinkingRef.current;
+    prevIsThinkingRef.current = isThinking;
+    if (!changed) return;
     requestAnimationFrame(() => {
       const el = transcriptRef.current;
       if (el) el.scrollTop = el.scrollHeight;
     });
-  }, [messages]);
+  }, [isThinking]);
 
   const live = isAgentConfigured();
   const agentLabel = live ? "AI" : "Agent";
