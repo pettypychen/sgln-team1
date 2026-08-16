@@ -1,26 +1,115 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="1000" viewBox="0 0 1600 1000" role="img" aria-label="Onboarding kopi run cover spectrum">
-  <title>Onboarding kopi run cover spectrum</title>
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="1000" viewBox="0 0 1600 1000" role="img" aria-label="A traditional Singapore kopi in a glass with condensed milk">
+  <title>Kopi run – Singapore coffee</title>
   <defs>
-    <linearGradient id="base" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0" stop-color="#fdf3ea"/>
-      <stop offset="0.5" stop-color="#f0913f"/>
-      <stop offset="1" stop-color="#8d4127"/>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#f7ead6"/>
+      <stop offset="0.55" stop-color="#d4935a"/>
+      <stop offset="1" stop-color="#7a3c14"/>
     </linearGradient>
-    <radialGradient id="a" cx="18%" cy="18%" r="60%"><stop offset="0" stop-color="#f6b25a"/><stop offset="1" stop-color="#f6b25a" stop-opacity="0"/></radialGradient>
-    <radialGradient id="b" cx="74%" cy="32%" r="58%"><stop offset="0" stop-color="#ee7a34"/><stop offset="1" stop-color="#ee7a34" stop-opacity="0"/></radialGradient>
-    <radialGradient id="c" cx="80%" cy="84%" r="60%"><stop offset="0" stop-color="#b4441c"/><stop offset="1" stop-color="#b4441c" stop-opacity="0"/></radialGradient>
-    <filter id="soft"><feGaussianBlur stdDeviation="78"/></filter>
-    <filter id="grain">
-      <feTurbulence type="fractalNoise" baseFrequency="0.84" numOctaves="3" seed="41"/>
-      <feColorMatrix type="matrix" values="0 0 0 0 .075 0 0 0 0 .045 0 0 0 0 .03 .23 .23 .23 0 0"/>
-    </filter>
+    <linearGradient id="table" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#6b3c18"/>
+      <stop offset="1" stop-color="#3c1e08"/>
+    </linearGradient>
+    <linearGradient id="saucer-fill" x1="0" y1="0" x2="0.4" y2="1">
+      <stop offset="0" stop-color="#eedcb8"/>
+      <stop offset="1" stop-color="#c8a060"/>
+    </linearGradient>
+    <linearGradient id="coffee-fill" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#2e1206"/>
+      <stop offset="0.75" stop-color="#200c04"/>
+      <stop offset="1" stop-color="#180804"/>
+    </linearGradient>
+    <linearGradient id="milk-fill" x1="0" y1="0" x2="0.2" y2="1">
+      <stop offset="0" stop-color="#f5e8c4"/>
+      <stop offset="1" stop-color="#e8d0a0"/>
+    </linearGradient>
+    <linearGradient id="glass-hl" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="white" stop-opacity="0.38"/>
+      <stop offset="0.25" stop-color="white" stop-opacity="0.06"/>
+      <stop offset="1" stop-color="white" stop-opacity="0"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="50%" cy="40%" r="55%">
+      <stop offset="0" stop-color="#f5d890" stop-opacity="0.22"/>
+      <stop offset="1" stop-color="#f5d890" stop-opacity="0"/>
+    </radialGradient>
+    <filter id="blur-lg"><feGaussianBlur stdDeviation="32"/></filter>
+    <filter id="blur-sm"><feGaussianBlur stdDeviation="10"/></filter>
+    <filter id="drop"><feDropShadow dx="0" dy="22" stdDeviation="26" flood-color="#180804" flood-opacity="0.55"/></filter>
   </defs>
-  <rect width="1600" height="1000" fill="url(#base)"/>
-  <g filter="url(#soft)">
-    <rect width="1600" height="1000" fill="url(#a)"/>
-    <rect width="1600" height="1000" fill="url(#b)"/>
-    <rect width="1600" height="1000" fill="url(#c)"/>
+
+  <!-- Background -->
+  <rect width="1600" height="1000" fill="url(#bg)"/>
+  <!-- Ambient glow behind cup -->
+  <ellipse cx="800" cy="420" rx="480" ry="380" fill="url(#glow)"/>
+
+  <!-- Table surface -->
+  <rect x="0" y="740" width="1600" height="260" fill="url(#table)"/>
+  <!-- Table top edge highlight -->
+  <rect x="0" y="740" width="1600" height="5" fill="#c89050" opacity="0.55"/>
+  <!-- Table grain lines -->
+  <line x1="0" y1="780" x2="1600" y2="780" stroke="#3c1e08" stroke-width="2" opacity="0.4"/>
+  <line x1="0" y1="830" x2="1600" y2="830" stroke="#3c1e08" stroke-width="2" opacity="0.3"/>
+  <line x1="0" y1="890" x2="1600" y2="890" stroke="#3c1e08" stroke-width="2" opacity="0.25"/>
+
+  <!-- Cup shadow on table -->
+  <ellipse cx="800" cy="748" rx="340" ry="28" fill="#180804" opacity="0.52" filter="url(#blur-lg)"/>
+
+  <!-- ── SAUCER ── -->
+  <!-- Saucer outer edge (dark underside) -->
+  <ellipse cx="800" cy="730" rx="310" ry="36" fill="#9a7040"/>
+  <!-- Saucer top surface -->
+  <ellipse cx="800" cy="720" rx="306" ry="32" fill="url(#saucer-fill)"/>
+  <!-- Saucer inner well (cup sits here) -->
+  <ellipse cx="800" cy="718" rx="178" ry="20" fill="#b88844" opacity="0.42"/>
+  <ellipse cx="800" cy="716" rx="172" ry="17" fill="#daba78" opacity="0.32"/>
+
+  <!-- Cup shadow on saucer -->
+  <ellipse cx="800" cy="714" rx="156" ry="15" fill="#180804" opacity="0.32"/>
+
+  <!-- ── KOPI GLASS ── -->
+  <!-- Classic Singapore kopi glass: slight taper, tall, clear glass -->
+  <!-- Base: x 596–1004, y 200–714 (width 408, height 514) -->
+
+  <!-- Glass dark back-wall (seen through transparent glass) -->
+  <path d="M604 712 L622 212 L978 212 L996 712 Z" fill="#140602" opacity="0.9"/>
+
+  <!-- Coffee body fill -->
+  <path d="M608 710 L626 218 L974 218 L992 710 Z" fill="url(#coffee-fill)"/>
+
+  <!-- Condensed milk layer (bottom ~28% of glass) -->
+  <!-- Kopi served with condensed milk pooled at bottom, unmixed -->
+  <path d="M609 710 L610 562 Q612 534 800 524 Q988 534 990 562 L991 710 Z" fill="url(#milk-fill)" opacity="0.95"/>
+  <!-- Milk surface ripple / swirl -->
+  <path d="M650 632 Q724 606 800 622 Q872 637 942 610" stroke="#fff8e0" stroke-width="10" fill="none" opacity="0.5" stroke-linecap="round"/>
+  <path d="M660 672 Q800 650 938 672" stroke="#fff8e0" stroke-width="7" fill="none" opacity="0.35" stroke-linecap="round"/>
+  <!-- Milk-coffee boundary gradient blur -->
+  <path d="M610 580 Q616 530 800 518 Q984 530 990 580 L990 570 Q984 518 800 506 Q616 518 610 570 Z" fill="#3a1a08" opacity="0.4" filter="url(#blur-sm)"/>
+
+  <!-- Coffee surface at top (crema) -->
+  <ellipse cx="800" cy="218" rx="178" ry="18" fill="#2e1206"/>
+  <ellipse cx="800" cy="214" rx="174" ry="14" fill="#4a2010" opacity="0.85"/>
+  <ellipse cx="786" cy="212" rx="94" ry="9" fill="#6a3018" opacity="0.55"/>
+  <ellipse cx="820" cy="211" rx="36" ry="6" fill="#8a4828" opacity="0.4"/>
+
+  <!-- Glass left highlight (main) -->
+  <path d="M608 710 L626 218" stroke="url(#glass-hl)" stroke-width="52" opacity="1" stroke-linecap="round"/>
+  <!-- Bright left edge streak -->
+  <path d="M612 680 L628 240" stroke="white" stroke-width="14" opacity="0.28" stroke-linecap="round"/>
+  <!-- Right edge subtle highlight -->
+  <path d="M992 710 L974 218" stroke="white" stroke-width="10" opacity="0.09" stroke-linecap="round"/>
+
+  <!-- Glass rim top -->
+  <ellipse cx="800" cy="210" rx="181" ry="21" fill="none" stroke="#c8a060" stroke-width="10"/>
+  <ellipse cx="800" cy="208" rx="180" ry="20" fill="none" stroke="white" stroke-width="4" opacity="0.4"/>
+
+  <!-- Glass base thick ring -->
+  <path d="M604 714 Q604 730 800 732 Q996 730 996 714 Z" fill="#c09050"/>
+  <ellipse cx="800" cy="714" rx="196" ry="18" fill="#d8a868"/>
+
+  <!-- ── STEAM ── -->
+  <g fill="none" stroke="white" stroke-linecap="round" stroke-linejoin="round" opacity="0.55">
+    <path d="M726 190 Q706 136 726 86 Q746 36 728 -10" stroke-width="9"/>
+    <path d="M800 178 Q778 118 800 62 Q822 6 802 -46" stroke-width="9"/>
+    <path d="M874 190 Q896 134 874 82 Q852 30 870 -18" stroke-width="9"/>
   </g>
-  <path d="M-90 632C204 430 429 385 712 466c327 94 579 51 988-232v868H-90Z" fill="#3a1a10" opacity="0.15" filter="url(#soft)"/>
-  <rect width="1600" height="1000" filter="url(#grain)" opacity="0.56"/>
 </svg>

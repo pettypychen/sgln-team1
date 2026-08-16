@@ -14,6 +14,7 @@ import stakeholderInterview from "@/assets/covers/cover-business-analyst-stakeho
 import clientIntake from "@/assets/covers/cover-legal-client-intake.svg";
 import commercialLease from "@/assets/covers/cover-legal-commercial-lease.svg";
 import maDueDiligence from "@/assets/covers/cover-legal-ma-due-diligence.svg";
+import firstYearAssociate from "@/assets/covers/cover-legal-first-year-associate-ma-due-diligence.svg";
 import ndaRedline from "@/assets/covers/cover-legal-nda-redline.svg";
 import kopiRun from "@/assets/covers/cover-onboarding-kopi-run.svg";
 import { FIRST_YEAR_ASSOCIATE_MA_DUE_DILIGENCE_CONTENT } from "@/content/simulations";
@@ -44,7 +45,7 @@ export const SIMULATIONS: Simulation[] = [
     cat: FIRST_YEAR_ASSOCIATE_MA_DUE_DILIGENCE_CONTENT.category,
     title: FIRST_YEAR_ASSOCIATE_MA_DUE_DILIGENCE_CONTENT.title,
     meta: `${FIRST_YEAR_ASSOCIATE_MA_DUE_DILIGENCE_CONTENT.estimatedMinutes} min · ${FIRST_YEAR_ASSOCIATE_MA_DUE_DILIGENCE_CONTENT.difficulty} · 0 completed`,
-    cover: maDueDiligence,
+    cover: firstYearAssociate,
   },
   {
     id: 11,

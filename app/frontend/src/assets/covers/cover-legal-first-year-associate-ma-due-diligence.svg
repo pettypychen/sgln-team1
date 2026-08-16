@@ -1,0 +1,236 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="1000" viewBox="0 0 1600 1000" role="img" aria-label="Legal contract documents with a fountain pen for M&A due diligence">
+  <title>M&amp;A due diligence – legal contract</title>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#1a1510"/>
+      <stop offset="1" stop-color="#0a0806"/>
+    </linearGradient>
+    <linearGradient id="desk" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#2c1e0e"/>
+      <stop offset="1" stop-color="#120d06"/>
+    </linearGradient>
+    <linearGradient id="paper1" x1="0" y1="0" x2="0.1" y2="1">
+      <stop offset="0" stop-color="#f8f4ec"/>
+      <stop offset="1" stop-color="#e8e0cc"/>
+    </linearGradient>
+    <linearGradient id="paper2" x1="0" y1="0" x2="0.12" y2="1">
+      <stop offset="0" stop-color="#f5f0e8"/>
+      <stop offset="1" stop-color="#e0d8c4"/>
+    </linearGradient>
+    <linearGradient id="paper3" x1="0" y1="0" x2="0.08" y2="1">
+      <stop offset="0" stop-color="#f2ede4"/>
+      <stop offset="1" stop-color="#ddd4be"/>
+    </linearGradient>
+    <linearGradient id="pen-barrel" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#1a1a1a"/>
+      <stop offset="0.35" stop-color="#3a3a3a"/>
+      <stop offset="0.5" stop-color="#505050"/>
+      <stop offset="0.65" stop-color="#3a3a3a"/>
+      <stop offset="1" stop-color="#1a1a1a"/>
+    </linearGradient>
+    <linearGradient id="pen-cap" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#0d0d0d"/>
+      <stop offset="0.4" stop-color="#282828"/>
+      <stop offset="0.6" stop-color="#282828"/>
+      <stop offset="1" stop-color="#0d0d0d"/>
+    </linearGradient>
+    <linearGradient id="gold-band" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#d4aa50"/>
+      <stop offset="0.5" stop-color="#f0cc70"/>
+      <stop offset="1" stop-color="#b88a30"/>
+    </linearGradient>
+    <linearGradient id="nib" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#888"/>
+      <stop offset="0.5" stop-color="#ddd"/>
+      <stop offset="1" stop-color="#888"/>
+    </linearGradient>
+    <radialGradient id="lamp-glow" cx="50%" cy="0%" r="80%">
+      <stop offset="0" stop-color="#f5e0a0" stop-opacity="0.55"/>
+      <stop offset="0.6" stop-color="#c8a050" stop-opacity="0.18"/>
+      <stop offset="1" stop-color="#c8a050" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="seal-grad" cx="50%" cy="40%" r="60%">
+      <stop offset="0" stop-color="#d4a030"/>
+      <stop offset="1" stop-color="#8a5818"/>
+    </radialGradient>
+    <filter id="paper-shadow"><feDropShadow dx="8" dy="12" stdDeviation="18" flood-color="#000" flood-opacity="0.6"/></filter>
+    <filter id="pen-shadow"><feDropShadow dx="12" dy="18" stdDeviation="22" flood-color="#000" flood-opacity="0.7"/></filter>
+    <filter id="glow-blur"><feGaussianBlur stdDeviation="60"/></filter>
+    <filter id="soft-blur"><feGaussianBlur stdDeviation="30"/></filter>
+    <filter id="lamp-blur"><feGaussianBlur stdDeviation="80"/></filter>
+  </defs>
+
+  <!-- Dark mahogany background -->
+  <rect width="1600" height="1000" fill="url(#bg)"/>
+
+  <!-- Warm desk lamp glow from top -->
+  <ellipse cx="800" cy="-60" rx="900" ry="600" fill="url(#lamp-glow)" filter="url(#lamp-blur)"/>
+  <ellipse cx="800" cy="300" rx="700" ry="500" fill="#c8a050" opacity="0.07" filter="url(#glow-blur)"/>
+
+  <!-- Desk surface -->
+  <rect x="0" y="720" width="1600" height="280" fill="url(#desk)"/>
+  <rect x="0" y="720" width="1600" height="3" fill="#5a3a18" opacity="0.7"/>
+  <!-- Desk wood grain -->
+  <line x1="0" y1="770" x2="1600" y2="770" stroke="#1a1008" stroke-width="2" opacity="0.5"/>
+  <line x1="0" y1="840" x2="1600" y2="840" stroke="#1a1008" stroke-width="2" opacity="0.4"/>
+  <line x1="0" y1="920" x2="1600" y2="920" stroke="#1a1008" stroke-width="2" opacity="0.3"/>
+
+  <!-- ── STACKED CONTRACT DOCUMENTS ── -->
+
+  <!-- Back document (slightly tilted left) -->
+  <g transform="rotate(-6, 800, 500)" filter="url(#paper-shadow)">
+    <rect x="360" y="90" width="540" height="700" rx="4" fill="url(#paper3)" opacity="0.85"/>
+    <!-- Text lines on back doc -->
+    <g fill="#c8bca8" opacity="0.5">
+      <rect x="390" y="140" width="300" height="12" rx="2"/>
+      <rect x="390" y="165" width="470" height="8" rx="2"/>
+      <rect x="390" y="183" width="450" height="8" rx="2"/>
+      <rect x="390" y="201" width="460" height="8" rx="2"/>
+      <rect x="390" y="229" width="480" height="8" rx="2"/>
+      <rect x="390" y="247" width="440" height="8" rx="2"/>
+      <rect x="390" y="275" width="460" height="8" rx="2"/>
+      <rect x="390" y="293" width="420" height="8" rx="2"/>
+    </g>
+  </g>
+
+  <!-- Middle document (slightly tilted right) -->
+  <g transform="rotate(4, 800, 500)" filter="url(#paper-shadow)">
+    <rect x="440" y="80" width="560" height="720" rx="4" fill="url(#paper2)" opacity="0.9"/>
+    <!-- Text lines on middle doc -->
+    <g fill="#9a8e7a" opacity="0.6">
+      <rect x="470" y="126" width="320" height="14" rx="2"/>
+      <rect x="470" y="152" width="480" height="8" rx="2"/>
+      <rect x="470" y="170" width="460" height="8" rx="2"/>
+      <rect x="470" y="188" width="490" height="8" rx="2"/>
+      <rect x="470" y="216" width="440" height="8" rx="2"/>
+      <rect x="470" y="234" width="470" height="8" rx="2"/>
+      <rect x="470" y="252" width="450" height="8" rx="2"/>
+      <rect x="470" y="280" width="480" height="8" rx="2"/>
+      <rect x="470" y="298" width="420" height="8" rx="2"/>
+      <rect x="470" y="316" width="460" height="8" rx="2"/>
+    </g>
+  </g>
+
+  <!-- Front / main document (straight) -->
+  <g filter="url(#paper-shadow)">
+    <rect x="500" y="60" width="600" height="740" rx="4" fill="url(#paper1)"/>
+
+    <!-- Document content -->
+    <!-- Title -->
+    <rect x="550" y="100" width="400" height="20" rx="3" fill="#1a1510" opacity="0.75"/>
+    <!-- Subtitle -->
+    <rect x="590" y="132" width="320" height="12" rx="2" fill="#3a2e20" opacity="0.55"/>
+
+    <!-- Divider line -->
+    <line x1="520" y1="158" x2="1080" y2="158" stroke="#c8bca8" stroke-width="1.5"/>
+
+    <!-- Body text lines -->
+    <g fill="#2a2018" opacity="0.5">
+      <rect x="530" y="174" width="540" height="9" rx="2"/>
+      <rect x="530" y="193" width="520" height="9" rx="2"/>
+      <rect x="530" y="212" width="535" height="9" rx="2"/>
+      <rect x="530" y="231" width="510" height="9" rx="2"/>
+      <rect x="530" y="258" width="540" height="9" rx="2"/>
+      <rect x="530" y="277" width="525" height="9" rx="2"/>
+      <rect x="530" y="296" width="530" height="9" rx="2"/>
+      <rect x="530" y="315" width="505" height="9" rx="2"/>
+      <rect x="530" y="334" width="540" height="9" rx="2"/>
+    </g>
+
+    <!-- Clause section header -->
+    <rect x="530" y="362" width="220" height="11" rx="2" fill="#1a1510" opacity="0.65"/>
+
+    <!-- More body text -->
+    <g fill="#2a2018" opacity="0.5">
+      <rect x="530" y="385" width="540" height="9" rx="2"/>
+      <rect x="530" y="404" width="515" height="9" rx="2"/>
+      <rect x="530" y="423" width="530" height="9" rx="2"/>
+      <rect x="530" y="442" width="520" height="9" rx="2"/>
+      <rect x="530" y="469" width="540" height="9" rx="2"/>
+      <rect x="530" y="488" width="500" height="9" rx="2"/>
+      <rect x="530" y="507" width="535" height="9" rx="2"/>
+    </g>
+
+    <!-- Another clause -->
+    <rect x="530" y="535" width="260" height="11" rx="2" fill="#1a1510" opacity="0.65"/>
+    <g fill="#2a2018" opacity="0.5">
+      <rect x="530" y="558" width="540" height="9" rx="2"/>
+      <rect x="530" y="577" width="520" height="9" rx="2"/>
+      <rect x="530" y="596" width="535" height="9" rx="2"/>
+    </g>
+
+    <!-- Signature line area -->
+    <line x1="530" y1="640" x2="770" y2="640" stroke="#8a7a60" stroke-width="1.5"/>
+    <line x1="840" y1="640" x2="1070" y2="640" stroke="#8a7a60" stroke-width="1.5"/>
+    <!-- Signature labels -->
+    <rect x="530" y="648" width="120" height="7" rx="2" fill="#8a7a60" opacity="0.5"/>
+    <rect x="840" y="648" width="130" height="7" rx="2" fill="#8a7a60" opacity="0.5"/>
+
+    <!-- Signature marks (cursive-like strokes) -->
+    <path d="M545 635 Q570 616 600 628 Q625 638 648 622" stroke="#2a1a08" stroke-width="2.5" fill="none" stroke-linecap="round" opacity="0.75"/>
+    <!-- Right signature (partial / fresh) -->
+    <path d="M855 635 Q875 620 895 630" stroke="#0a0a50" stroke-width="2.5" fill="none" stroke-linecap="round" opacity="0.4"/>
+
+    <!-- Wax seal / stamp (bottom right of doc) -->
+    <circle cx="1020" cy="700" r="42" fill="url(#seal-grad)"/>
+    <circle cx="1020" cy="700" r="38" fill="none" stroke="#d4a030" stroke-width="2.5" opacity="0.7"/>
+    <circle cx="1020" cy="700" r="30" fill="none" stroke="#d4a030" stroke-width="1.5" opacity="0.5"/>
+    <!-- Seal emblem (simplified scales / letter) -->
+    <text x="1020" y="708" text-anchor="middle" font-size="28" font-family="serif" fill="#7a4810" opacity="0.8">§</text>
+    <!-- Embossed ring detail -->
+    <g stroke="#b88830" stroke-width="1" fill="none" opacity="0.5">
+      <circle cx="1020" cy="700" r="36"/>
+    </g>
+  </g>
+
+  <!-- ── FOUNTAIN PEN ── -->
+  <!-- Pen rests diagonally across the document, nib pointing to signature line -->
+  <g transform="rotate(-28, 900, 500)" filter="url(#pen-shadow)">
+    <!-- Pen cap -->
+    <rect x="260" y="368" width="260" height="56" rx="28" fill="url(#pen-cap)"/>
+    <!-- Cap clip -->
+    <rect x="476" y="362" width="12" height="80" rx="6" fill="#b8a848"/>
+    <!-- Cap gold band -->
+    <rect x="496" y="368" width="24" height="56" rx="0" fill="url(#gold-band)"/>
+    <!-- Cap highlight -->
+    <rect x="268" y="374" width="200" height="10" rx="5" fill="white" opacity="0.12"/>
+
+    <!-- Pen barrel -->
+    <rect x="520" y="368" width="520" height="56" rx="0" fill="url(#pen-barrel)"/>
+    <!-- Barrel band (center decoration) -->
+    <rect x="750" y="368" width="28" height="56" fill="url(#gold-band)" opacity="0.9"/>
+    <!-- Barrel grip section (slightly darker) -->
+    <rect x="1000" y="370" width="80" height="52" rx="0" fill="#141414"/>
+    <!-- Grip texture -->
+    <g stroke="#2a2a2a" stroke-width="2" opacity="0.4">
+      <line x1="1014" y1="372" x2="1014" y2="420"/>
+      <line x1="1028" y1="372" x2="1028" y2="420"/>
+      <line x1="1042" y1="372" x2="1042" y2="420"/>
+      <line x1="1056" y1="372" x2="1056" y2="420"/>
+      <line x1="1070" y1="372" x2="1070" y2="420"/>
+    </g>
+    <!-- Barrel highlight -->
+    <rect x="522" y="374" width="470" height="10" rx="5" fill="white" opacity="0.1"/>
+
+    <!-- Nib section -->
+    <!-- Tapered section toward nib -->
+    <path d="M1080 372 L1080 420 L1160 406 L1160 386 Z" fill="#1e1e1e"/>
+    <!-- Nib -->
+    <path d="M1160 390 L1260 388 L1280 396 L1260 404 L1160 402 Z" fill="url(#nib)"/>
+    <!-- Nib split line -->
+    <line x1="1180" y1="396" x2="1275" y2="396" stroke="#333" stroke-width="1.5" opacity="0.6"/>
+    <!-- Nib tip / ink drop -->
+    <path d="M1275 393 L1285 396 L1275 399 Z" fill="#c8c8c8"/>
+    <!-- Ink on paper (tiny ink mark at nib tip) -->
+    <ellipse cx="1284" cy="396" rx="4" ry="2" fill="#0a0a50" opacity="0.7"/>
+  </g>
+
+  <!-- Ink on signature line (where pen is writing) -->
+  <path d="M855 635 Q875 620 895 630 Q912 638 930 625" stroke="#0a0a50" stroke-width="3" fill="none" stroke-linecap="round" opacity="0.6"/>
+
+  <!-- Ambient warm light pool on desk -->
+  <ellipse cx="800" cy="730" rx="520" ry="30" fill="#c8a050" opacity="0.07"/>
+
+  <!-- Document stack shadow on desk -->
+  <ellipse cx="800" cy="815" rx="400" ry="24" fill="#000" opacity="0.45" filter="url(#soft-blur)"/>
+</svg>
