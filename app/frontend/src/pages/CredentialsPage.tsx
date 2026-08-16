@@ -22,8 +22,8 @@ function aiEvalLine(attempt: Attempt): string | null {
     // unknown case — skip max display
   }
   const scoreStr = maxCase > 0
-    ? ` · Case ${ev.caseScore}/${maxCase} · Interaction ${ev.interactionScore}/${maxInteraction}`
-    : ` · Case ${ev.caseScore} · Interaction ${ev.interactionScore}`;
+    ? ` · Total ${ev.caseScore + ev.interactionScore}/${maxCase + maxInteraction} (Case ${ev.caseScore}/${maxCase}, Interaction ${ev.interactionScore}/${maxInteraction})`
+    : ` · Total ${ev.caseScore + ev.interactionScore} (Case ${ev.caseScore} Interaction ${ev.interactionScore})`;
   return `AI: ${outcomeLabel(ev.recommendation)}${scoreStr}`;
 }
 
