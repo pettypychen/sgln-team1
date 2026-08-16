@@ -150,7 +150,7 @@ export function EvaluatorQueuePage() {
         recommendation: recommendationFilter,
         attemptNumber: attemptFilter,
         submittedWithinDays: dateFilter,
-      }),
+      }).sort((a, b) => b.submittedAt.localeCompare(a.submittedAt)),
     [attemptFilter, attempts, caseFilter, dateFilter, recommendationFilter, statusFilter],
   );
 
