@@ -83,9 +83,7 @@ function readinessFor(
       },
       {
         label: "Worked the culture map with the AI",
-        ready:
-          /rohan/.test(combined) &&
-          /communicat|evaluat|feedback|persuad|leading|decid|trust|disagree|schedul/.test(combined),
+        ready: /communicat|evaluat|feedback|persuad|lead|deci|trust|disagree|schedul/.test(combined),
       },
     ];
   }
@@ -97,9 +95,7 @@ function readinessFor(
       },
       {
         label: "Worked the culture map with the AI",
-        ready:
-          /jordan/.test(combined) &&
-          /communicat|persuad|evaluat|leading|decid|trust|disagree|schedul/.test(combined),
+        ready: /communicat|persuad|evaluat|lead|deci|trust|disagree|schedul/.test(combined),
       },
     ];
   }
