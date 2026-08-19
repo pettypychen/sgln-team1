@@ -158,6 +158,34 @@ export const CASE_DEFINITIONS: CaseDefinition[] = [
       ],
     },
   },
+  {
+    id: "missed-handoff-conversation",
+    title: "The missed handoff",
+    category: "Business Analyst",
+    version: "1.0.0",
+    evaluationMode: "human_final",
+    released: true,
+    submissionTitle: "Your recommendation",
+    workProductPlaceholder: "Write the conversation as you would advise her to run it…",
+    badge: {
+      symbol: "\u2696",
+      name: "Accountability Coach",
+      palette: "from-[#2f2a3d] via-[#5f5a7d] to-[#c9a45f]",
+    },
+    rubric: {
+      caseId: "missed-handoff-conversation",
+      caseVersion: "1.0.0",
+      rubricVersion: "1.0.0",
+      caseThreshold: 30,
+      interactionThreshold: 10,
+      criteria: [
+        criterion("handoff-plan", "case_outcome", "The recommendation", 32, "Sets out how to open, the order of the conversation, where accountability lands, how the honest account is invited, and the expectations and escalation rights agreed before the meeting ends."),
+        criterion("handoff-adaptation", "case_outcome", "Signals to watch", 20, "Names at least one signal to watch for in the room — including Rohan going quiet — and what to change in response."),
+        criterion("handoff-dimensions", "ai_interaction", "Culture map reasoning", 12, "Works the culture map dimensions with the AI, grounded in the profile, and the recommendation follows from what was concluded."),
+        criterion("handoff-pressure-test", "ai_interaction", "Pressure-tested hypothesis", 8, "Asks the AI to challenge at least one placement instead of accepting the first reading."),
+      ],
+    },
+  },
 ];
 
 export function getCaseDefinition(caseId: string): CaseDefinition {
@@ -178,6 +206,7 @@ const SOURCE_ARTIFACT_IDS: Record<string, string[]> = {
   "requirements-gathering-workshop": ["requirements-workshop-packet.md"],
   "kopi-run": ["kopi-menu.csv", "colleague-orders.csv", "kopi-glossary.md"],
   "apac-pilot-pitch": ["culture-map.md", "jordan-whitaker-profile.md"],
+  "missed-handoff-conversation": ["culture-map.md", "rohan-krishnan-profile.md"],
 };
 
 export function sourceArtifactsForCase(caseId: string) {

@@ -19,6 +19,7 @@ export function BadgeMedallion({
     "requirements-gathering-workshop": "badge-shape-analyst",
     "kopi-run": "badge-shape-kopi",
     "apac-pilot-pitch": "badge-shape-analyst",
+    "missed-handoff-conversation": "badge-shape-analyst",
   }[caseId];
   return (
     <div

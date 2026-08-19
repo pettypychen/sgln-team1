@@ -1,0 +1,13 @@
+{
+  "caseId": "missed-handoff-conversation",
+  "caseVersion": "1.0.0",
+  "rubricVersion": "1.0.0",
+  "caseThreshold": 30,
+  "interactionThreshold": 10,
+  "criteria": [
+    {"id":"handoff-plan","dimension":"case_outcome","label":"The recommendation","description":"Sets out how to open, the order of the conversation, where accountability lands, how the honest account is invited, and the expectations and escalation rights agreed before the meeting ends.","maxPoints":32},
+    {"id":"handoff-adaptation","dimension":"case_outcome","label":"Signals to watch","description":"Names at least one signal to watch for in the room — including Rohan going quiet — and what to change in response.","maxPoints":20},
+    {"id":"handoff-dimensions","dimension":"ai_interaction","label":"Culture map reasoning","description":"Works the culture map dimensions with the AI, grounded in the profile, and the recommendation follows from what was concluded.","maxPoints":12},
+    {"id":"handoff-pressure-test","dimension":"ai_interaction","label":"Pressure-tested hypothesis","description":"Asks the AI to challenge at least one placement instead of accepting the first reading.","maxPoints":8}
+  ]
+}

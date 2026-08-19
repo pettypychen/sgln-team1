@@ -50,6 +50,12 @@ const BADGES = {
     colors: ["#25384f", "#4f6f9d", "#c9b072"],
     shape: "analyst",
   },
+  "missed-handoff-conversation": {
+    name: "Accountability Coach",
+    symbol: "⚖",
+    colors: ["#2f2a3d", "#5f5a7d", "#c9a45f"],
+    shape: "analyst",
+  },
 };
 
 function page({ credential, valid, appUrl }) {

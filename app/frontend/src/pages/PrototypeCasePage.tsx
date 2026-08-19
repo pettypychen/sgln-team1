@@ -3,6 +3,7 @@ import { Link, Navigate, useNavigate, useParams } from "react-router-dom";
 import {
   APAC_PILOT_PITCH_CONTENT,
   KOPI_RUN_CONTENT,
+  MISSED_HANDOFF_CONTENT,
   MONTH_END_CLOSE_CONTENT,
 } from "@/content/simulations";
 import { getCaseDefinition } from "@/evaluation/rubrics";
@@ -17,12 +18,14 @@ import { MarkdownDocument } from "@/components/ui/MarkdownDocument";
 type PrototypeContent =
   | typeof MONTH_END_CLOSE_CONTENT
   | typeof KOPI_RUN_CONTENT
-  | typeof APAC_PILOT_PITCH_CONTENT;
+  | typeof APAC_PILOT_PITCH_CONTENT
+  | typeof MISSED_HANDOFF_CONTENT;
 
 const CONTENT: Record<string, PrototypeContent> = {
   [MONTH_END_CLOSE_CONTENT.id]: MONTH_END_CLOSE_CONTENT,
   [KOPI_RUN_CONTENT.id]: KOPI_RUN_CONTENT,
   [APAC_PILOT_PITCH_CONTENT.id]: APAC_PILOT_PITCH_CONTENT,
+  [MISSED_HANDOFF_CONTENT.id]: MISSED_HANDOFF_CONTENT,
 };
 
 interface CaseState {
@@ -35,6 +38,8 @@ const DEMO_REPLIES: Record<string, string> = {
     "Pick one colleague and ask me to check the matching menu code. I’ll explain the match using the supplied menu and glossary.",
   "apac-pilot-pitch":
     "Take one culture map dimension — say Persuading or Deciding — and tell me where you think Jordan sits and why. I’ll challenge the placement using the profile. Once you’ve worked out the order, write only the recommendation.",
+  "missed-handoff-conversation":
+    "Start with one dimension — Evaluating or Disagreeing is a good place — and tell me where you think Rohan sits and why. I’ll challenge it using the profile. Once you’ve worked it out, write only the recommendation.",
 };
 
 function demoReply(caseId: string) {
@@ -67,6 +72,24 @@ function readinessFor(
       {
         label: "Included menu codes and a total",
         ready: /k0[1-6]/.test(combined) && /total|sgd/.test(combined),
+      },
+    ];
+  }
+  if (caseId === "missed-handoff-conversation") {
+    return [
+      {
+        label: "Asked the AI to pressure-test a placement",
+        ready: messages.some((message) => message.role === "user"),
+      },
+      {
+        label: "Worked the culture map with the AI",
+        ready:
+          /rohan/.test(combined) &&
+          /communicat|evaluat|feedback|persuad|leading|decid|trust|disagree|schedul/.test(combined),
+      },
+      {
+        label: "Recommendation sets expectations",
+        ready: /escalat|expectation/.test(combined) && /handoff|deadline/.test(combined),
       },
     ];
   }

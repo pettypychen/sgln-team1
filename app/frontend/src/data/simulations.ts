@@ -18,6 +18,7 @@ import ndaRedline from "@/assets/covers/cover-legal-nda-redline.svg";
 import kopiRun from "@/assets/covers/cover-onboarding-kopi-run.svg";
 import {
   APAC_PILOT_PITCH_CONTENT,
+  MISSED_HANDOFF_CONTENT,
   FIRST_YEAR_ASSOCIATE_MA_DUE_DILIGENCE_CONTENT,
 } from "@/content/simulations";
 
@@ -64,6 +65,14 @@ export const SIMULATIONS: Simulation[] = [
     title: APAC_PILOT_PITCH_CONTENT.title,
     meta: "10 min · Beginner · New",
     cover: stakeholderInterview,
+  },
+  {
+    id: 13,
+    slug: MISSED_HANDOFF_CONTENT.id,
+    cat: "BUSINESS ANALYST",
+    title: MISSED_HANDOFF_CONTENT.title,
+    meta: "10 min · Beginner · New",
+    cover: backlogPrioritization,
   },
 ];
 

@@ -45,6 +45,15 @@ const definitions = [
       { id: "jordan-whitaker-profile.md", file: "jordan-whitaker-profile.md" },
     ],
   },
+  {
+    id: "missed-handoff-conversation",
+    title: "The missed handoff",
+    category: "Business Analyst",
+    artifacts: [
+      { id: "culture-map.md", file: "culture-map.md" },
+      { id: "rohan-krishnan-profile.md", file: "rohan-krishnan-profile.md" },
+    ],
+  },
 ];
 
 const packages = Object.fromEntries(
