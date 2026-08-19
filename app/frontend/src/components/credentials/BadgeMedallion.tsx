@@ -18,6 +18,7 @@ export function BadgeMedallion({
     "month-end-close-under-pressure": "badge-shape-accounting",
     "requirements-gathering-workshop": "badge-shape-analyst",
     "kopi-run": "badge-shape-kopi",
+    "apac-pilot-pitch": "badge-shape-analyst",
   }[caseId];
   return (
     <div

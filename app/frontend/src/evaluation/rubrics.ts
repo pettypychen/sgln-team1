@@ -130,6 +130,34 @@ export const CASE_DEFINITIONS: CaseDefinition[] = [
       ],
     },
   },
+  {
+    id: "apac-pilot-pitch",
+    title: "Pitching the APAC pilot",
+    category: "Business Analyst",
+    version: "1.0.0",
+    evaluationMode: "human_final",
+    released: true,
+    submissionTitle: "Your recommendation",
+    workProductPlaceholder: "Write the seven minutes as you would say it to your APAC Product Lead…",
+    badge: {
+      symbol: "\u21c4",
+      name: "Cross-Culture Navigator",
+      palette: "from-[#25384f] via-[#4f6f9d] to-[#c9b072]",
+    },
+    rubric: {
+      caseId: "apac-pilot-pitch",
+      caseVersion: "1.0.0",
+      rubricVersion: "1.0.0",
+      caseThreshold: 30,
+      interactionThreshold: 10,
+      criteria: [
+        criterion("pitch-plan", "case_outcome", "The recommendation", 32, "Sets out how to open, the order of information, and the full ask inside seven minutes: six-month pilot, USD 600,000, two global engineers."),
+        criterion("pitch-adaptation", "case_outcome", "Signals to watch", 20, "Names at least one signal to watch for in the room and what to change if Jordan reacts differently than expected."),
+        criterion("pitch-dimensions", "ai_interaction", "Culture map reasoning", 12, "Works the culture map dimensions with the AI, grounded in the profile, and the recommendation follows from what was concluded."),
+        criterion("pitch-pressure-test", "ai_interaction", "Pressure-tested hypothesis", 8, "Asks the AI to challenge at least one placement instead of accepting the first reading."),
+      ],
+    },
+  },
 ];
 
 export function getCaseDefinition(caseId: string): CaseDefinition {
@@ -149,6 +177,7 @@ const SOURCE_ARTIFACT_IDS: Record<string, string[]> = {
   ],
   "requirements-gathering-workshop": ["requirements-workshop-packet.md"],
   "kopi-run": ["kopi-menu.csv", "colleague-orders.csv", "kopi-glossary.md"],
+  "apac-pilot-pitch": ["culture-map.md", "jordan-whitaker-profile.md"],
 };
 
 export function sourceArtifactsForCase(caseId: string) {

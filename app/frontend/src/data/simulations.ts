@@ -16,7 +16,10 @@ import commercialLease from "@/assets/covers/cover-legal-commercial-lease.svg";
 import maDueDiligence from "@/assets/covers/cover-legal-ma-due-diligence.svg";
 import ndaRedline from "@/assets/covers/cover-legal-nda-redline.svg";
 import kopiRun from "@/assets/covers/cover-onboarding-kopi-run.svg";
-import { FIRST_YEAR_ASSOCIATE_MA_DUE_DILIGENCE_CONTENT } from "@/content/simulations";
+import {
+  APAC_PILOT_PITCH_CONTENT,
+  FIRST_YEAR_ASSOCIATE_MA_DUE_DILIGENCE_CONTENT,
+} from "@/content/simulations";
 
 /** Filter tabs, in reference order. */
 export const CATEGORY_FILTERS: CategoryFilter[] = [
@@ -53,6 +56,14 @@ export const SIMULATIONS: Simulation[] = [
     title: "Kopi Run",
     meta: "5 min · Beginner · New",
     cover: kopiRun,
+  },
+  {
+    id: 12,
+    slug: APAC_PILOT_PITCH_CONTENT.id,
+    cat: "BUSINESS ANALYST",
+    title: APAC_PILOT_PITCH_CONTENT.title,
+    meta: "10 min · Beginner · New",
+    cover: stakeholderInterview,
   },
 ];
 

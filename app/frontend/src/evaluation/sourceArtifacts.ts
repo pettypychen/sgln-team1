@@ -1,4 +1,5 @@
 import {
+  APAC_PILOT_PITCH_CONTENT,
   FIRST_YEAR_ASSOCIATE_MA_DUE_DILIGENCE_CONTENT,
   KOPI_RUN_CONTENT,
   MONTH_END_CLOSE_CONTENT,
@@ -21,6 +22,7 @@ const SOURCE_ARTIFACTS: Record<string, SourceArtifact[]> = {
   ],
   [MONTH_END_CLOSE_CONTENT.id]: MONTH_END_CLOSE_CONTENT.artifacts,
   [KOPI_RUN_CONTENT.id]: KOPI_RUN_CONTENT.artifacts,
+  [APAC_PILOT_PITCH_CONTENT.id]: APAC_PILOT_PITCH_CONTENT.artifacts,
 };
 
 export function sourceArtifact(
