@@ -21,6 +21,7 @@ import {
 } from "@/evaluation/queueFilters";
 import { isFirebaseConfigured } from "@/lib/firebase";
 import { listSubmissions, triggerSubmissionEvaluation } from "@/lib/submissionStore";
+import { credentialsApi } from "@/evaluation/repository";
 
 const STATUS_LABELS: Record<AttemptStatus, string> = {
   pending_ai_processing: "Pending AI processing",
@@ -99,8 +100,10 @@ export function EvaluatorQueuePage() {
   useEffect(() => {
     if (!session) return;
     setLoading(true);
-    const load = isFirebaseConfigured ? listSubmissions() : evaluationRepository.listAttempts();
-    load
+    // Use Cloud Function /attempts for the initial load — it has admin access to all
+    // users' submissions (including those whose saveSubmission() may have failed silently).
+    // Fall back to local repository only when the Cloud Function isn't reachable.
+    credentialsApi.listAttempts()
       .then(setAttempts)
       .catch((reason: unknown) => setError(reason instanceof Error ? reason.message : "Queue failed to load."))
       .finally(() => setLoading(false));
