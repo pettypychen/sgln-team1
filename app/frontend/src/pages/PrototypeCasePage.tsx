@@ -1,9 +1,12 @@
 import { useMemo, useState } from "react";
 import { Link, Navigate, useNavigate, useParams } from "react-router-dom";
 import {
+  APAC_PILOT_PITCH_CONTENT,
   KOPI_RUN_CONTENT,
+  MISSED_HANDOFF_CONTENT,
   MONTH_END_CLOSE_CONTENT,
 } from "@/content/simulations";
+import { getCaseDefinition } from "@/evaluation/rubrics";
 import { usePersistentState } from "@/hooks/usePersistentState";
 import type { ChatMessage } from "@/types";
 import { CaseChatPanel } from "@/components/chat/CaseChatPanel";
@@ -14,11 +17,15 @@ import { MarkdownDocument } from "@/components/ui/MarkdownDocument";
 
 type PrototypeContent =
   | typeof MONTH_END_CLOSE_CONTENT
-  | typeof KOPI_RUN_CONTENT;
+  | typeof KOPI_RUN_CONTENT
+  | typeof APAC_PILOT_PITCH_CONTENT
+  | typeof MISSED_HANDOFF_CONTENT;
 
 const CONTENT: Record<string, PrototypeContent> = {
   [MONTH_END_CLOSE_CONTENT.id]: MONTH_END_CLOSE_CONTENT,
   [KOPI_RUN_CONTENT.id]: KOPI_RUN_CONTENT,
+  [APAC_PILOT_PITCH_CONTENT.id]: APAC_PILOT_PITCH_CONTENT,
+  [MISSED_HANDOFF_CONTENT.id]: MISSED_HANDOFF_CONTENT,
 };
 
 interface CaseState {
@@ -26,10 +33,20 @@ interface CaseState {
   workProduct: string;
 }
 
+const DEMO_REPLIES: Record<string, string> = {
+  "kopi-run":
+    "Pick one colleague and ask me to check the matching menu code. I’ll explain the match using the supplied menu and glossary.",
+  "apac-pilot-pitch":
+    "Take one culture map dimension — say Persuading or Deciding — and tell me where you think Jordan sits and why. I’ll challenge the placement using the profile. Once you’ve worked out the order, write only the recommendation.",
+  "missed-handoff-conversation":
+    "Start with one dimension — Evaluating or Disagreeing is a good place — and tell me where you think Rohan sits and why. I’ll challenge it using the profile. Once you’ve worked it out, write only the recommendation.",
+};
+
 function demoReply(caseId: string) {
-  return caseId === "kopi-run"
-    ? "Pick one colleague and ask me to check the matching menu code. I’ll explain the match using the supplied menu and glossary."
-    : "I can compare the ledger, checklist, and manager notes. Ask me to identify a source-backed exception or verify a calculation, then challenge anything that is not tied to a row or note.";
+  return (
+    DEMO_REPLIES[caseId] ??
+    "I can compare the ledger, checklist, and manager notes. Ask me to identify a source-backed exception or verify a calculation, then challenge anything that is not tied to a row or note."
+  );
 }
 
 function readinessFor(
@@ -55,6 +72,30 @@ function readinessFor(
       {
         label: "Included menu codes and a total",
         ready: /k0[1-6]/.test(combined) && /total|sgd/.test(combined),
+      },
+    ];
+  }
+  if (caseId === "missed-handoff-conversation") {
+    return [
+      {
+        label: "Asked the AI to pressure-test a placement",
+        ready: messages.some((message) => message.role === "user"),
+      },
+      {
+        label: "Worked the culture map with the AI",
+        ready: /communicat|evaluat|feedback|persuad|lead|deci|trust|disagree|schedul/.test(combined),
+      },
+    ];
+  }
+  if (caseId === "apac-pilot-pitch") {
+    return [
+      {
+        label: "Asked the AI to pressure-test a placement",
+        ready: messages.some((message) => message.role === "user"),
+      },
+      {
+        label: "Worked the culture map with the AI",
+        ready: /communicat|persuad|evaluat|lead|deci|trust|disagree|schedul/.test(combined),
       },
     ];
   }
@@ -104,6 +145,8 @@ export function PrototypeCasePage() {
   );
 
   if (!content) return <Navigate to="/" replace />;
+
+  const definition = getCaseDefinition(caseId);
 
   const selectedArtifact =
     activeArtifact === -1 ? null : content.artifacts[activeArtifact];
@@ -180,7 +223,7 @@ export function PrototypeCasePage() {
             />
           </div>
           <CaseSubmissionPanel
-            title={caseId === "kopi-run" ? "Your answers" : "Final work product"}
+            title={definition.submissionTitle ?? "Final work product"}
             description={caseId === "kopi-run" ? "Write the order you want evaluated. The chat can help you check it, but this is the submitted answer." : "Write the work product you want evaluated."}
             value={workProduct}
             onChange={(workProduct) =>
@@ -190,7 +233,7 @@ export function PrototypeCasePage() {
               }))
             }
             textareaId="work-product"
-            placeholder={caseId === "kopi-run" ? "Aiman — K03 — Kopi O Kosong — SGD 1.40\nBeatrice — ...\nCheryl — ...\nTotal — SGD ..." : "Exception table, calculations, prioritized blockers, and manager update…"}
+            placeholder={definition.workProductPlaceholder ?? "Exception table, calculations, prioritized blockers, and manager update…"}
             readinessItems={readiness}
           />
         </section>

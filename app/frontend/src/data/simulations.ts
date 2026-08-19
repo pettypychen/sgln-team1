@@ -6,17 +6,23 @@ import type {
   TrustPartner,
 } from "@/types";
 import annualAudit from "@/assets/covers/cover-accounting-annual-audit.svg";
-import monthEndClose from "@/assets/covers/cover-accounting-month-end-close.svg";
+import monthEndClose from "@/assets/covers/cover-accounting-month-end-close.jpg";
 import reconcileLedger from "@/assets/covers/cover-accounting-reconcile-ledger.svg";
+import apacPilotPitch from "@/assets/covers/cover-business-analyst-apac-pilot-pitch.jpg";
 import backlogPrioritization from "@/assets/covers/cover-business-analyst-backlog-prioritization.svg";
+import missedHandoff from "@/assets/covers/cover-business-analyst-missed-handoff.jpg";
 import requirementsGathering from "@/assets/covers/cover-business-analyst-requirements-gathering.svg";
 import stakeholderInterview from "@/assets/covers/cover-business-analyst-stakeholder-interview.svg";
 import clientIntake from "@/assets/covers/cover-legal-client-intake.svg";
 import commercialLease from "@/assets/covers/cover-legal-commercial-lease.svg";
-import maDueDiligence from "@/assets/covers/cover-legal-ma-due-diligence.svg";
+import maDueDiligence from "@/assets/covers/cover-legal-ma-due-diligence.jpg";
 import ndaRedline from "@/assets/covers/cover-legal-nda-redline.svg";
 import kopiRun from "@/assets/covers/cover-onboarding-kopi-run.svg";
-import { FIRST_YEAR_ASSOCIATE_MA_DUE_DILIGENCE_CONTENT } from "@/content/simulations";
+import {
+  APAC_PILOT_PITCH_CONTENT,
+  MISSED_HANDOFF_CONTENT,
+  FIRST_YEAR_ASSOCIATE_MA_DUE_DILIGENCE_CONTENT,
+} from "@/content/simulations";
 
 /** Filter tabs, in reference order. */
 export const CATEGORY_FILTERS: CategoryFilter[] = [
@@ -53,6 +59,22 @@ export const SIMULATIONS: Simulation[] = [
     title: "Kopi Run",
     meta: "5 min · Beginner · New",
     cover: kopiRun,
+  },
+  {
+    id: 12,
+    slug: APAC_PILOT_PITCH_CONTENT.id,
+    cat: "BUSINESS ANALYST",
+    title: APAC_PILOT_PITCH_CONTENT.title,
+    meta: "10 min · Beginner · New",
+    cover: apacPilotPitch,
+  },
+  {
+    id: 13,
+    slug: MISSED_HANDOFF_CONTENT.id,
+    cat: "BUSINESS ANALYST",
+    title: MISSED_HANDOFF_CONTENT.title,
+    meta: "10 min · Beginner · New",
+    cover: missedHandoff,
   },
 ];
 

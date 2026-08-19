@@ -1,0 +1,13 @@
+{
+  "caseId": "apac-pilot-pitch",
+  "caseVersion": "1.0.0",
+  "rubricVersion": "1.0.0",
+  "caseThreshold": 30,
+  "interactionThreshold": 10,
+  "criteria": [
+    {"id":"pitch-plan","dimension":"case_outcome","label":"The recommendation","description":"Sets out how to open, the order of information, and the full ask inside seven minutes: six-month pilot, USD 600,000, two global engineers.","maxPoints":32},
+    {"id":"pitch-adaptation","dimension":"case_outcome","label":"Signals to watch","description":"Names at least one signal to watch for in the room and what to change if Jordan reacts differently than expected.","maxPoints":20},
+    {"id":"pitch-dimensions","dimension":"ai_interaction","label":"Culture map reasoning","description":"Works the culture map dimensions with the AI, grounded in the profile, and the recommendation follows from what was concluded.","maxPoints":12},
+    {"id":"pitch-pressure-test","dimension":"ai_interaction","label":"Pressure-tested hypothesis","description":"Asks the AI to challenge at least one placement instead of accepting the first reading.","maxPoints":8}
+  ]
+}

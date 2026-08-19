@@ -36,6 +36,24 @@ const definitions = [
       { id: "kopi-glossary.md", file: "kopi-glossary.md" },
     ],
   },
+  {
+    id: "apac-pilot-pitch",
+    title: "Pitching the APAC pilot",
+    category: "Business Analyst",
+    artifacts: [
+      { id: "culture-map.md", file: "culture-map.md" },
+      { id: "jordan-whitaker-profile.md", file: "jordan-whitaker-profile.md" },
+    ],
+  },
+  {
+    id: "missed-handoff-conversation",
+    title: "The missed handoff",
+    category: "Business Analyst",
+    artifacts: [
+      { id: "culture-map.md", file: "culture-map.md" },
+      { id: "rohan-krishnan-profile.md", file: "rohan-krishnan-profile.md" },
+    ],
+  },
 ];
 
 const packages = Object.fromEntries(
