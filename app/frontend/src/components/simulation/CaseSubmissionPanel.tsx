@@ -95,7 +95,7 @@ export function CaseSubmissionPanel({
         </ul>
       ) : null}
 
-      <div className="mt-4 min-h-0">
+      <div className="mt-4 flex min-h-0 flex-1 flex-col">
         {children ?? (
           <>
             <label className="sr-only" htmlFor={textareaId}>

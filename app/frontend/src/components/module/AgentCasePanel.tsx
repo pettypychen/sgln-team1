@@ -117,7 +117,7 @@ export function AgentCasePanel({
             ? `Connected to ${agentLabel}. I can challenge your analysis, help you spot gaps, and structure your diligence response. What would you like to work on first?`
             : message.content
         }
-        className="flex min-h-[260px] flex-[0.8] flex-col px-4 pb-3"
+        className="flex min-h-[260px] flex-[0.45] flex-col px-4 pb-3"
         transcriptClassName="min-h-0 flex-1 space-y-3 overflow-y-auto py-4"
       />
 
