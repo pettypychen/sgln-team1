@@ -87,10 +87,6 @@ function readinessFor(
           /rohan/.test(combined) &&
           /communicat|evaluat|feedback|persuad|leading|decid|trust|disagree|schedul/.test(combined),
       },
-      {
-        label: "Recommendation sets expectations",
-        ready: /escalat|expectation/.test(combined) && /handoff|deadline/.test(combined),
-      },
     ];
   }
   if (caseId === "apac-pilot-pitch") {
@@ -104,10 +100,6 @@ function readinessFor(
         ready:
           /jordan/.test(combined) &&
           /communicat|persuad|evaluat|leading|decid|trust|disagree|schedul/.test(combined),
-      },
-      {
-        label: "Recommendation lands the ask",
-        ready: /600|budget/.test(combined) && /engineer/.test(combined),
       },
     ];
   }
