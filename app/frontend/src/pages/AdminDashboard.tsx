@@ -225,11 +225,11 @@ function AdminContent({ onLogout }: { onLogout: () => void }) {
                             <div className="grid gap-4 lg:grid-cols-2">
                               <div>
                                 <p className="m-0 text-micro font-semibold uppercase tracking-wide text-muted">Prompt sent</p>
-                                <pre className="mt-2 max-h-64 overflow-auto whitespace-pre-wrap rounded-button bg-white p-3 font-mono text-micro text-ink soft-edge">{log.promptPreview || "—"}</pre>
+                                <pre className="mt-2 max-h-64 overflow-auto whitespace-pre-wrap bg-white p-3 font-mono text-micro text-ink soft-edge">{log.promptPreview || "—"}</pre>
                               </div>
                               <div>
                                 <p className="m-0 text-micro font-semibold uppercase tracking-wide text-muted">Response {log.completedAt ? `· ${new Date(log.completedAt).toLocaleString()}` : ""}</p>
-                                <pre className="mt-2 max-h-64 overflow-auto whitespace-pre-wrap rounded-button bg-white p-3 font-mono text-micro text-ink soft-edge">{log.response || "—"}</pre>
+                                <pre className="mt-2 max-h-64 overflow-auto whitespace-pre-wrap bg-white p-3 font-mono text-micro text-ink soft-edge">{log.response || "—"}</pre>
                               </div>
                             </div>
                             {log.submissionId ? (
