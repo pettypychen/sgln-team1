@@ -5,6 +5,7 @@ import {
   KOPI_RUN_CONTENT,
   MISSED_HANDOFF_CONTENT,
   MONTH_END_CLOSE_CONTENT,
+  THE_ROOM_YOURE_NOT_IN_CONTENT,
 } from "@/content/simulations";
 import { getCaseDefinition } from "@/evaluation/rubrics";
 import { usePersistentState } from "@/hooks/usePersistentState";
@@ -19,13 +20,15 @@ type PrototypeContent =
   | typeof MONTH_END_CLOSE_CONTENT
   | typeof KOPI_RUN_CONTENT
   | typeof APAC_PILOT_PITCH_CONTENT
-  | typeof MISSED_HANDOFF_CONTENT;
+  | typeof MISSED_HANDOFF_CONTENT
+  | typeof THE_ROOM_YOURE_NOT_IN_CONTENT;
 
 const CONTENT: Record<string, PrototypeContent> = {
   [MONTH_END_CLOSE_CONTENT.id]: MONTH_END_CLOSE_CONTENT,
   [KOPI_RUN_CONTENT.id]: KOPI_RUN_CONTENT,
   [APAC_PILOT_PITCH_CONTENT.id]: APAC_PILOT_PITCH_CONTENT,
   [MISSED_HANDOFF_CONTENT.id]: MISSED_HANDOFF_CONTENT,
+  [THE_ROOM_YOURE_NOT_IN_CONTENT.id]: THE_ROOM_YOURE_NOT_IN_CONTENT,
 };
 
 interface CaseState {
@@ -40,6 +43,8 @@ const DEMO_REPLIES: Record<string, string> = {
     "Take one culture map dimension — say Persuading or Deciding — and tell me where you think Jordan sits and why. I’ll challenge the placement using the profile. Once you’ve worked out the order, write only the recommendation.",
   "missed-handoff-conversation":
     "Start with one dimension — Evaluating or Disagreeing is a good place — and tell me where you think Rohan sits and why. I’ll challenge it using the profile. Once you’ve worked it out, write only the recommendation.",
+  "the-room-youre-not-in":
+    "Start with what they can currently say about her. Pick one of the eleven and tell me what they have actually seen — not what their title suggests they care about. Then tell me which moment in the seven weeks you would spend her 5% on, and what you are giving up to do it. I’ll argue for the option you discarded, or attack her words the way that room will.",
 };
 
 function demoReply(caseId: string) {
@@ -84,6 +89,21 @@ function readinessFor(
       {
         label: "Worked the culture map with the AI",
         ready: /communicat|evaluat|feedback|persuad|lead|deci|trust|disagree|schedul/.test(combined),
+      },
+    ];
+  }
+  if (caseId === "the-room-youre-not-in") {
+    return [
+      {
+        label: "Asked the AI to pressure-test the plan",
+        ready: messages.some((message) => message.role === "user"),
+      },
+      {
+        label: "Worked the visibility gap with the AI",
+        ready:
+          /visib|percept|green x|rules of the game|unwritten|skip-?level|amplif|little voice|excuse|intention|survive|contribute|marcus|dana|priya|corvus|five situations|5% ?(zone|moment|plan)/i.test(
+            combined,
+          ),
       },
     ];
   }

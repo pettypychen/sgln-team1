@@ -87,7 +87,7 @@ export function ProgressTracker({
       <div className="flex items-start justify-between gap-4">
         <div>
           <p className="m-0 text-micro font-medium text-muted">Progress tracker</p>
-          <h2 className="m-0 mt-1 font-display text-[28px] font-light leading-[1.08] text-ink">
+          <h2 className="m-0 mt-1 font-display text-[28px] leading-[1.08] text-ink">
             Module checklist
           </h2>
         </div>

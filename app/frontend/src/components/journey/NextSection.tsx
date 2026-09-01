@@ -11,7 +11,7 @@ export function NextSection() {
     >
       <div className="mx-auto max-w-container">
         <JourneyEyebrow>What&apos;s next</JourneyEyebrow>
-        <h2 className="m-0 mb-12 font-display text-[36px] font-light leading-[1.05] text-ink md:text-[54px]">
+        <h2 className="m-0 mb-12 font-display text-[30px] uppercase leading-[1.05] tracking-tight text-ink md:text-[46px]">
           From concept to working demo
         </h2>
 
@@ -21,7 +21,7 @@ export function NextSection() {
               <Icon name="calendar" size={16} />
               Aug 20 session
             </div>
-            <h3 className="m-0 mb-4 font-display text-[30px] font-light leading-[1.12] text-ink">
+            <h3 className="m-0 mb-4 font-display text-[30px] leading-[1.12] text-ink">
               Prototype the simulator
             </h3>
             <p className="m-0 text-body-lg leading-[1.55] text-muted-deep">
@@ -39,7 +39,7 @@ export function NextSection() {
               <Icon name="map" size={16} />
               Roadmap
             </div>
-            <h3 className="m-0 mb-6 font-display text-[30px] font-light leading-[1.12] text-ink">
+            <h3 className="m-0 mb-6 font-display text-[30px] leading-[1.12] text-ink">
               Where it grows
             </h3>
             <div className="flex flex-col gap-5">

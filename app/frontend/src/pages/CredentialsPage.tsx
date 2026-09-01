@@ -194,7 +194,7 @@ export function CredentialsPage() {
     return (
       <main className="grid min-h-screen place-items-center bg-[#eeede9] p-6 text-ink">
         <div className="max-w-lg rounded-panel bg-white p-8 text-center soft-edge">
-          <h1 className="font-display text-3xl font-light">No records found</h1>
+          <h1 className="font-display text-3xl">No records found</h1>
           <p className="text-muted-deep">No submissions were found for <strong>{email}</strong>.</p>
           <button onClick={() => { setEmail(""); setEmailInput(""); setCollection(undefined); }} className="mt-4 rounded-button bg-black px-4 py-2 text-small font-semibold text-white">
             Try a different email
@@ -219,7 +219,7 @@ export function CredentialsPage() {
         <header className="flex flex-wrap items-end justify-between gap-4">
           <div>
             <p className="m-0 text-micro font-semibold uppercase tracking-[.18em] text-muted">Credential collection</p>
-            <h1 className="m-0 mt-2 font-display text-[44px] font-light">{collection.access.displayName}'s credentials</h1>
+            <h1 className="m-0 mt-2 font-display text-[44px]">{collection.access.displayName}'s credentials</h1>
           </div>
           <div className="flex flex-wrap gap-2">
             <button onClick={() => { setEmail(""); setEmailInput(""); setCollection(undefined); }} className="rounded-button bg-white px-4 py-2 text-small font-semibold soft-edge">Switch account</button>
@@ -230,7 +230,7 @@ export function CredentialsPage() {
         {notice ? <p role="status" className="mt-4 rounded-panel bg-blue-50 p-4 text-small text-blue-950">{notice}</p> : null}
         {error ? <p role="alert" className="mt-4 rounded-panel bg-red-50 p-4 text-small text-red-900">{error}</p> : null}
 
-        <section className="mt-8"><h2 className="font-display text-3xl font-light">Badge collection</h2><div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <section className="mt-8"><h2 className="font-display text-3xl">Badge collection</h2><div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {CASE_DEFINITIONS.map((definition) => {
             const credential = earnedByCase.get(definition.id);
             const earnedAt = credential?.awardDate ?? passedCases.get(definition.id);
@@ -246,7 +246,7 @@ export function CredentialsPage() {
         </div></section>
 
         <section className="mt-10">
-          <h2 className="font-display text-3xl font-light">Attempt history</h2>
+          <h2 className="font-display text-3xl">Attempt history</h2>
           <div className="mt-4 grid gap-3">
           {collection.attempts.length ? [...collection.attempts].sort((a, b) => b.submittedAt.localeCompare(a.submittedAt)).map((attempt) => (
             <article key={attempt.id} className="flex flex-wrap items-center justify-between gap-4 rounded-panel bg-white p-5 soft-edge">
@@ -275,7 +275,7 @@ export function CredentialsPage() {
               <button aria-label="Close credential detail" className="absolute right-4 top-4 grid h-10 w-10 place-items-center rounded-full bg-cloud text-xl" onClick={() => setSelected(null)}>×</button>
               <div className="grid gap-7 md:grid-cols-[220px_1fr]">
                 <BadgeMedallion caseId={selected.caseId} size="lg" premium={Boolean(selected.supplementalLabel)} />
-                <div><p className="m-0 text-micro font-semibold uppercase tracking-[.16em] text-muted">{selected.category}{selected.supplementalLabel ? ` · ${selected.supplementalLabel}` : ""}</p><h2 id="credential-title" className="m-0 mt-2 font-display text-4xl font-light">{definition.badge.name}</h2><p className="mt-3 text-small text-muted-deep">{selected.caseTitle} · demonstrates case proficiency and responsible AI interaction.</p>
+                <div><p className="m-0 text-micro font-semibold uppercase tracking-[.16em] text-muted">{selected.category}{selected.supplementalLabel ? ` · ${selected.supplementalLabel}` : ""}</p><h2 id="credential-title" className="m-0 mt-2 font-display text-4xl">{definition.badge.name}</h2><p className="mt-3 text-small text-muted-deep">{selected.caseTitle} · demonstrates case proficiency and responsible AI interaction.</p>
                   <dl className="mt-5 grid gap-3 text-small sm:grid-cols-2"><div><dt className="text-muted">Awarded to</dt><dd className="m-0 mt-1 font-semibold">{selected.learnerDisplayName}</dd></div><div><dt className="text-muted">Issue date</dt><dd className="m-0 mt-1 font-semibold">{new Date(selected.awardDate).toLocaleDateString()}</dd></div><div><dt className="text-muted">Credential ID</dt><dd className="m-0 mt-1 break-all font-mono text-micro">{selected.id}</dd></div><div><dt className="text-muted">Authority</dt><dd className="m-0 mt-1">{selected.evaluationAuthority}</dd></div></dl>
                 </div>
               </div>

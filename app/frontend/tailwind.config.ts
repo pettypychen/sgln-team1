@@ -1,6 +1,6 @@
 import type { Config } from "tailwindcss";
 
-/** Design tokens for the ElevenLabs-inspired marketplace redesign. */
+/** Design tokens for the Simworks brand system (see doc/design.md). */
 const config: Config = {
   content: ["./index.html", "./src/**/*.{ts,tsx}"],
   theme: {
@@ -8,28 +8,31 @@ const config: Config = {
       transparent: "transparent",
       current: "currentColor",
       ink: "#000000",
-      paper: "#f7f7f5",
-      manila: "#f5f2ef",
+      paper: "#ffffff",
+      manila: "#f2f2f2",
       porcelain: "#ffffff",
       graphite: "#242424",
-      teal: "#256f67",
-      oxblood: "#8b3a34",
-      amber: "#b9833b",
-      analyst: "#4f6f9d",
+      teal: "#2f9e5f",
+      oxblood: "#c1673c",
+      amber: "#d98d5f",
+      analyst: "#4a9fd8",
+      blush: "#f2d9e8",
+      lavender: "#ded4f2",
+      aqua: "#5fd8e6",
       white: "#ffffff",
       black: "#000000",
 
       surface: {
         DEFAULT: "#ffffff",
-        raised: "#f5f2ef",
-        dark: "#171717",
+        raised: "#f2f2f2",
+        dark: "#0a0a0a",
       },
       slate: "#5f5f5b",
-      "slate-mid": "#777169",
+      "slate-mid": "#6b6b6b",
       silver: "#e8e5df",
       cloud: "#f5f5f5",
       footer: "#4e4e4e",
-      muted: "#777169",
+      muted: "#6b6b6b",
       "muted-deep": "#4e4e4e",
       hairline: "rgba(0,0,0,0.06)",
       border: "#e5e5e5",
@@ -38,11 +41,11 @@ const config: Config = {
 
     extend: {
       fontFamily: {
-        sans: ['"Inter"', '"Aptos"', '"Segoe UI"', '"Helvetica Neue"', "sans-serif"],
-        display: ['"Waldenburg"', '"Times New Roman"', "serif"],
-        displayBold: ['"WaldenburgFH"', '"Inter"', "sans-serif"],
+        sans: ['"DM Sans"', '"Aptos"', '"Segoe UI"', '"Helvetica Neue"', "sans-serif"],
+        display: ['"Helvetica Neue"', '"Arial"', '"DM Sans"', "sans-serif"],
+        displayBold: ['"Oswald"', '"Archivo Black"', '"Arial Black"', "sans-serif"],
         mono: [
-          '"Geist Mono"',
+          '"Space Mono"',
           "ui-monospace",
           "SFMono-Regular",
           "Menlo",

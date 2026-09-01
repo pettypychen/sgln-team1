@@ -1,0 +1,14 @@
+{
+  "caseId": "the-room-youre-not-in",
+  "caseVersion": "1.0.0",
+  "rubricVersion": "1.0.0",
+  "caseThreshold": 28,
+  "interactionThreshold": 12,
+  "criteria": [
+    {"id":"room-plan","dimension":"case_outcome","label":"The 5% plan","description":"Commits to a small number of moments and names what is given up, ties each to a named person and the specific perception the record shows needs moving, accounts for the cost of what it takes on, and would not read the same for any executive at any company.","maxPoints":26},
+    {"id":"room-words","dimension":"case_outcome","label":"The words","description":"Writes what Serene actually says out loud rather than describing an approach, sized for the slot it is written for, pitched at the altitude that room can act on, and recognisable as her rather than as campaigning.","maxPoints":22},
+    {"id":"room-rules","dimension":"ai_interaction","label":"Rules of the game","description":"Works the visibility gap and the unwritten rules with the AI, reasoning each read from what a person has said, promoted or already seen rather than from job title or seniority, and the plan follows from what was concluded.","maxPoints":10},
+    {"id":"room-challenge","dimension":"ai_interaction","label":"Pressure-tested","description":"Asks the AI to challenge the plan, argue for a discarded option, or attack the words the way the room will, and engages with what comes back instead of accepting the first reading.","maxPoints":8},
+    {"id":"room-voice","dimension":"ai_interaction","label":"Naming the little voice","description":"Identifies the self-talk that would stop her on the day, separates the legitimate objection from the excuse doing its work, and gives her something to do when it arrives.","maxPoints":6}
+  ]
+}

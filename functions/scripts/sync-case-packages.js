@@ -54,6 +54,16 @@ const definitions = [
       { id: "rohan-krishnan-profile.md", file: "rohan-krishnan-profile.md" },
     ],
   },
+  {
+    id: "the-room-youre-not-in",
+    title: "The Room You're Not In",
+    category: "Leadership",
+    artifacts: [
+      { id: "visibility-record.md", file: "visibility-record.md" },
+      { id: "seven-weeks.md", file: "seven-weeks.md" },
+      { id: "five-percent-zone.md", file: "five-percent-zone.md" },
+    ],
+  },
 ];
 
 const packages = Object.fromEntries(

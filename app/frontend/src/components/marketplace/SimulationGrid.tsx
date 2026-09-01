@@ -17,7 +17,7 @@ export function SimulationGrid({ sims, columns = 3 }: SimulationGridProps) {
           <div className="mb-2 text-small font-medium text-muted-deep">
             Simulation library
           </div>
-          <h2 className="m-0 font-display text-[40px] font-light leading-[1.1] text-ink">
+          <h2 className="m-0 font-display text-[40px] leading-[1.1] text-ink">
             Pick the situation to rehearse.
           </h2>
         </div>

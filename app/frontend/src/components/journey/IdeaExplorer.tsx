@@ -29,7 +29,7 @@ export function IdeaExplorer() {
     >
       <div className="mx-auto max-w-container">
         <JourneyEyebrow>Diverge</JourneyEyebrow>
-        <h2 className="m-0 mb-3.5 font-display text-[36px] font-light leading-[1.05] text-ink md:text-[54px]">
+        <h2 className="m-0 mb-3.5 font-display text-[30px] uppercase leading-[1.05] tracking-tight text-ink md:text-[46px]">
           27 ideas, five ways to answer it
         </h2>
         <p className="m-0 mb-12 max-w-[640px] text-body-lg text-muted-deep">
@@ -99,7 +99,7 @@ export function IdeaExplorer() {
                   {active.theme.name}
                 </span>
               </div>
-              <h3 className="m-0 mb-4 font-display text-[30px] font-light leading-[1.15] text-ink">
+              <h3 className="m-0 mb-4 font-display text-[30px] leading-[1.15] text-ink">
                 {active.idea.name}
               </h3>
               <p className="m-0 text-body-lg text-muted-deep">

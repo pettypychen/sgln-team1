@@ -127,7 +127,7 @@ export function TrustBar({ partners }: TrustBarProps) {
           <div className="mb-3 text-small font-medium text-muted-deep">
             Employer-calibrated evidence
           </div>
-          <p className="m-0 max-w-[48ch] font-display text-[34px] font-light leading-[1.1] text-ink">
+          <p className="m-0 max-w-[48ch] font-display text-[34px] leading-[1.1] text-ink">
             Scenarios are shaped with practitioners, then scored around the
             artifacts hiring teams can actually inspect.
           </p>

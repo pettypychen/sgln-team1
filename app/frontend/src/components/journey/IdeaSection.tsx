@@ -27,7 +27,7 @@ export function IdeaSection() {
             The idea
           </span>
         </div>
-        <h2 className="m-0 mb-4 font-display text-[38px] font-light leading-[1.05] text-white md:text-[60px]">
+        <h2 className="m-0 mb-4 font-display text-[32px] uppercase leading-[1.05] tracking-tight text-white md:text-[52px]">
           Workplace Flight Simulator
         </h2>
         <p className="m-0 mb-12 max-w-[820px] text-[20px] leading-[1.55] text-white/70">

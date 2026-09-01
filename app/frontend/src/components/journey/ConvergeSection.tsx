@@ -15,7 +15,7 @@ export function ConvergeSection() {
     >
       <div className="mx-auto max-w-container">
         <JourneyEyebrow>Converge</JourneyEyebrow>
-        <h2 className="m-0 mb-14 font-display text-[36px] font-light leading-[1.05] text-ink md:text-[54px]">
+        <h2 className="m-0 mb-14 font-display text-[30px] uppercase leading-[1.05] tracking-tight text-ink md:text-[46px]">
           Then we narrowed, twice over
         </h2>
 
@@ -23,7 +23,7 @@ export function ConvergeSection() {
           <div className="flex flex-col gap-6">
             {CONVERGE_STEPS.map((step, i) => (
               <div key={step.title} className="flex items-start gap-5">
-                <div className="flex h-12 w-12 flex-none items-center justify-center rounded-button bg-ink font-display text-[22px] font-light text-white">
+                <div className="flex h-12 w-12 flex-none items-center justify-center rounded-button bg-ink font-display text-[22px] text-white">
                   {i + 1}
                 </div>
                 <div>
@@ -68,7 +68,7 @@ export function ConvergeSection() {
                     }
                     style={{ width: `${stage.width * 100}%`, maxWidth: 560 }}
                   >
-                    <span className="font-display text-[34px] font-light">
+                    <span className="font-display text-[34px]">
                       {stage.count}
                     </span>
                     <span className="text-[19px] font-medium">

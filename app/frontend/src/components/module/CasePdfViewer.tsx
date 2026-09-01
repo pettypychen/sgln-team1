@@ -184,7 +184,7 @@ export function CasePdfViewer({
                       <p className="m-0 text-micro font-medium text-muted">
                         {activePage.kicker}
                       </p>
-                      <h3 className="m-0 mt-2 font-display text-[38px] font-light leading-[1.08]">
+                      <h3 className="m-0 mt-2 font-display text-[38px] leading-[1.08]">
                         {activePage.heading}
                       </h3>
                     </div>

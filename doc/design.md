@@ -1,265 +1,187 @@
-# Design System Inspired by ElevenLabs
+# Design System — Simworks Brand (from Figma Deck)
+
+Source: [Simworks Figma Deck](https://www.figma.com/deck/CPiQfr2ll6anhYNVrcmodq/Simworks?node-id=2-123)
 
 ## 1. Visual Theme & Atmosphere
 
-ElevenLabs' website is a study in restrained elegance — a near-white canvas (`#ffffff`, `#f5f5f5`) where typography and subtle shadows do all the heavy lifting. The design feels like a premium audio product brochure: clean, spacious, and confident enough to let the content speak (literally, given ElevenLabs makes voice AI). There's an almost Apple-like quality to the whitespace strategy, but warmer — the occasional warm stone tint (`#f5f2ef`, `#777169`) prevents the purity from feeling clinical.
+Simworks presents itself as a high-conviction, editorial brand: stark black-and-white contrast punctuated by warm, cinematic accent color. The deck alternates between two registers — **dark, cinematic "moment" slides** (cover, section dividers, taglines, testimonials) rendered in near-black with warm amber/terracotta studio lighting and a single cool blue accent, and **clean white "systems" slides** (data, pricing, process diagrams) that read like a product spec sheet. The tone is confident and slightly severe — bold condensed all-caps headlines against black, balanced by restrained, almost technical monospace labels and neutral body copy on the white slides.
 
-The typography system is built on a fascinating duality: Waldenburg at weight 300 (light) for display headings creates ethereal, whisper-thin titles that feel like sound waves rendered in type — delicate, precise, and surprisingly impactful at large sizes. This light-weight display approach is the design's signature — where most sites use bold headings to grab attention, ElevenLabs uses lightness to create intrigue. Inter handles all body and UI text with workmanlike reliability, using slight positive letter-spacing (0.14px–0.18px) that gives body text an airy, well-spaced quality. WaldenburgFH appears as a bold uppercase variant for specific button labels.
-
-What makes ElevenLabs distinctive is its multi-layered shadow system. Rather than simple box-shadows, elements use complex stacks: inset border-shadows (`rgba(0,0,0,0.075) 0px 0px 0px 0.5px inset`), outline shadows (`rgba(0,0,0,0.06) 0px 0px 0px 1px`), and soft elevation shadows (`rgba(0,0,0,0.04) 0px 4px 4px`) — all at remarkably low opacities. The result is a design where surfaces seem to barely exist, floating just above the page with the lightest possible touch. Pill-shaped buttons (9999px) with warm-tinted backgrounds (`rgba(245,242,239,0.8)`) and warm shadows (`rgba(78,50,23,0.04)`) add a tactile, physical quality.
+Photography and 3D renders lean cinematic and metaphor-driven (a ladder through a skylight, a glowing cockpit, an AI hand reaching toward a human hand) rather than literal product screenshots — the brand sells a feeling (aspiration, judgment, readiness) before it sells a product.
 
 **Key Characteristics:**
-- Near-white canvas with warm undertones (`#f5f5f5`, `#f5f2ef`)
-- Waldenburg weight 300 (light) for display — ethereal, whisper-thin headings
-- Inter with positive letter-spacing (0.14–0.18px) for body — airy readability
-- Multi-layered shadow stacks at sub-0.1 opacity — surfaces barely exist
-- Pill buttons (9999px) with warm stone-tinted backgrounds
-- WaldenburgFH bold uppercase for specific CTA labels
-- Warm shadow tints: `rgba(78, 50, 23, 0.04)` — shadows have color, not just darkness
-- Geist Mono / ui-monospace for code snippets
+- Black-and-white foundation with sparing, deliberate color accents
+- Heavy condensed all-caps grotesk for headlines/quotes — the brand's loudest voice
+- Monospace uppercase for kickers, labels, tags, and step numbers — the brand's "systems" voice
+- Neutral humanist sans for body copy and white-slide headings — the quiet, readable voice
+- Warm cinematic renders (amber/terracotta lighting) as the emotional register
+- A six-petal flower/hexafoil mark as the consistent brand anchor on every slide
+- Green used exclusively as the "money/success" signal color (revenue flow, checkmarks)
+- Thin hairline borders and minimal corner radius — systems feel precise, not soft
 
 ## 2. Color Palette & Roles
 
 ### Primary
-- **Pure White** (`#ffffff`): Primary background, card surfaces, button backgrounds
-- **Light Gray** (`#f5f5f5`): Secondary surface, subtle section differentiation
-- **Warm Stone** (`#f5f2ef`): Button background (at 80% opacity) — the warm signature
-- **Black** (`#000000`): Primary text, headings, dark buttons
+- **Black** (`#000000`): Dominant dark background for cover/divider/moment slides
+- **White** (`#ffffff`): Dominant background for content/data/pricing slides
+- **Off-black text** (`#111111`–`#1a1a1a`): Headline text on white
+
+### Accent
+- **Terracotta / Amber** (approx. `#d98d5f`, `#e0a06e`): Cinematic lighting warmth in hero renders
+- **Sky Blue** (approx. `#4a9fd8`): Single cool accent (skylight circle) cutting through warm scenes
+- **Green** (approx. `#2f9e5f`): Reserved strictly for revenue flow, success checkmarks, positive signals
+- **Gold / Bronze** (gradient, approx. `#8a6a3a` → `#d9b86a`): Credential/badge iconography
+
+### Pastel Card Accents (icon/feature cards on white slides)
+- **Blush Pink** (approx. `#f2d9e8`)
+- **Lavender** (approx. `#ded4f2`)
+- **Aqua Cyan** (approx. `#5fd8e6`)
 
 ### Neutral Scale
-- **Dark Gray** (`#4e4e4e`): Secondary text, descriptions
-- **Warm Gray** (`#777169`): Tertiary text, muted links, decorative underlines
-- **Near White** (`#f6f6f6`): Alternate light surface
-
-### Interactive
-- **Grid Cyan** (`#7fffff`): `--grid-column-bg`, at 25% opacity — decorative grid overlay
-- **Ring Blue** (`rgb(147 197 253 / 0.5)`): `--tw-ring-color`, focus ring
-- **Border Light** (`#e5e5e5`): Explicit borders
-- **Border Subtle** (`rgba(0, 0, 0, 0.05)`): Ultra-subtle bottom borders
-
-### Shadows
-- **Inset Border** (`rgba(0,0,0,0.075) 0px 0px 0px 0.5px inset`): Internal edge definition
-- **Inset Dark** (`rgba(0,0,0,0.1) 0px 0px 0px 0.5px inset`): Stronger inset variant
-- **Outline Ring** (`rgba(0,0,0,0.06) 0px 0px 0px 1px`): Shadow-as-border
-- **Soft Elevation** (`rgba(0,0,0,0.04) 0px 4px 4px`): Gentle lift
-- **Card Shadow** (`rgba(0,0,0,0.4) 0px 0px 1px, rgba(0,0,0,0.04) 0px 4px 4px`): Button/card elevation
-- **Warm Shadow** (`rgba(78,50,23,0.04) 0px 6px 16px`): Warm-tinted button shadow
-- **Edge Shadow** (`rgba(0,0,0,0.08) 0px 0px 0px 0.5px`): Subtle edge definition
-- **Inset Ring** (`rgba(0,0,0,0.1) 0px 0px 0px 1px inset`): Strong inset border
+- **Mid Gray** (`#6b6b6b`): Secondary/body text, kicker labels
+- **Light Gray** (`#e5e5e5`): Hairline borders, card dividers
+- **Panel Gray** (`#f2f2f2`): Rounded process-step backgrounds on diagram slides
 
 ## 3. Typography Rules
 
 ### Font Families
-- **Display**: `Waldenburg`, fallback: `Waldenburg Fallback`
-- **Display Bold**: `WaldenburgFH`, fallback: `WaldenburgFH Fallback`
-- **Body / UI**: `Inter`, fallback: `Inter Fallback`
-- **Monospace**: `Geist Mono` or `ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas`
+- **Display / Headline**: Heavy condensed grotesk, all caps (visually consistent with Archivo Black / Anton) — used for taglines, quote overlays, section-divider titles
+- **Content Heading**: Neutral humanist sans, regular-to-medium weight, mixed case (e.g. "Revenue Model") — used for white "systems" slide titles, noticeably less loud than the display face
+- **Kicker / Label / Data**: Monospace, uppercase, wide letter-spacing — used for "SIMWORKS" wordmark lockup, eyebrow kickers ("PRICING", "FEEDBACK FROM USERS"), step numbers ("01", "02", "03"), and tier labels ("TIER WORK LITE")
+- **Body**: Neutral sans-serif, regular weight — bullet copy, descriptions, footnotes
 
 ### Hierarchy
 
-| Role | Font | Size | Weight | Line Height | Letter Spacing | Notes |
-|------|------|------|--------|-------------|----------------|-------|
-| Display Hero | Waldenburg | 48px (3.00rem) | 300 | 1.08 (tight) | -0.96px | Whisper-thin, ethereal |
-| Section Heading | Waldenburg | 36px (2.25rem) | 300 | 1.17 (tight) | normal | Light display |
-| Card Heading | Waldenburg | 32px (2.00rem) | 300 | 1.13 (tight) | normal | Light card titles |
-| Body Large | Inter | 20px (1.25rem) | 400 | 1.35 | normal | Introductions |
-| Body | Inter | 18px (1.13rem) | 400 | 1.44–1.60 | 0.18px | Standard reading text |
-| Body Standard | Inter | 16px (1.00rem) | 400 | 1.50 | 0.16px | UI text |
-| Body Medium | Inter | 16px (1.00rem) | 500 | 1.50 | 0.16px | Emphasized body |
-| Nav / UI | Inter | 15px (0.94rem) | 500 | 1.33–1.47 | 0.15px | Navigation links |
-| Button | Inter | 15px (0.94rem) | 500 | 1.47 | normal | Button labels |
-| Button Uppercase | WaldenburgFH | 14px (0.88rem) | 700 | 1.10 (tight) | 0.7px | `text-transform: uppercase` |
-| Caption | Inter | 14px (0.88rem) | 400–500 | 1.43–1.50 | 0.14px | Metadata |
-| Small | Inter | 13px (0.81rem) | 500 | 1.38 | normal | Tags, badges |
-| Code | Geist Mono | 13px (0.81rem) | 400 | 1.85 (relaxed) | normal | Code blocks |
-| Micro | Inter | 12px (0.75rem) | 500 | 1.33 | normal | Tiny labels |
-| Tiny | Inter | 10px (0.63rem) | 400 | 1.60 (relaxed) | normal | Fine print |
+| Role | Style | Notes |
+|------|-------|-------|
+| Cover / Tagline | Condensed grotesk, all caps, ~40–56px | e.g. "WHERE JUDGMENT BECOMES YOUR RESUME." — tight leading, full-bleed on black |
+| Quote Overlay | Condensed grotesk, all caps, ~24–32px | Overlaid on photography, wrapped 2–4 lines, white text |
+| Section Divider Title | Condensed grotesk, all caps, ~40px | e.g. "DEMO", "BACKUP SLIDES" — paired with small mono wordmark above |
+| Content Slide Heading | Humanist sans, regular/medium, ~32–40px | e.g. "Revenue Model", "A Self-Sustaining Marketplace..." — mixed case, not condensed |
+| Stat / Big Number | Condensed grotesk, ~36–44px | e.g. "20-100+", "$49" — same voice as headlines even on white/black cards |
+| Kicker Label | Monospace, uppercase, ~10–11px, wide tracking | e.g. "PRICING", "FEEDBACK FROM USERS" |
+| Body | Sans-serif, regular, ~14–16px | Bullet lists, descriptions |
 
 ### Principles
-- **Light as the hero weight**: Waldenburg at 300 is the defining typographic choice. Where other design systems use bold for impact, ElevenLabs uses lightness — thin strokes that feel like audio waveforms, creating intrigue through restraint.
-- **Positive letter-spacing on body**: Inter uses +0.14px to +0.18px tracking across body text, creating an airy, well-spaced reading rhythm that contrasts with the tight display tracking (-0.96px).
-- **WaldenburgFH for emphasis**: A bold (700) uppercase variant of Waldenburg appears only in specific CTA button labels with 0.7px letter-spacing — the one place where the type system gets loud.
-- **Monospace as ambient**: Geist Mono at relaxed line-height (1.85) for code blocks feels unhurried and readable.
+- **Condensed caps = the emotional register.** Reserve the heavy condensed all-caps face for moments meant to land hard: taglines, pull quotes, big stats, section titles.
+- **Monospace = the systems register.** Any label that reads as metadata, a tag, a step, or a tier uses uppercase monospace with wide tracking — it signals "this is structural, not narrative."
+- **Humanist sans = the neutral register.** Content-slide headings and all body copy stay in a plain, mixed-case humanist sans so dense information stays legible and doesn't compete with the display voice.
+- **Never mix registers within one text block** — a heading is either condensed-cap, humanist, or mono; not blended.
+
+### Applying registers to the product app
+The deck's "moment" (dark, all-caps) vs. "systems" (white, humanist) split doesn't map 1:1 onto the app's own two zones:
+- **Marketplace, simulation library, and case workspace screens** are the app's white "systems" surface. Headings there use `font-display` — **Helvetica Neue / Arial at weight 800**, in **mixed/sentence case, never uppercase** — e.g. "Practice the work before you land the job.", "Choose a practice track.", card titles like "Month-End Close Under Pressure". This is the product's plain, heavy-weight systems voice; it is deliberately not condensed.
+- **The one "moment" component embedded in a systems page** is the marketplace hero's black active-simulation card (`ContinueCard`). Its title alone uses `font-displayBold` — **Oswald**, condensed, weight 600 — the single place outside the Journey pages where the condensed display face appears. Never apply `font-displayBold` to a systems-page heading.
+- **Journey pages** (`JourneyHero`, `IdeaSection`, `ConvergeSection`, `FinalistsSection`, `NextSection`, `IdeaExplorer`) are the deck-style "moment" surface and keep the full condensed all-caps Archivo Black treatment.
+- Kicker/eyebrow labels (`SectionLabel`, "Explore pathways", "Simulation library") and step/case IDs stay uppercase monospace everywhere, per the systems register above.
+
+### Cover art (case cards & the moment card)
+- Every case cover — grid cards and the hero's active-simulation card alike — renders as a **striped diagonal gradient placeholder**, tinted by the case's category accent, with a small uppercase mono "Cinematic placeholder / [category] · cover" note top-right. No stock photography or hand-drawn art.
+- Category accent colors (used for the cover gradient, the pathway-tab bar, and the small dot on each card): **Legal = bronze `#8a6a3a`**, **Accounting = terracotta `#c1673c`**, **Business analyst = sky blue `#4a9fd8`**, **Onboarding = gray `#6b6b6b`**.
+- **Green (`#2f9e5f`) is reserved for live/success/ready signals only** — the "credential track live" dot, ready checklist states — never a category or cover color.
 
 ## 4. Component Stylings
 
-### Buttons
+### Brand Mark
+- Six-petal flower/hexafoil, formed from overlapping circles, line-art only (no fill)
+- White stroke on black slides, black stroke on white slides
+- Fixed position: top-left on dark moment slides, top-right (small, corner) on white content slides
+- Also used solid/white-filled inside the black "hub" node of process diagrams
 
-**Primary Black Pill**
-- Background: `#000000`
-- Text: `#ffffff`
-- Padding: 0px 14px
-- Radius: 9999px (full pill)
-- Use: Primary CTA
+### Cards (Feature / Icon Cards)
+- Pastel-tinted rounded-rectangle background (blush pink, lavender, aqua) or plain photo
+- Bold sans/condensed heading directly below image, all caps
+- Checkmark (circled) + short body line per bullet
+- No border — color block and whitespace define the edge
 
-**White Pill (Shadow-bordered)**
-- Background: `#ffffff`
-- Text: `#000000`
-- Radius: 9999px
-- Shadow: `rgba(0,0,0,0.4) 0px 0px 1px, rgba(0,0,0,0.04) 0px 4px 4px`
-- Use: Secondary CTA on white
+### Cards (Process / Diagram Nodes)
+- Light gray (`#f2f2f2`) rounded rectangle for standard nodes
+- Solid black rounded rectangle with white flower mark + mono label for the central "hub" node
+- Black pill labels with white mono text for fee/cost annotations
+- Green stroke + arrow for revenue-flow connectors; black dashed stroke for informational connectors
 
-**Warm Stone Pill**
-- Background: `rgba(245, 242, 239, 0.8)` (warm translucent)
-- Text: `#000000`
-- Padding: 12px 20px 12px 14px (asymmetric)
-- Radius: 30px
-- Shadow: `rgba(78, 50, 23, 0.04) 0px 6px 16px` (warm-tinted)
-- Use: Featured CTA, hero action — the signature warm button
+### Cards (Pricing Tiers)
+- White background, 1px light-gray hairline border, minimal radius (~4–8px)
+- Uppercase mono tier label, centered
+- Large price in condensed/regular numeral, "per month" in small gray sans below
+- Checkmarked feature list, left-aligned
 
-**Uppercase Waldenburg Button**
-- Font: WaldenburgFH 14px weight 700
-- Text-transform: uppercase
-- Letter-spacing: 0.7px
-- Use: Specific bold CTA labels
+### Testimonial Block
+- Solid black rounded card floating on white background (split-screen layout)
+- Condensed all-caps quote in white, opening/closing curly quotes
+- Attribution in small plain sans below the quote
+- Optional large stat ("20-100+") in condensed face beneath attribution, same card
 
-### Cards & Containers
-- Background: `#ffffff`
-- Border: `1px solid #e5e5e5` or shadow-as-border
-- Radius: 16px–24px
-- Shadow: multi-layer stack (inset + outline + elevation)
-- Content: product screenshots, code examples, audio waveform previews
-
-### Inputs & Forms
-- Textarea: padding 12px 20px, transparent text at default
-- Select: white background, standard styling
-- Radio: standard with tw-ring focus
-- Focus: `var(--tw-ring-offset-shadow)` ring system
-
-### Navigation
-- Clean white sticky header
-- Inter 15px weight 500 for nav links
-- Pill CTAs right-aligned (black primary, white secondary)
-- Mobile: hamburger collapse at 1024px
-
-### Image Treatment
-- Product screenshots and audio waveform visualizations
-- Warm gradient backgrounds in feature sections
-- 20px–24px radius on image containers
-- Full-width sections alternating white and light gray
-
-### Distinctive Components
-
-**Audio Waveform Sections**
-- Colorful gradient backgrounds showcasing voice AI capabilities
-- Warm amber, blue, and green gradients behind product demos
-- Screenshots of the ElevenLabs product interface
-
-**Warm Stone CTA Block**
-- `rgba(245,242,239,0.8)` background with warm shadow
-- Asymmetric padding (more right padding)
-- Creates a physical, tactile quality unique to ElevenLabs
+### Quote Overlay (on photography)
+- Bottom-aligned or lower-third, condensed all-caps white text with subtle drop shadow for legibility over image
+- Curly quotation marks retained as literal characters
 
 ## 5. Layout Principles
 
-### Spacing System
-- Base unit: 8px
-- Scale: 1px, 3px, 4px, 8px, 9px, 10px, 11px, 12px, 16px, 18px, 20px, 24px, 28px, 32px, 40px
-
-### Grid & Container
-- Centered content with generous max-width
-- Single-column hero, expanding to feature grids
-- Full-width gradient sections for product showcases
-- White card grids on light gray backgrounds
+### Grid & Composition
+- Dark slides: generous negative space, subject/text anchored lower-third or left-aligned, brand mark isolated top-left
+- White slides: left-aligned kicker + heading block, content below in 2–3 column grids
+- Split-screen pattern: ~35/65 white-panel / full-bleed-image, used for testimonials and proof points
+- Diagram slides: central black "hub" flanked by numbered input/output nodes with directional connectors
 
 ### Whitespace Philosophy
-- **Apple-like generosity**: Massive vertical spacing between sections creates a premium, unhurried pace. Each section is an exhibit.
-- **Warm emptiness**: The whitespace isn't cold — the warm stone undertones and warm shadows give empty space a tactile, physical quality.
-- **Typography-led rhythm**: The light-weight Waldenburg headings create visual "whispers" that draw the eye through vast white space.
+- Black slides use whitespace (blackspace) as drama — one line of type against a vast dark field
+- White slides use whitespace as clarity — generous gutters between 3-column card grids keep dense info scannable
+
+### Footer / Metadata Treatment
+- Consistent vertical, rotated, small mono caption on the far right edge of every slide: `CONFIDENTIAL · [DATE]`
+- Never competes with primary content — always low-contrast, edge-anchored
 
 ### Border Radius Scale
-- Minimal (2px): Small links, inline elements
-- Subtle (4px): Nav items, tab panels, tags
-- Standard (8px): Small containers
-- Comfortable (10px–12px): Medium cards, dropdowns
-- Card (16px): Standard cards, articles
-- Large (18px–20px): Featured cards, code panels
-- Section (24px): Large panels, section containers
-- Warm Button (30px): Warm stone CTA
-- Pill (9999px): Primary buttons, navigation pills
+- Minimal (4px): Pricing card corners, black pill labels
+- Standard (8px–12px): Process diagram nodes, feature/icon cards
+- None (0px): Full-bleed photography, split-screen panels
 
-## 6. Depth & Elevation
+## 6. Iconography & Imagery
 
-| Level | Treatment | Use |
-|-------|-----------|-----|
-| Flat (Level 0) | No shadow | Page background, text blocks |
-| Inset Edge (Level 0.5) | `rgba(0,0,0,0.075) 0px 0px 0px 0.5px inset, #fff 0px 0px 0px 0px inset` | Internal border definition |
-| Outline Ring (Level 1) | `rgba(0,0,0,0.06) 0px 0px 0px 1px` + `rgba(0,0,0,0.04) 0px 1px 2px` + `rgba(0,0,0,0.04) 0px 2px 4px` | Shadow-as-border for cards |
-| Card (Level 2) | `rgba(0,0,0,0.4) 0px 0px 1px, rgba(0,0,0,0.04) 0px 4px 4px` | Button elevation, prominent cards |
-| Warm Lift (Level 3) | `rgba(78,50,23,0.04) 0px 6px 16px` | Featured CTAs — warm-tinted |
-| Focus (Accessibility) | `var(--tw-ring-offset-shadow)` blue ring | Keyboard focus |
-
-**Shadow Philosophy**: ElevenLabs uses the most refined shadow system of any design system analyzed. Every shadow is at sub-0.1 opacity, many include both outward cast AND inward inset components, and the warm CTA shadows use an actual warm color (`rgba(78,50,23,...)`) rather than neutral black. The inset half-pixel borders (`0px 0px 0px 0.5px inset`) create edges so subtle they're felt rather than seen — surfaces define themselves through the lightest possible touch.
+- **Line icons only** for inline bullets (checkmark-in-circle, thumb-up-in-circle) — thin stroke, no fill
+- **Badge icon**: hexagonal gold/bronze gradient credential badge with embossed flower-mark motif — used to signify achievement/verification
+- **Photography**: warm, cinematic, real-people-in-real-settings (desk conversations, cockpit interiors) — avoid flat stock-photo lighting
+- **3D renders**: metaphor-first (ladder/skylight, glowing cockpit) with dramatic single-source warm lighting and one contrasting cool element
+- **World map outline**: thin white stroke-only continents on black, used as a scale/ambition motif behind taglines
 
 ## 7. Do's and Don'ts
 
 ### Do
-- Use Waldenburg weight 300 for all display headings — the lightness IS the brand
-- Apply multi-layer shadows (inset + outline + elevation) at sub-0.1 opacity
-- Use warm stone tints (`#f5f2ef`, `rgba(245,242,239,0.8)`) for featured elements
-- Apply positive letter-spacing (+0.14px to +0.18px) on Inter body text
-- Use 9999px radius for primary buttons — pill shape is standard
-- Use warm-tinted shadows (`rgba(78,50,23,0.04)`) on featured CTAs
-- Keep the page predominantly white with subtle gray section differentiation
-- Use WaldenburgFH bold uppercase ONLY for specific CTA button labels
+- Reserve heavy condensed all-caps type for headlines, quotes, and big stats only
+- Use uppercase monospace for every kicker, tag, tier label, and step number
+- Keep content-slide headings in a plain humanist sans — don't make everything shout
+- Anchor the flower mark consistently (top-left on dark, top-right on white)
+- Use green only for revenue/success signals — never as a general accent
+- Let black slides breathe with large areas of negative space
+- Use warm cinematic lighting (amber/terracotta) with exactly one cool accent per scene
+- Give every card in a selector/tab row the same visible hairline border (`rgba(0,0,0,0.08)`) whether or not it's the active choice — selection state should read from the fill/elevation, not from making unselected cards borderless
 
 ### Don't
-- Don't use bold (700) Waldenburg for headings — weight 300 is non-negotiable
-- Don't use heavy shadows (>0.1 opacity) — the ethereal quality requires whisper-level depth
-- Don't use cool gray borders — the system is warm-tinted throughout
-- Don't skip the inset shadow component — half-pixel inset borders define edges
-- Don't apply negative letter-spacing to body text — Inter uses positive tracking
-- Don't use sharp corners (<8px) on cards — the generous radius is structural
-- Don't introduce brand colors — the palette is intentionally achromatic with warm undertones
-- Don't make buttons opaque and heavy — the warm translucent stone treatment is the signature
+- Don't apply the condensed display face to body copy or dense lists — it's for high-impact moments only
+- Don't introduce additional accent colors beyond the defined pastel/green/blue/amber set
+- Don't add heavy shadows or gradients to cards — the system relies on flat color blocks and hairline borders
+- Don't round corners aggressively — this brand reads precise, not soft (max ~12px)
+- Don't drop the mono-uppercase treatment for structural labels — it's what separates "data" from "narrative" in this system
+- Don't mix quote-overlay text with busy image backgrounds — ensure enough dark contrast area for legibility
 
-## 8. Responsive Behavior
+## 8. Agent Prompt Guide
 
-### Breakpoints
-| Name | Width | Key Changes |
-|------|-------|-------------|
-| Mobile | <1024px | Single column, hamburger nav, stacked sections |
-| Desktop | >1024px | Full layout, horizontal nav, multi-column grids |
-
-### Touch Targets
-- Pill buttons with generous padding (12px–20px)
-- Navigation links at 15px with adequate spacing
-- Select dropdowns maintain comfortable sizing
-
-### Collapsing Strategy
-- Navigation: horizontal → hamburger at 1024px
-- Feature grids: multi-column → stacked
-- Hero: maintains centered layout, font scales proportionally
-- Gradient sections: full-width maintained, content stacks
-- Spacing compresses proportionally
-
-### Image Behavior
-- Product screenshots scale responsively
-- Gradient backgrounds simplify on mobile
-- Audio waveform previews maintain aspect ratio
-- Rounded corners maintained across breakpoints
-
-## 9. Agent Prompt Guide
-
-### Quick Color Reference
-- Background: Pure White (`#ffffff`) or Light Gray (`#f5f5f5`)
-- Text: Black (`#000000`)
-- Secondary text: Dark Gray (`#4e4e4e`)
-- Muted text: Warm Gray (`#777169`)
-- Warm surface: Warm Stone (`rgba(245, 242, 239, 0.8)`)
-- Border: `#e5e5e5` or `rgba(0,0,0,0.05)`
+### Quick Reference
+- Dark hero/moment slide: black background, condensed all-caps white headline, flower mark top-left, mono caption bottom-right edge
+- White content slide: white background, mono uppercase kicker, humanist sans heading, 2–3 column card grid
+- Testimonial: black rounded card on white, condensed all-caps quote, plain sans attribution
+- Diagram: light-gray nodes + black hub node (flower mark + mono label), green arrows for money flow
 
 ### Example Component Prompts
-- "Create a hero on white background. Headline at 48px Waldenburg weight 300, line-height 1.08, letter-spacing -0.96px, black text. Subtitle at 18px Inter weight 400, line-height 1.60, letter-spacing 0.18px, #4e4e4e text. Two pill buttons: black (9999px, 0px 14px padding) and warm stone (rgba(245,242,239,0.8), 30px radius, 12px 20px padding, warm shadow rgba(78,50,23,0.04) 0px 6px 16px)."
-- "Design a card: white background, 20px radius. Shadow: rgba(0,0,0,0.06) 0px 0px 0px 1px, rgba(0,0,0,0.04) 0px 1px 2px, rgba(0,0,0,0.04) 0px 2px 4px. Title at 32px Waldenburg weight 300, body at 16px Inter weight 400 letter-spacing 0.16px, #4e4e4e."
-- "Build a white pill button: white bg, 9999px radius. Shadow: rgba(0,0,0,0.4) 0px 0px 1px, rgba(0,0,0,0.04) 0px 4px 4px. Text at 15px Inter weight 500."
-- "Create an uppercase CTA label: 14px WaldenburgFH weight 700, text-transform uppercase, letter-spacing 0.7px."
-- "Design navigation: white sticky header. Inter 15px weight 500. Black pill CTA right-aligned. Border-bottom: rgba(0,0,0,0.05)."
+- "Create a dark cover slide: pure black background, six-petal flower mark line-icon top-left in white, condensed all-caps headline 48px centered lower-third, small mono 'CONFIDENTIAL · [DATE]' rotated on the right edge."
+- "Design a pricing card: white background, 1px light-gray border, 8px radius. Mono uppercase tier label centered at top, large price numeral below, 'per month' in small gray sans, checkmarked feature list left-aligned."
+- "Build a testimonial block: black rounded card (12px radius) on white page. Condensed all-caps white quote text, small plain-sans attribution line, optional large stat number below in the same condensed face."
+- "Create a process diagram: light-gray rounded node boxes with mono step number ('01') and sans label, connected by black lines to a central black rounded hub containing the white flower mark and a mono label; use a green stroked arrow for the revenue-flow connector."
 
 ### Iteration Guide
-1. Start with white — the warm undertone comes from shadows and stone surfaces, not backgrounds
-2. Waldenburg 300 for headings — never bold, the lightness is the identity
-3. Multi-layer shadows: always include inset + outline + elevation at sub-0.1 opacity
-4. Positive letter-spacing on Inter body (+0.14px to +0.18px) — the airy reading quality
-5. Warm stone CTA is the signature — `rgba(245,242,239,0.8)` with `rgba(78,50,23,0.04)` shadow
-6. Pill (9999px) for buttons, generous radius (16px–24px) for cards
+1. Decide the register first — is this a narrative "moment" (black, condensed caps) or a "systems" slide (white, humanist + mono)?
+2. Never blend condensed-caps and humanist-sans in the same text block
+3. Kickers, tags, tiers, and step numbers are always uppercase monospace
+4. Reserve green strictly for money/success signals
+5. Keep corners minimal (≤12px) and borders hairline — precision over softness
+6. Anchor the flower mark and the rotated mono footer caption on every slide for continuity

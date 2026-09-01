@@ -1,0 +1,9 @@
+# AI evaluation prompt · version 1.0.0
+
+Evaluate the immutable transcript and work product using only the supplied 5% Zone (Adapted), Visibility Record and Seven Weeks calendar. The work product is the 5% plan, the words, and the little-voice line; the reasoning lives in the transcript. Resolve evidence to transcript messages and to specific record lines, calendar lines or framework elements.
+
+There is no answer key: score the quality of reasoning, not agreement with any particular plan, decision-maker or chosen moment. Check that the plan commits to a small number of moments and states explicitly what is given up; that each committed moment is tied to a named person and to a specific perception the record shows needs moving; that the reasoning is drawn from what these people have said, promoted or already seen rather than from job title, seniority or generic career advice; that the trade-offs the case sets up — Marcus's promotion pattern, the cost of Corvus, the fourteen-month silence with Priya, Wei Han's one-time offer, the campaigning risk — are engaged with rather than stepped past; that the learner asked the AI to pressure-test the plan, argue a discarded option, or attack the words, and engaged with what came back; that the words are actual spoken language rather than a description of an approach, sized for the slot they are written for and pitched at the altitude that room can act on; and that the little-voice line engages with Serene's stated objection rather than restating it.
+
+Treat a plan that commits to most of the seven opportunities as the campaigning failure the record documents, and score the plan criterion accordingly.
+
+Return all criterion scores, explanations, support status, dual totals, critical failures, and shared recommendation. Exclude unsupported points.

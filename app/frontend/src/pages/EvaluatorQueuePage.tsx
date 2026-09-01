@@ -61,7 +61,7 @@ function AccessForm({ onReady }: { onReady: () => void }) {
     <main className="grid min-h-screen place-items-center bg-[#eeede9] p-6 text-ink">
       <form onSubmit={submit} className="w-full max-w-md rounded-panel bg-white p-8 soft-edge">
         <p className="m-0 text-micro font-semibold uppercase tracking-[0.18em] text-muted">Prototype evaluator access</p>
-        <h1 className="mt-3 font-display text-[36px] font-light">Evaluator console</h1>
+        <h1 className="mt-3 font-display text-[36px]">Evaluator console</h1>
         <p className="text-small text-muted-deep">Attribution is recorded but not identity-verified in this prototype.</p>
         <label className="mt-6 grid gap-2 text-small font-medium">Access code
           <input required type="password" value={code} onChange={(event) => setCode(event.target.value)} className="rounded-button border border-hairline px-4 py-3" />
@@ -189,7 +189,7 @@ export function EvaluatorQueuePage() {
     <main className="min-h-screen bg-[#eeede9] p-4 text-ink md:p-7">
       <div className="mx-auto max-w-[1500px]">
         <header className="flex flex-wrap items-end justify-between gap-4">
-          <div><p className="m-0 text-micro font-semibold uppercase tracking-[0.18em] text-muted">Human authority · all cases</p><h1 className="m-0 mt-2 font-display text-[42px] font-light">Evaluation queue</h1></div>
+          <div><p className="m-0 text-micro font-semibold uppercase tracking-[0.18em] text-muted">Human authority · all cases</p><h1 className="m-0 mt-2 font-display text-[42px]">Evaluation queue</h1></div>
           <div className="flex items-center gap-3 text-small"><span className="text-muted-deep">{session.evaluatorName} · unverified</span><button className="rounded-button bg-white px-4 py-2 soft-edge" onClick={() => { clearEvaluatorSession(); setSession(null); }}>Sign out</button></div>
         </header>
 

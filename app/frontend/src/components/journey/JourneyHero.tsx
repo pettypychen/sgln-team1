@@ -19,7 +19,7 @@ export function JourneyHero() {
         <div className="mb-7 text-small font-medium uppercase tracking-[0.16em] text-amber">
           The challenge · How might we
         </div>
-        <h1 className="m-0 max-w-[1080px] font-display text-[40px] font-light leading-[1.08] text-white [text-wrap:balance] md:text-[64px] lg:text-[76px]">
+        <h1 className="m-0 max-w-[1080px] font-display text-[36px] uppercase leading-[1.08] tracking-tight text-white [text-wrap:balance] md:text-[56px] lg:text-[66px]">
           Help non-tech graduates in Singapore grow into{" "}
           <span className="text-amber">capable professionals</span> — when the
           early-career training ground is being{" "}

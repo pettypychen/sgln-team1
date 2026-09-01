@@ -32,7 +32,7 @@ interface MarketplacePageProps {
 export function MarketplacePage({
   columns = 3,
   showContinue = true,
-  accent = "#f5f2ef",
+  accent = "#f2f2f2",
 }: MarketplacePageProps) {
   const [activeCat, setActiveCat] = useState<CategoryFilter>("ALL");
   const navigate = useNavigate();

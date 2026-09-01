@@ -20,25 +20,31 @@ const CATEGORY_DETAIL: Record<
     label: "Legal",
     note: "Redlines & intake",
     count: "04",
-    color: "#256f67",
+    color: "#8a6a3a",
   },
   ACCOUNTING: {
     label: "Accounting",
     note: "Close & audit",
     count: "03",
-    color: "#8b3a34",
+    color: "#c1673c",
   },
   "BUSINESS ANALYST": {
     label: "Business analyst",
     note: "Discovery & prioritization",
     count: "03",
-    color: "#4f6f9d",
+    color: "#4a9fd8",
+  },
+  LEADERSHIP: {
+    label: "Leadership",
+    note: "High-stakes moments",
+    count: "01",
+    color: "#2f6e73",
   },
   ONBOARDING: {
     label: "Onboarding",
     note: "Learn the SimWorks loop",
     count: "01",
-    color: "#8d4127",
+    color: "#6b6b6b",
   },
 };
 
@@ -49,7 +55,7 @@ export function CategoryTabs({ categories, active, onChange }: CategoryTabsProps
       <div className="flex flex-col gap-4 border-y border-hairline py-5 lg:flex-row lg:items-center lg:justify-between">
         <div>
           <div className="mb-1 text-small text-muted">Explore pathways</div>
-          <h2 className="m-0 font-display text-[36px] font-light leading-[1.1] text-ink">
+          <h2 className="m-0 font-display text-[36px] leading-[1.1] text-ink">
             Choose a practice track.
           </h2>
         </div>
@@ -66,7 +72,7 @@ export function CategoryTabs({ categories, active, onChange }: CategoryTabsProps
                   "group min-h-[76px] cursor-pointer rounded-panel bg-white p-4 text-left transition-[background,box-shadow,transform] hover:-translate-y-0.5 " +
                   (isActive
                     ? "soft-edge"
-                    : "shadow-[rgba(0,0,0,0.04)_0_0_0_1px] hover:bg-cloud")
+                    : "shadow-[rgba(0,0,0,0.08)_0_0_0_1px] hover:bg-cloud")
                 }
               >
                 <span className="mb-3 flex items-center justify-between gap-3">

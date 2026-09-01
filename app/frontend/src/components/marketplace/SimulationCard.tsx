@@ -1,5 +1,5 @@
 import { CoverArt } from "@/components/ui/CoverArt";
-import { coverLabel } from "@/data/simulations";
+import { CATEGORY_ACCENT, coverLabel } from "@/data/simulations";
 import type { Category, Simulation } from "@/types";
 import { Link } from "react-router-dom";
 
@@ -7,17 +7,11 @@ interface SimulationCardProps {
   sim: Simulation;
 }
 
-const CATEGORY_ACCENT: Record<Category, string> = {
-  LEGAL: "#8b3a34",
-  ACCOUNTING: "#256f67",
-  "BUSINESS ANALYST": "#4f6f9d",
-  ONBOARDING: "#8d4127",
-};
-
 const CATEGORY_EVIDENCE: Record<Category, string> = {
   LEGAL: "Issue log / redline judgment",
   ACCOUNTING: "Reconciliation workbook",
   "BUSINESS ANALYST": "Stakeholder decision brief",
+  LEADERSHIP: "Decision-ready executive message",
   ONBOARDING: "Constraint and verification check",
 };
 
@@ -36,6 +30,7 @@ export function SimulationCard({ sim }: SimulationCardProps) {
       <CoverArt
         label={coverLabel(sim.cat)}
         src={sim.cover}
+        accent={accent}
         aspect="16 / 9"
         className="border-b border-hairline"
       >
@@ -51,7 +46,7 @@ export function SimulationCard({ sim }: SimulationCardProps) {
             <div className="mb-2 text-small font-medium" style={{ color: accent }}>
               {sim.cat}
             </div>
-            <h3 className="m-0 text-pretty font-display text-card font-light text-ink">
+            <h3 className="m-0 text-pretty font-display text-card text-ink">
               {sim.title}
             </h3>
           </div>

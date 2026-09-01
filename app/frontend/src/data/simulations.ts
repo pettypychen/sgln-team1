@@ -5,22 +5,24 @@ import type {
   Simulation,
   TrustPartner,
 } from "@/types";
-import annualAudit from "@/assets/covers/cover-accounting-annual-audit.svg";
+import annualAudit from "@/assets/covers/cover-accounting-annual-audit.jpg";
 import monthEndClose from "@/assets/covers/cover-accounting-month-end-close.jpg";
-import reconcileLedger from "@/assets/covers/cover-accounting-reconcile-ledger.svg";
+import reconcileLedger from "@/assets/covers/cover-accounting-reconcile-ledger.jpg";
 import apacPilotPitch from "@/assets/covers/cover-business-analyst-apac-pilot-pitch.jpg";
-import backlogPrioritization from "@/assets/covers/cover-business-analyst-backlog-prioritization.svg";
+import backlogPrioritization from "@/assets/covers/cover-business-analyst-backlog-prioritization.jpg";
 import missedHandoff from "@/assets/covers/cover-business-analyst-missed-handoff.jpg";
-import requirementsGathering from "@/assets/covers/cover-business-analyst-requirements-gathering.svg";
-import stakeholderInterview from "@/assets/covers/cover-business-analyst-stakeholder-interview.svg";
-import clientIntake from "@/assets/covers/cover-legal-client-intake.svg";
-import commercialLease from "@/assets/covers/cover-legal-commercial-lease.svg";
+import requirementsGathering from "@/assets/covers/cover-business-analyst-requirements-gathering.jpg";
+import stakeholderInterview from "@/assets/covers/cover-business-analyst-stakeholder-interview.jpg";
+import theRoomYoureNotIn from "@/assets/covers/cover-leadership-the-room-youre-not-in.jpg";
+import clientIntake from "@/assets/covers/cover-legal-client-intake.jpg";
+import commercialLease from "@/assets/covers/cover-legal-commercial-lease.jpg";
 import maDueDiligence from "@/assets/covers/cover-legal-ma-due-diligence.jpg";
-import ndaRedline from "@/assets/covers/cover-legal-nda-redline.svg";
-import kopiRun from "@/assets/covers/cover-onboarding-kopi-run.svg";
+import ndaRedline from "@/assets/covers/cover-legal-nda-redline.jpg";
+import kopiRun from "@/assets/covers/cover-onboarding-kopi-run.jpg";
 import {
   APAC_PILOT_PITCH_CONTENT,
   MISSED_HANDOFF_CONTENT,
+  THE_ROOM_YOURE_NOT_IN_CONTENT,
   FIRST_YEAR_ASSOCIATE_MA_DUE_DILIGENCE_CONTENT,
 } from "@/content/simulations";
 
@@ -30,6 +32,7 @@ export const CATEGORY_FILTERS: CategoryFilter[] = [
   "LEGAL",
   "ACCOUNTING",
   "BUSINESS ANALYST",
+  "LEADERSHIP",
   "ONBOARDING",
 ];
 
@@ -76,6 +79,14 @@ export const SIMULATIONS: Simulation[] = [
     meta: "10 min · Beginner · New",
     cover: missedHandoff,
   },
+  {
+    id: 14,
+    slug: THE_ROOM_YOURE_NOT_IN_CONTENT.id,
+    cat: "LEADERSHIP",
+    title: THE_ROOM_YOURE_NOT_IN_CONTENT.title,
+    meta: "20 min · Advanced · New",
+    cover: theRoomYoureNotIn,
+  },
 ];
 
 /** Hero "continue" card — from referenceHTML hero markup. */
@@ -101,16 +112,37 @@ export const TRUST_PARTNERS: TrustPartner[] = [
   { name: "Orchard Partners", logo: "orchard" }, // Vanda orchid / Orchard Rd
 ];
 
-/** Filters the catalog by category (`ALL` returns everything). Active cases (slug present) sort before previews. */
+const CATEGORY_ORDER: Category[] = CATEGORY_FILTERS.filter(
+  (category): category is Category => category !== "ALL",
+);
+
+/**
+ * Filters the catalog by category (`ALL` returns everything). Active cases (slug
+ * present) sort before previews; within that, cases group by category in
+ * `CATEGORY_FILTERS` order.
+ */
 export function filterSimulations(
   sims: Simulation[],
   filter: CategoryFilter,
 ): Simulation[] {
   const filtered = filter === "ALL" ? sims : sims.filter((s) => s.cat === filter);
-  return [...filtered].sort((a, b) => (b.slug ? 1 : 0) - (a.slug ? 1 : 0));
+  return [...filtered].sort((a, b) => {
+    const activeDiff = (b.slug ? 1 : 0) - (a.slug ? 1 : 0);
+    if (activeDiff !== 0) return activeDiff;
+    return CATEGORY_ORDER.indexOf(a.cat) - CATEGORY_ORDER.indexOf(b.cat);
+  });
 }
 
 /** Cover-art label shown on placeholder art, e.g. "LEGAL · Cover". */
 export function coverLabel(cat: Category): string {
   return `${cat} · Cover`;
 }
+
+/** Category accent used for cover-art gradients, progress fills, and pathway bars. */
+export const CATEGORY_ACCENT: Record<Category, string> = {
+  LEGAL: "#8a6a3a",
+  ACCOUNTING: "#c1673c",
+  "BUSINESS ANALYST": "#4a9fd8",
+  LEADERSHIP: "#2f6e73",
+  ONBOARDING: "#6b6b6b",
+};

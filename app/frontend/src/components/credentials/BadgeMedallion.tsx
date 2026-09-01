@@ -20,6 +20,7 @@ export function BadgeMedallion({
     "kopi-run": "badge-shape-kopi",
     "apac-pilot-pitch": "badge-shape-analyst",
     "missed-handoff-conversation": "badge-shape-analyst",
+    "the-room-youre-not-in": "badge-shape-leadership",
   }[caseId];
   return (
     <div

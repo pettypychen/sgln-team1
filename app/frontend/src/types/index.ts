@@ -5,6 +5,7 @@ export type Category =
   | "LEGAL"
   | "ACCOUNTING"
   | "BUSINESS ANALYST"
+  | "LEADERSHIP"
   | "ONBOARDING";
 
 export type CategoryFilter = "ALL" | Category;

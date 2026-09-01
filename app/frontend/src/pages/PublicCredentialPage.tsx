@@ -29,7 +29,7 @@ export function PublicCredentialPage() {
 
   if (credential === undefined) return <main className="grid min-h-screen place-items-center bg-[#eeede9] text-ink">Verifying credential…</main>;
   if (!credential || credential.status !== "public") {
-    return <main className="grid min-h-screen place-items-center bg-[#eeede9] p-6 text-ink"><section className="max-w-xl rounded-panel bg-white p-9 text-center soft-edge"><div className="mx-auto grid h-20 w-20 place-items-center rounded-full bg-stone-200 text-3xl">×</div><h1 className="mt-6 font-display text-4xl font-light">Share link no longer valid</h1><p className="text-muted-deep">This public verification URL was revoked or does not exist. No private credential information is available from this link.</p></section></main>;
+    return <main className="grid min-h-screen place-items-center bg-[#eeede9] p-6 text-ink"><section className="max-w-xl rounded-panel bg-white p-9 text-center soft-edge"><div className="mx-auto grid h-20 w-20 place-items-center rounded-full bg-stone-200 text-3xl">×</div><h1 className="mt-6 font-display text-4xl">Share link no longer valid</h1><p className="text-muted-deep">This public verification URL was revoked or does not exist. No private credential information is available from this link.</p></section></main>;
   }
 
   const definition = getCaseDefinition(credential.caseId);
@@ -38,7 +38,7 @@ export function PublicCredentialPage() {
       <section className="w-full max-w-3xl rounded-panel bg-white p-8 text-center soft-edge md:p-12">
         <p className="m-0 text-micro font-semibold uppercase tracking-[.2em] text-muted">SimWorks · verified credential</p>
         <div className="mx-auto mt-8 w-fit"><BadgeMedallion caseId={credential.caseId} size="lg" premium={Boolean(credential.supplementalLabel)} /></div>
-        <h1 className="m-0 mt-7 font-display text-[44px] font-light">{definition.badge.name}</h1>
+        <h1 className="m-0 mt-7 font-display text-[44px]">{definition.badge.name}</h1>
         <p className="mt-3 text-body text-muted-deep">Awarded to <strong className="text-ink">{credential.learnerDisplayName}</strong> for {credential.caseTitle}{credential.supplementalLabel ? ` · ${credential.supplementalLabel}` : ""}.</p>
         <div className="mx-auto mt-7 grid max-w-xl gap-4 rounded-panel bg-cloud p-5 text-left text-small sm:grid-cols-2">
           <div><p className="m-0 text-muted">Category</p><p className="m-0 mt-1 font-semibold">{credential.category}</p></div>

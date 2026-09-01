@@ -11,3 +11,7 @@ app/frontend/.env
 .claude/
 .agents/
 skills-lock.json
+
+# Reference ebooks (source material, not distributable)
+doc/*.mobi
+doc/*.epub

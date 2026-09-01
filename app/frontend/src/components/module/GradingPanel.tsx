@@ -34,10 +34,10 @@ function ScoreRing({ report }: { report: GradeReport }) {
   const style = VERDICT_STYLES[report.verdict];
   const stops =
     report.verdict === "distinction"
-      ? "#256f67"
+      ? "#2f9e5f"
       : report.verdict === "pass"
         ? "#000000"
-        : "#b9833b";
+        : "#d98d5f";
 
   return (
     <div className="flex items-center gap-4">

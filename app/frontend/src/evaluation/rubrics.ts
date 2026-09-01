@@ -114,7 +114,7 @@ export const CASE_DEFINITIONS: CaseDefinition[] = [
     badge: {
       symbol: "☕",
       name: "Kopi Coordinator",
-      palette: "from-[#4a2515] via-[#8d4127] to-[#d5a646]",
+      palette: "from-[#4a2515] via-[#a8623a] to-[#d5a646]",
     },
     rubric: {
       caseId: "kopi-run",
@@ -186,6 +186,35 @@ export const CASE_DEFINITIONS: CaseDefinition[] = [
       ],
     },
   },
+  {
+    id: "the-room-youre-not-in",
+    title: "The Room You're Not In",
+    category: "Leadership",
+    version: "1.0.0",
+    evaluationMode: "human_final",
+    released: true,
+    submissionTitle: "The 5% plan",
+    workProductPlaceholder: "The plan, the words, and what she says to herself on the night\u2026",
+    badge: {
+      symbol: "\u25c9",
+      name: "Executive Presence Lead",
+      palette: "from-[#12313a] via-[#2f6e73] to-[#d8b45c]",
+    },
+    rubric: {
+      caseId: "the-room-youre-not-in",
+      caseVersion: "1.0.0",
+      rubricVersion: "1.0.0",
+      caseThreshold: 28,
+      interactionThreshold: 12,
+      criteria: [
+        criterion("room-plan", "case_outcome", "The 5% plan", 26, "Commits to a small number of moments and names what is given up, ties each to a named person and the specific perception the record shows needs moving, accounts for the cost of what it takes on, and would not read the same for any executive at any company."),
+        criterion("room-words", "case_outcome", "The words", 22, "Writes what Serene actually says out loud rather than describing an approach, sized for the slot it is written for, pitched at the altitude that room can act on, and recognisable as her rather than as campaigning."),
+        criterion("room-rules", "ai_interaction", "Rules of the game", 10, "Works the visibility gap and the unwritten rules with the AI, reasoning each read from what a person has said, promoted or already seen rather than from job title or seniority, and the plan follows from what was concluded."),
+        criterion("room-challenge", "ai_interaction", "Pressure-tested", 8, "Asks the AI to challenge the plan, argue for a discarded option, or attack the words the way the room will, and engages with what comes back instead of accepting the first reading."),
+        criterion("room-voice", "ai_interaction", "Naming the little voice", 6, "Identifies the self-talk that would stop her on the day, separates the legitimate objection from the excuse doing its work, and gives her something to do when it arrives."),
+      ],
+    },
+  },
 ];
 
 export function getCaseDefinition(caseId: string): CaseDefinition {
@@ -207,6 +236,11 @@ const SOURCE_ARTIFACT_IDS: Record<string, string[]> = {
   "kopi-run": ["kopi-menu.csv", "colleague-orders.csv", "kopi-glossary.md"],
   "apac-pilot-pitch": ["culture-map.md", "jordan-whitaker-profile.md"],
   "missed-handoff-conversation": ["culture-map.md", "rohan-krishnan-profile.md"],
+  "the-room-youre-not-in": [
+    "visibility-record.md",
+    "seven-weeks.md",
+    "five-percent-zone.md",
+  ],
 };
 
 export function sourceArtifactsForCase(caseId: string) {

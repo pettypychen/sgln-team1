@@ -72,7 +72,7 @@ export const JOURNEY_SECTIONS: JourneySection[] = [
 export const JOURNEY_THEMES: JourneyTheme[] = [
   {
     name: "Simulation & practice",
-    color: "#256f67",
+    color: "#2f9e5f",
     ideas: [
       {
         name: "Workplace Flight Simulator",
@@ -98,7 +98,7 @@ export const JOURNEY_THEMES: JourneyTheme[] = [
   },
   {
     name: "Mentorship & transfer",
-    color: "#4f6f9d",
+    color: "#4a9fd8",
     ideas: [
       {
         name: "WorkflowStore",
@@ -124,7 +124,7 @@ export const JOURNEY_THEMES: JourneyTheme[] = [
   },
   {
     name: "Real-world exposure",
-    color: "#8b3a34",
+    color: "#c1673c",
     ideas: [
       {
         name: "Startup founder mandate",
@@ -150,7 +150,7 @@ export const JOURNEY_THEMES: JourneyTheme[] = [
   },
   {
     name: "Human + AI dynamics",
-    color: "#b9833b",
+    color: "#d98d5f",
     ideas: [
       {
         name: "AI orchestrators",

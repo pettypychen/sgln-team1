@@ -10,7 +10,7 @@ export function SectionLabel({ children, className = "" }: SectionLabelProps) {
   return (
     <div
       className={
-        "text-small font-medium text-muted-deep " +
+        "font-mono text-micro uppercase tracking-[0.14em] text-muted " +
         className
       }
     >

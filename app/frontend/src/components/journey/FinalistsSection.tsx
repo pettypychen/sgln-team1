@@ -11,7 +11,7 @@ export function FinalistsSection() {
     >
       <div className="mx-auto max-w-container">
         <JourneyEyebrow>The shortlist</JourneyEyebrow>
-        <h2 className="m-0 mb-12 font-display text-[36px] font-light leading-[1.05] text-ink md:text-[54px]">
+        <h2 className="m-0 mb-12 font-display text-[30px] uppercase leading-[1.05] tracking-tight text-ink md:text-[46px]">
           Three front-runners, one winner
         </h2>
 
@@ -28,7 +28,7 @@ export function FinalistsSection() {
                     Winner
                   </span>
                 </div>
-                <h3 className="m-0 mb-5 font-display text-[30px] font-light leading-[1.12] text-white">
+                <h3 className="m-0 mb-5 font-display text-[30px] leading-[1.12] text-white">
                   {finalist.name}
                 </h3>
                 <div className="flex flex-col gap-3">
@@ -54,7 +54,7 @@ export function FinalistsSection() {
                 <div className="mb-5 text-micro font-semibold uppercase tracking-[0.1em] text-muted">
                   Finalist
                 </div>
-                <h3 className="m-0 mb-4 font-display text-[26px] font-light leading-[1.15] text-ink">
+                <h3 className="m-0 mb-4 font-display text-[26px] leading-[1.15] text-ink">
                   {finalist.name}
                 </h3>
                 <p className="m-0 text-body-lg text-muted-deep">

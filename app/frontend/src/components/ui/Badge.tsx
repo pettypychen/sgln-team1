@@ -7,11 +7,11 @@ interface BadgeProps {
   className?: string;
 }
 
-export function Badge({ children, color = "#f5f2ef", className = "" }: BadgeProps) {
+export function Badge({ children, color = "#f2f2f2", className = "" }: BadgeProps) {
   return (
     <div
       className={
-        "rounded-button px-3 py-1.5 text-micro font-precise text-ink warm-lift " +
+        "rounded-button px-3 py-1.5 font-mono text-micro uppercase tracking-[0.08em] text-ink warm-lift " +
         className
       }
       style={{ background: color }}
